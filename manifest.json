@@ -2,7 +2,7 @@
   "name": "Ecurie Damien SIRI",
   "short_name": "Ecurie DSIRI",
   "start_url": "https://www.ecuriedamiensiri-proprietaire.com",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#ffffff",
   "theme_color": "#175B92",
   "icons": [
