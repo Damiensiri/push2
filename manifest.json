@@ -1,13 +1,13 @@
 {
   "name": "Ecurie Damien SIRI",
   "short_name": "Ecurie DSIRI",
-  "start_url": "https://www.ecuriedamiensiri-proprietaire.com",
+  "start_url": "https://www.ce-dugrandrang.com/pro",
   "display": "fullscreen",
-  "background_color": "#ffffff",
+  "background_color": "#181E3B",
   "theme_color": "#175B92",
   "icons": [
     {
-      "src": "/https://static.wixstatic.com/media/ff7f34_9ce2d1c780174f128484ce283672fa34~mv2.jpg/v1/fill/w_1200,h_916,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/logo%202_edited.jpg",
+      "src": "https://static.wixstatic.com/media/ff7f34_23f4fa9cffe44f83b179d9fc01aba6a2~mv2.png/v1/fill/w_1024,h_1024,al_c,q_90,enc_avif,quality_auto/DS_logo_bleu_fond_blanc.png",
       "sizes": "192x192",
       "type": "image/png"
     },
