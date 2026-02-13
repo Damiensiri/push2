@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <title>Ecurie Damien SIRI</title>
 
@@ -11,17 +12,19 @@
 <meta name="theme-color" content="#0f1b3a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Ecurie Damien SIRI">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <style>
 
-/* RESET TOTAL */
+/* RESET */
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
 }
 
+/* BODY */
 html, body{
   width:100%;
   height:100%;
@@ -44,33 +47,39 @@ html, body{
   letter-spacing:0.5px;
 }
 
-/* CONTAINER IFRAME */
+/* CONTAINER */
 #iframeBox{
   width:100vw;
   height:calc(100vh - 70px);
   overflow:hidden;
 }
 
-/* IFRAME */
+/* IFRAME WIX FIX */
 iframe{
-  width:100%;
+  width:120vw;
   height:100%;
   border:none;
   display:block;
   background:white;
+
+  transform:scale(0.9);
+  transform-origin:0 0;
 }
 
 </style>
+
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div id="header">
-ECURIE DAMIEN SIRI
+  ECURIE DAMIEN SIRI
 </div>
 
+<!-- WIX -->
 <div id="iframeBox">
-  <iframe
+  <iframe 
     src="https://www.ce-dugrandrang.com/pro"
     allow="clipboard-read; clipboard-write; fullscreen"
   ></iframe>
