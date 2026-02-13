@@ -7,8 +7,8 @@
 
 <title>Ecurie Damien SIRI</title>
 
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
+
 <meta name="theme-color" content="#0f1b3a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -17,26 +17,23 @@
 
 <style>
 
-/* RESET */
-*{
+/* RESET TOTAL */
+html,body{
+  width:100vw;
+  height:100vh;
   margin:0;
   padding:0;
-  box-sizing:border-box;
-}
-
-/* BODY */
-html, body{
-  width:100%;
-  height:100%;
   overflow:hidden;
   background:#0f1b3a;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
 /* HEADER */
 #header{
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
   height:70px;
-  width:100%;
   background:#0f1b3a;
   color:white;
   display:flex;
@@ -44,26 +41,25 @@ html, body{
   justify-content:center;
   font-size:18px;
   font-weight:700;
-  letter-spacing:0.5px;
+  z-index:10;
 }
 
-/* CONTAINER */
+/* ZONE WIX */
 #iframeBox{
-  width:100vw;
-  height:calc(100vh - 70px);
+  position:fixed;
+  top:70px;
+  left:0;
+  right:0;
+  bottom:0;
   overflow:hidden;
 }
 
-/* IFRAME WIX FIX */
+/* IFRAME */
 iframe{
-  width:120vw;
+  width:100%;
   height:100%;
-  border:none;
+  border:0;
   display:block;
-  background:white;
-
-  transform:scale(0.9);
-  transform-origin:0 0;
 }
 
 </style>
@@ -72,17 +68,13 @@ iframe{
 
 <body>
 
-<!-- HEADER -->
-<div id="header">
-  ECURIE DAMIEN SIRI
-</div>
+<div id="header">ECURIE DAMIEN SIRI</div>
 
-<!-- WIX -->
 <div id="iframeBox">
   <iframe 
     src="https://www.ce-dugrandrang.com/pro"
-    allow="clipboard-read; clipboard-write; fullscreen"
-  ></iframe>
+    allow="clipboard-read; clipboard-write; fullscreen">
+  </iframe>
 </div>
 
 </body>
