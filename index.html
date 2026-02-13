@@ -1,80 +1,84 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <title>Ecurie Damien SIRI</title>
 
+<!-- PWA -->
 <link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#0f1b3a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Ecurie Damien SIRI">
+<meta name="theme-color" content="#175B92">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<style>
+<!-- iOS -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ecurie Damien SIRI">
 
-/* RESET TOTAL */
+<style>
 html,body{
-  width:100vw;
-  height:100vh;
   margin:0;
   padding:0;
+  width:100%;
+  height:100%;
   overflow:hidden;
-  background:#0f1b3a;
+  background:#175B92;
+  font-family:-apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* HEADER */
 #header{
-  position:fixed;
-  top:0;
-  left:0;
-  right:0;
-  height:70px;
-  background:#0f1b3a;
+  height:64px;
+  background:#175B92;
   color:white;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
+  font-size:20px;
   font-weight:700;
-  z-index:10;
+  flex-shrink:0;
 }
 
-/* ZONE WIX */
-#iframeBox{
-  position:fixed;
-  top:70px;
-  left:0;
-  right:0;
-  bottom:0;
-  overflow:hidden;
+/* CONTAINER */
+#app{
+  display:flex;
+  flex-direction:column;
+  width:100%;
+  height:100%;
 }
 
 /* IFRAME */
+#iframeBox{
+  flex:1;
+  background:white;
+}
+
 iframe{
   width:100%;
   height:100%;
-  border:0;
-  display:block;
+  border:none;
+  background:white;
 }
-
 </style>
-
 </head>
 
 <body>
 
-<div id="header">ECURIE DAMIEN SIRI</div>
+<div id="app">
 
-<div id="iframeBox">
-  <iframe 
-    src="https://www.ce-dugrandrang.com/pro?mobileSite=true"
-    allow="clipboard-read; clipboard-write; fullscreen">
-  </iframe>
+  <div id="header">
+    ECURIE DAMIEN SIRI
+  </div>
+
+  <div id="iframeBox">
+    <!-- ⚠️ ON METTRA /app APRES -->
+    <iframe 
+      src="https://www.ce-dugrandrang.com/app"
+      allow="clipboard-read; clipboard-write; fullscreen"
+    ></iframe>
+  </div>
+
 </div>
 
 </body>
