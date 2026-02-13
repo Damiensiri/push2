@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Ecurie Damien SIRI</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#175B92">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  background:#175B92;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* HEADER */
+#header{
+  height:70px;
+  background:#175B92;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  font-weight:700;
+}
+
+/* IFRAME WIX */
+#iframeBox{
+  height:calc(100vh - 70px);
+  width:100%;
+}
+
+iframe{
+  width:100%;
+  height:100%;
+  border:none;
+  background:white;
+}
+</style>
+</head>
+
+<body>
+
+<div id="header">
+  ECURIE DAMIEN SIRI
+</div>
+
+<div id="iframeBox">
+  <iframe 
+    src="https://www.ce-dugrandrang.com/pro"
+    allow="clipboard-read; clipboard-write; fullscreen"
+  ></iframe>
+</div>
+
+</body>
+</html>
