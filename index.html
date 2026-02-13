@@ -2,63 +2,70 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <title>Ecurie Damien SIRI</title>
 
+<!-- PWA -->
 <link rel="manifest" href="manifest.json">
-
-<meta name="theme-color" content="#181E3B">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Ecurie Damien SIRI">
+<meta name="theme-color" content="#175B92">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
 <style>
+
+/* RESET TOTAL */
 html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
   height: 100%;
-  background: #181E3B;
+  overflow-x: hidden;
+  background: #175B92;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* HEADER */
 #header {
-  height: 60px;
-  background: #181E3B;
+  height: 70px;
+  background: #175B92;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  flex-shrink: 0;
 }
 
-/* ZONE SITE */
+/* ZONE IFRAME */
 #iframeBox {
-  height: calc(100vh - 60px);
   width: 100%;
+  height: calc(100vh - 70px);
+  overflow: hidden;
 }
 
+/* IFRAME */
 iframe {
   width: 100%;
   height: 100%;
   border: none;
+  display: block;
   background: white;
 }
+
 </style>
 </head>
 
 <body>
 
+<!-- HEADER -->
 <div id="header">
-ECURIE DAMIEN SIRI
+  ECURIE DAMIEN SIRI
 </div>
 
+<!-- CONTENU -->
 <div id="iframeBox">
-  <iframe
+  <iframe 
     src="https://www.ce-dugrandrang.com/pro"
     allow="clipboard-read; clipboard-write; fullscreen"
   ></iframe>
