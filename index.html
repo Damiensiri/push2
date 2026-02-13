@@ -2,58 +2,58 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-
 <meta name="viewport"
-content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+      content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <title>Ecurie Damien SIRI</title>
 
-<!-- PWA -->
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#181E3B">
+<meta name="theme-color" content="#175B92">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-<!-- iOS -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
 <style>
-*{
-  box-sizing:border-box;
+/* RESET TOTAL */
+html, body {
   margin:0;
   padding:0;
-}
-
-html,body{
-  width:100%;
   height:100%;
+  width:100%;
   overflow:hidden;
-  background:#181E3B;
+  background:#175B92;
   font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
 /* HEADER */
 #header{
   height:70px;
-  background:#181E3B;
+  background:#175B92;
   color:white;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:18px;
+  font-size:20px;
   font-weight:700;
+  letter-spacing:1px;
+  position:fixed;
+  top:0;
+  left:0;
+  right:0;
+  z-index:10;
 }
 
 /* ZONE IFRAME */
 #iframeBox{
-  width:100vw;
-  height:calc(100vh - 70px);
+  position:absolute;
+  top:70px;
+  left:0;
+  right:0;
+  bottom:0;
   overflow:hidden;
 }
 
-/* IFRAME */
+/* IFRAME WIX FULL SCREEN */
 iframe{
-  width:100vw;
+  width:100%;
   height:100%;
   border:0;
   display:block;
@@ -68,10 +68,9 @@ iframe{
 </div>
 
 <div id="iframeBox">
-  <iframe 
+  <iframe
     src="https://www.ce-dugrandrang.com/pro"
-    scrolling="yes"
-    allowfullscreen
+    allow="clipboard-read; clipboard-write; fullscreen"
   ></iframe>
 </div>
 
