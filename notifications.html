@@ -13,46 +13,21 @@ body{
   background:#f4f4f4;
 }
 
-/* ===== TOP BAR ===== */
-#topbar{
-  position:sticky;
-  top:0;
-  background:#1f5c8f;
-  padding:14px;
-  color:white;
-  font-weight:600;
-  z-index:10;
-}
-
-#backBtn{
-  background:none;
-  border:none;
-  color:white;
-  font-size:16px;
-  font-weight:600;
-  cursor:pointer;
-}
-
-/* ===== TITRE ===== */
 h1{
   text-align:center;
   padding:20px 0 10px;
-  margin:0;
 }
 
-/* ===== COMPTEUR ===== */
 #counter{
   text-align:center;
   font-weight:600;
   margin-bottom:10px;
 }
 
-/* ===== CONTAINER ===== */
 #container{
-  padding:12px;
+  padding:10px;
 }
 
-/* ===== NOTIF ===== */
 .notif{
   background:white;
   padding:15px;
@@ -81,10 +56,6 @@ h1{
 
 <body>
 
-<div id="topbar">
-  <button id="backBtn">← Retour</button>
-</div>
-
 <h1>Notifications</h1>
 <div id="counter"></div>
 <div id="container"></div>
@@ -97,14 +68,6 @@ h1{
 
 const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
-
-// ==========================
-// RETOUR HOME
-// ==========================
-
-document.getElementById("backBtn").onclick = ()=>{
-  window.location.href = "https://www.ce-dugrandrang.com/pwa2";
-};
 
 // ==========================
 // LOCAL STORAGE
@@ -159,27 +122,29 @@ function nettoyerMinuit(data){
 // ==========================
 
 fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
-.then(res=>res.json())
-.then(data=>{
+.then(res => res.json())
+.then(data => {
 
   nettoyerMinuit(data);
 
   const container = document.getElementById("container");
   const counter = document.getElementById("counter");
 
-  container.innerHTML="";
+  container.innerHTML = "";
 
   let nonLues = 0;
 
   data.forEach((n,index)=>{
 
+    // expiration
     if(n.expire && new Date(n.expire) < new Date()){
       return;
     }
 
     const div = document.createElement("div");
-    div.className="notif";
+    div.className = "notif";
 
+    // ===== ICI LE COEUR DU FIX =====
     if(estLu(index)){
       div.classList.add("lu");
     }else{
@@ -187,7 +152,7 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
       div.setAttribute("data-unread","true");
     }
 
-    if(n.epingle==="oui"){
+    if(n.epingle === "oui"){
       div.classList.add("epingle");
     }
 
@@ -208,7 +173,8 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
   });
 
   function updateCounter(){
-    const totalNonLues = document.querySelectorAll('[data-unread="true"]').length;
+    const totalNonLues =
+      document.querySelectorAll('[data-unread="true"]').length;
 
     if(totalNonLues > 0){
       counter.innerHTML = totalNonLues + " notification(s) non lue(s)";
