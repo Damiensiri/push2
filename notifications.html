@@ -9,75 +9,177 @@
 <style>
 body{
   margin:0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
   background:#f4f4f4;
 }
 
 h1{
   text-align:center;
-  padding:12px;
+  padding:20px 0 10px;
 }
 
-.notification{
+#counter{
+  text-align:center;
+  font-weight:600;
+  margin-bottom:10px;
+}
+
+#container{
+  padding:10px;
+}
+
+.notif{
   background:white;
-  margin:10px;
-  padding:12px;
-  border-radius:10px;
-  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+  padding:15px;
+  margin-bottom:12px;
+  border-radius:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  cursor:pointer;
+  transition:0.2s;
 }
 
-.notification h3{
-  margin:0 0 6px 0;
-  font-size:15px;
+.notif.lu{
+  opacity:0.4;
 }
 
-.notification p{
-  margin:0;
-  font-size:14px;
+.notif.epingle{
+  border-left:4px solid #1f5c8f;
+}
+
+.date{
+  font-size:12px;
+  opacity:0.6;
+  margin-top:5px;
 }
 </style>
 </head>
-
 <body>
 
 <h1>Notifications</h1>
-<div id="list"></div>
+<div id="counter"></div>
+<div id="container"></div>
 
 <script>
 
-const SHEET_URL =
-"https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/notifications";
+// ==========================
+// CONFIG
+// ==========================
 
-function loadNotifications(){
+const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
+const STORAGE_KEY = "notifications_lues";
 
-fetch(SHEET_URL)
-.then(r=>r.json())
-.then(data=>{
+// ==========================
+// LOCAL STORAGE
+// ==========================
 
-  const container=document.getElementById("list");
-  container.innerHTML="";
-
-  data.forEach(n=>{
-
-    if(n.actif!=="oui") return;
-
-    const box=document.createElement("div");
-    box.className="notification";
-
-    box.innerHTML=`
-      <h3>${n.titre}</h3>
-      <p>${n.message}</p>
-    `;
-
-    container.appendChild(box);
-
-  });
-
-});
+function getLues(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
 
-loadNotifications();
-setInterval(loadNotifications,60000);
+function setLues(ids){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+}
+
+function marquerLu(id){
+  const lues = getLues();
+  if(!lues.includes(id)){
+    lues.push(id);
+    setLues(lues);
+  }
+}
+
+function estLu(id){
+  return getLues().includes(id);
+}
+
+// ==========================
+// RESET A MINUIT
+// ==========================
+
+function nettoyerMinuit(data){
+  const today = new Date().toDateString();
+  const lastDay = localStorage.getItem("notif_day");
+
+  if(lastDay !== today){
+    // on garde uniquement les épinglés
+    const lues = getLues();
+    const newLues = [];
+
+    data.forEach((n,index)=>{
+      if(n.epingle === "oui" && lues.includes(index)){
+        newLues.push(index);
+      }
+    });
+
+    setLues(newLues);
+    localStorage.setItem("notif_day",today);
+  }
+}
+
+// ==========================
+// FETCH SHEET
+// ==========================
+
+fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
+.then(res=>res.json())
+.then(data=>{
+
+  nettoyerMinuit(data);
+
+  const container = document.getElementById("container");
+  const counter = document.getElementById("counter");
+
+  container.innerHTML="";
+
+  let nonLues = 0;
+
+  data.forEach((n,index)=>{
+
+    // si date expirée on ignore
+    if(n.expire && new Date(n.expire) < new Date()){
+      return;
+    }
+
+    const div = document.createElement("div");
+    div.className="notif";
+
+    if(estLu(index)){
+      div.classList.add("lu");
+    }else{
+      nonLues++;
+    }
+
+    if(n.epingle==="oui"){
+      div.classList.add("epingle");
+    }
+
+    div.innerHTML = `
+      <strong>${n.titre}</strong><br>
+      ${n.message}
+      <div class="date">${n.date || ""}</div>
+    `;
+
+    div.onclick = ()=>{
+      marquerLu(index);
+      div.classList.add("lu");
+      updateCounter();
+    };
+
+    container.appendChild(div);
+  });
+
+  function updateCounter(){
+    const totalNonLues = data.length - getLues().length;
+    if(totalNonLues > 0){
+      counter.innerHTML = totalNonLues + " notification(s) non lue(s)";
+    }else{
+      counter.innerHTML = "Aucune nouvelle notification";
+    }
+  }
+
+  updateCounter();
+
+});
 
 </script>
 
