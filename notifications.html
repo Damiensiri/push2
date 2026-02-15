@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Notifications</title>
+
+<style>
+body{
+  margin:0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background:#f4f4f4;
+}
+
+h1{
+  text-align:center;
+  padding:12px;
+}
+
+.notification{
+  background:white;
+  margin:10px;
+  padding:12px;
+  border-radius:10px;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.notification h3{
+  margin:0 0 6px 0;
+  font-size:15px;
+}
+
+.notification p{
+  margin:0;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Notifications</h1>
+<div id="list"></div>
+
+<script>
+
+const SHEET_URL =
+"https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/notifications";
+
+function loadNotifications(){
+
+fetch(SHEET_URL)
+.then(r=>r.json())
+.then(data=>{
+
+  const container=document.getElementById("list");
+  container.innerHTML="";
+
+  data.forEach(n=>{
+
+    if(n.actif!=="oui") return;
+
+    const box=document.createElement("div");
+    box.className="notification";
+
+    box.innerHTML=`
+      <h3>${n.titre}</h3>
+      <p>${n.message}</p>
+    `;
+
+    container.appendChild(box);
+
+  });
+
+});
+}
+
+loadNotifications();
+setInterval(loadNotifications,60000);
+
+</script>
+
+</body>
+</html>
