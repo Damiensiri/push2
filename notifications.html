@@ -53,6 +53,7 @@ h1{
 }
 </style>
 </head>
+
 <body>
 
 <h1>Notifications</h1>
@@ -93,7 +94,7 @@ function estLu(id){
 }
 
 // ==========================
-// RESET A MINUIT
+// RESET CHAQUE JOUR
 // ==========================
 
 function nettoyerMinuit(data){
@@ -101,7 +102,7 @@ function nettoyerMinuit(data){
   const lastDay = localStorage.getItem("notif_day");
 
   if(lastDay !== today){
-    // on garde uniquement les épinglés
+
     const lues = getLues();
     const newLues = [];
 
@@ -121,35 +122,38 @@ function nettoyerMinuit(data){
 // ==========================
 
 fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
-.then(res=>res.json())
-.then(data=>{
+.then(res => res.json())
+.then(data => {
 
   nettoyerMinuit(data);
 
   const container = document.getElementById("container");
   const counter = document.getElementById("counter");
 
-  container.innerHTML="";
+  container.innerHTML = "";
 
   let nonLues = 0;
 
   data.forEach((n,index)=>{
 
-    // si date expirée on ignore
+    // expiration
     if(n.expire && new Date(n.expire) < new Date()){
       return;
     }
 
     const div = document.createElement("div");
-    div.className="notif";
+    div.className = "notif";
 
+    // NON LU
     if(estLu(index)){
       div.classList.add("lu");
     }else{
+      div.setAttribute("data-unread","true");
       nonLues++;
     }
 
-    if(n.epingle==="oui"){
+    // EPINGLE
+    if(n.epingle === "oui"){
       div.classList.add("epingle");
     }
 
@@ -159,9 +163,10 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
       <div class="date">${n.date || ""}</div>
     `;
 
-    div.onclick = ()=>{
+    div.onclick = () => {
       marquerLu(index);
       div.classList.add("lu");
+      div.removeAttribute("data-unread");
       updateCounter();
     };
 
@@ -169,9 +174,10 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
   });
 
   function updateCounter(){
-    const totalNonLues = data.length - getLues().length;
-    if(totalNonLues > 0){
-      counter.innerHTML = totalNonLues + " notification(s) non lue(s)";
+    const restants = document.querySelectorAll('[data-unread="true"]').length;
+
+    if(restants > 0){
+      counter.innerHTML = restants + " notification(s) non lue(s)";
     }else{
       counter.innerHTML = "Aucune nouvelle notification";
     }
