@@ -7,50 +7,47 @@
 <title>Notifications</title>
 
 <style>
-
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,sans-serif;
   background:#f4f4f4;
 }
 
-/* ===== TOP BAR ===== */
-
+/* ===== HEADER ===== */
 #topbar{
-  position:sticky;
-  top:0;
+  height:60px;
   background:#1f5c8f;
   color:white;
-  padding:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:sticky;
+  top:0;
+  z-index:10;
+  font-size:18px;
   font-weight:600;
-  text-align:center;
-  border-radius:0 0 14px 14px;
 }
 
 #backBtn{
   position:absolute;
-  left:14px;
-  top:14px;
-  font-size:18px;
+  left:15px;
+  font-size:22px;
   cursor:pointer;
 }
 
 /* ===== COUNTER ===== */
-
 #counter{
   text-align:center;
-  font-weight:600;
   margin:10px 0;
+  font-weight:600;
 }
 
 /* ===== CONTAINER ===== */
-
 #container{
   padding:12px;
 }
 
-/* ===== NOTIFICATION ===== */
-
+/* ===== NOTIFS ===== */
 .notif{
   background:white;
   padding:15px;
@@ -58,7 +55,6 @@ body{
   border-radius:12px;
   box-shadow:0 2px 8px rgba(0,0,0,0.08);
   cursor:pointer;
-  transition:0.2s;
 }
 
 .notif.lu{
@@ -74,36 +70,28 @@ body{
   opacity:0.6;
   margin-top:5px;
 }
-
 </style>
 </head>
 
 <body>
 
-<!-- ===== BARRE HAUTE ===== -->
+<!-- HEADER -->
 <div id="topbar">
-  <span id="backBtn">←</span>
+  <div id="backBtn">←</div>
   Notifications
 </div>
 
-<!-- ===== COMPTEUR ===== -->
 <div id="counter"></div>
-
-<!-- ===== LISTE ===== -->
 <div id="container"></div>
 
 <script>
 
-/* ==========================
-   CONFIG
-========================== */
+/* ================= CONFIG ================= */
 
 const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
 
-/* ==========================
-   LOCAL STORAGE
-========================== */
+/* ================= STORAGE ================= */
 
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -125,39 +113,36 @@ function estLu(id){
   return getLues().includes(id);
 }
 
-/* ==========================
-   RESET A MINUIT
-========================== */
+/* ================= RESET A MINUIT ================= */
 
-function nettoyerMinuit(data){
+function resetMinuit(data){
+
   const today = new Date().toDateString();
-  const lastDay = localStorage.getItem("notif_day");
+  const last = localStorage.getItem("notif_day");
 
-  if(lastDay !== today){
+  if(today !== last){
 
     const lues = getLues();
-    const newLues = [];
+    const keep = [];
 
-    data.forEach((n,index)=>{
-      if(n.epingle === "oui" && lues.includes(index)){
-        newLues.push(index);
+    data.forEach((n,i)=>{
+      if(n.epingle==="oui" && lues.includes(i)){
+        keep.push(i);
       }
     });
 
-    setLues(newLues);
+    setLues(keep);
     localStorage.setItem("notif_day",today);
   }
 }
 
-/* ==========================
-   FETCH SHEET
-========================== */
+/* ================= LOAD ================= */
 
 fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
-.then(res=>res.json())
+.then(r=>r.json())
 .then(data=>{
 
-  nettoyerMinuit(data);
+  resetMinuit(data);
 
   const container = document.getElementById("container");
   const counter = document.getElementById("counter");
@@ -165,16 +150,14 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
   container.innerHTML="";
   let nonLues = 0;
 
-  data.forEach((n,index)=>{
+  data.forEach((n,i)=>{
 
-    if(n.expire && new Date(n.expire) < new Date()){
-      return;
-    }
+    if(n.expire && new Date(n.expire) < new Date()) return;
 
     const div = document.createElement("div");
     div.className="notif";
 
-    if(estLu(index)){
+    if(estLu(i)){
       div.classList.add("lu");
     }else{
       nonLues++;
@@ -191,7 +174,7 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
     `;
 
     div.onclick = ()=>{
-      marquerLu(index);
+      marquerLu(i);
       div.classList.add("lu");
       updateCounter();
     };
@@ -200,10 +183,10 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
   });
 
   function updateCounter(){
-    if(nonLues > 0){
-      counter.innerHTML = nonLues + " notification(s) non lue(s)";
+    if(nonLues>0){
+      counter.innerText = nonLues+" notification(s) non lue(s)";
     }else{
-      counter.innerHTML = "Aucune nouvelle notification";
+      counter.innerText = "Aucune nouvelle notification";
     }
   }
 
@@ -211,12 +194,10 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
 
 });
 
-/* ==========================
-   BOUTON RETOUR
-========================== */
+/* ================= RETOUR ================= */
 
 document.getElementById("backBtn").onclick = ()=>{
-  history.back();
+  window.location.href = "https://www.ce-dugrandrang.com/pwa2";
 };
 
 </script>
