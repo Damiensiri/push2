@@ -194,10 +194,14 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
 
 });
 
-/* ================= RETOUR ================= */
+/* ================= RETOUR INTELLIGENT ================= */
 
 document.getElementById("backBtn").onclick = ()=>{
-  window.location.href = "https://www.ce-dugrandrang.com/pwa2";
+  if (window.history.length > 1) {
+    history.back();
+  } else {
+    window.location.href = "https://www.ce-dugrandrang.com/pwa2";
+  }
 };
 
 </script>
