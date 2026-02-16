@@ -5,57 +5,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-html,body{
+body{
   margin:0;
-  padding:0;
+  background:transparent;
+}
+
+/* CONTENEUR CENTRÉ */
+#bellWrapper{
   width:100%;
   height:100%;
   display:flex;
   align-items:center;
   justify-content:center;
-  background:transparent;
 }
 
-#bellBox{
+/* BLOC CLOCHE */
+#bell{
   position:relative;
-  font-size:26px;
+  font-size:24px;
   cursor:pointer;
 }
 
+/* BADGE */
 #badge{
   position:absolute;
   top:-6px;
   right:-10px;
-  min-width:18px;
-  height:18px;
   background:red;
   color:white;
   font-size:11px;
-  font-weight:700;
-  border-radius:50%;
+  min-width:18px;
+  height:18px;
+  padding:0 4px;
+  border-radius:999px;
   display:none;
   align-items:center;
   justify-content:center;
+  font-weight:600;
 }
 </style>
 </head>
 
 <body>
 
-<div id="bellBox">🔔
-  <div id="badge"></div>
+<div id="bellWrapper">
+  <div id="bell">
+    🔔
+    <span id="badge"></span>
+  </div>
 </div>
 
 <script>
 
 const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
-const NOTIF_URL = "https://damiensiri.github.io/push2/notifications.html";
 
+/* STORAGE */
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
 
+/* UPDATE BADGE */
 function updateBell(){
 
 fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
@@ -63,35 +73,32 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
 .then(data=>{
 
   const lues = getLues();
-  let nonLues = 0;
 
-  data.forEach(n=>{
-
-    if(n.actif?.trim() !== "oui") return;
-
-    if(!lues.includes(n.id)){
-      nonLues++;
-    }
-
-  });
+  const nonLues = data.filter(n =>
+    n.actif?.trim() === "oui" &&
+    !lues.includes(n.id)
+  ).length;
 
   const badge = document.getElementById("badge");
 
   if(nonLues > 0){
-    badge.innerText = nonLues;
-    badge.style.display = "flex";
+    badge.textContent = nonLues;
+    badge.style.display="flex";
   }else{
-    badge.style.display = "none";
+    badge.style.display="none";
   }
 
 });
 
 }
 
-document.getElementById("bellBox").onclick = ()=>{
-  window.top.location.href = NOTIF_URL;
+/* OUVERTURE CENTRE */
+document.getElementById("bell").onclick = ()=>{
+  window.top.location.href =
+    "https://damiensiri.github.io/push2/notifications.html";
 };
 
+/* INIT */
 updateBell();
 setInterval(updateBell,60000);
 
