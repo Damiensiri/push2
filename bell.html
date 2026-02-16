@@ -17,7 +17,6 @@ body{
   font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
-/* CLOCHE */
 #bellBox{
   position:relative;
   font-size:24px;
@@ -25,7 +24,6 @@ body{
   user-select:none;
 }
 
-/* BADGE */
 #badge{
   position:absolute;
   top:-6px;
@@ -43,12 +41,10 @@ body{
 }
 </style>
 </head>
+
 <body>
 
-<div id="bellBox" onclick="openNotifications()">
-  🔔
-  <span id="badge"></span>
-</div>
+<div id="bellBox">🔔<span id="badge"></span></div>
 
 <script>
 
@@ -56,13 +52,13 @@ const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
 const NOTIF_PAGE = "https://damiensiri.github.io/push2/notifications.html";
 
-/* ===== LOCAL STORAGE ===== */
+/* ===== LUES ===== */
 
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
 
-/* ===== UPDATE BADGE ===== */
+/* ===== BADGE ===== */
 
 function updateBell(){
 
@@ -74,38 +70,33 @@ function updateBell(){
     let nonLues = 0;
 
     data.forEach((n,i)=>{
-
-      // ignore expirées
       if(n.expire && new Date(n.expire) < new Date()) return;
-
-      if(!lues.includes(i)){
-        nonLues++;
-      }
+      if(!lues.includes(i)) nonLues++;
     });
 
     const badge = document.getElementById("badge");
 
     if(nonLues > 0){
       badge.style.display="flex";
-      badge.innerText = nonLues;
+      badge.textContent = nonLues;
     }else{
       badge.style.display="none";
     }
 
-  })
-  .catch(err=>{
-    console.log("Erreur notif:",err);
   });
 
 }
 
-/* ===== OUVERTURE FULL SCREEN ===== */
+/* ===== FORCE SORTIE IFRAME ===== */
 
-function openNotifications(){
-  window.top.location.href = NOTIF_PAGE;
-}
+document.getElementById("bellBox").addEventListener("click",()=>{
 
-/* ===== INIT ===== */
+  // casse l'iframe Wix
+  window.top.location.replace(NOTIF_PAGE);
+
+});
+
+/* INIT */
 
 updateBell();
 setInterval(updateBell,60000);
