@@ -3,16 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>Notifications</title>
 
 <style>
 body{
   margin:0;
   font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f4f4f4;
+  background:transparent;
 }
 
-/* HEADER */
+/* ===== CLOCHE ===== */
+#bellContainer{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  width:100%;
+  height:100%;
+}
+
+#bell{
+  position:relative;
+  font-size:24px;
+  cursor:pointer;
+}
+
+#badge{
+  position:absolute;
+  top:-6px;
+  right:-10px;
+  background:red;
+  color:white;
+  font-size:11px;
+  min-width:18px;
+  height:18px;
+  border-radius:50%;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+  padding:0 4px;
+}
+
+/* ===== CENTRE ===== */
+#center{
+  display:none;
+  background:#f4f4f4;
+  min-height:100vh;
+}
+
 #topbar{
   height:60px;
   background:#1f5c8f;
@@ -32,21 +71,19 @@ body{
   cursor:pointer;
 }
 
-/* COUNTER */
 #counter{
   text-align:center;
-  margin:12px;
+  margin:10px 0;
   font-weight:600;
 }
 
-/* LISTE */
 #container{
   padding:12px;
 }
 
 .notif{
   background:white;
-  padding:14px;
+  padding:15px;
   margin-bottom:12px;
   border-radius:12px;
   box-shadow:0 2px 8px rgba(0,0,0,0.08);
@@ -64,36 +101,42 @@ body{
 .date{
   font-size:12px;
   opacity:0.6;
-  margin-top:6px;
+  margin-top:5px;
 }
 </style>
 </head>
-
 <body>
 
-<!-- HEADER -->
-<div id="topbar">
-  <div id="backBtn">←</div>
-  Notifications
+<!-- CLOCHE -->
+<div id="bellContainer">
+  <div id="bell">
+    🔔
+    <div id="badge"></div>
+  </div>
 </div>
 
-<div id="counter"></div>
-<div id="container"></div>
+<!-- CENTRE NOTIFICATIONS -->
+<div id="center">
+  <div id="topbar">
+    <div id="backBtn">←</div>
+    Notifications
+  </div>
+
+  <div id="counter"></div>
+  <div id="container"></div>
+</div>
 
 <script>
-/* ================= CONFIG ================= */
 
 const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
-
-/* ================= STORAGE ================= */
 
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
 
-function setLues(list){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+function setLues(ids){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
 }
 
 function marquerLu(id){
@@ -108,24 +151,25 @@ function estLu(id){
   return getLues().includes(id);
 }
 
-/* ================= LOAD ================= */
+function chargerNotifications(){
 
 fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
-.then(res => res.json())
-.then(data => {
+.then(r=>r.json())
+.then(data=>{
 
   const container = document.getElementById("container");
   const counter = document.getElementById("counter");
+  const badge = document.getElementById("badge");
 
-  container.innerHTML = "";
+  container.innerHTML="";
   let nonLues = 0;
 
   data.forEach((n,i)=>{
 
-    if(n.actif !== "oui") return;
+    if(n.expire && new Date(n.expire) < new Date()) return;
 
     const div = document.createElement("div");
-    div.className = "notif";
+    div.className="notif";
 
     if(estLu(i)){
       div.classList.add("lu");
@@ -133,7 +177,7 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
       nonLues++;
     }
 
-    if(n.epingle === "oui"){
+    if(n.epingle==="oui"){
       div.classList.add("epingle");
     }
 
@@ -146,30 +190,51 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
     div.onclick = ()=>{
       marquerLu(i);
       div.classList.add("lu");
-      updateCounter();
+      updateCompteur(data.length);
     };
 
     container.appendChild(div);
-
   });
 
-  function updateCounter(){
-    if(nonLues > 0){
-      counter.textContent = nonLues + " notification(s) non lue(s)";
+  function updateCompteur(total){
+    const nonLuTotal = total - getLues().length;
+
+    if(nonLuTotal > 0){
+      counter.innerText = nonLuTotal + " notification(s) non lue(s)";
+      badge.style.display="flex";
+      badge.innerText = nonLuTotal;
     }else{
-      counter.textContent = "Aucune nouvelle notification";
+      counter.innerText = "Aucune nouvelle notification";
+      badge.style.display="none";
     }
   }
 
-  updateCounter();
+  updateCompteur(data.length);
 
 });
+}
 
-/* ================= RETOUR ================= */
+/* ===== OUVERTURE CENTRE ===== */
+
+document.getElementById("bell").onclick = ()=>{
+  document.getElementById("bellContainer").style.display="none";
+  document.getElementById("center").style.display="block";
+  chargerNotifications();
+};
+
+/* ===== RETOUR ===== */
 
 document.getElementById("backBtn").onclick = ()=>{
-  history.back();
+  document.getElementById("center").style.display="none";
+  document.getElementById("bellContainer").style.display="flex";
+  chargerNotifications();
 };
+
+/* ===== LOAD BADGE AU DEMARRAGE ===== */
+
+chargerNotifications();
+setInterval(chargerNotifications,60000);
+
 </script>
 
 </body>
