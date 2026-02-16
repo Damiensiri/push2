@@ -4,101 +4,107 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Bell</title>
-
 <style>
-html,body{
+body{
   margin:0;
-  padding:0;
-  width:100%;
-  height:100%;
   background:transparent;
-  overflow:hidden;
   display:flex;
-  align-items:center;
   justify-content:center;
+  align-items:center;
+  height:100vh;
   font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
-/* BOUTON */
+/* BLOC CLIQUABLE */
 #bell{
   position:relative;
-  font-size:22px;
+  font-size:26px;
   cursor:pointer;
-  user-select:none;
 }
 
 /* BADGE */
 #badge{
   position:absolute;
   top:-6px;
-  right:-8px;
+  right:-10px;
   background:red;
   color:white;
   font-size:11px;
+  font-weight:600;
   min-width:18px;
   height:18px;
   border-radius:50%;
   display:none;
   align-items:center;
   justify-content:center;
-  font-weight:700;
 }
 </style>
 </head>
 
 <body>
 
-<div id="bell">🔔
+<div id="bell" onclick="openNotifications()">
+  🔔
   <div id="badge"></div>
 </div>
 
 <script>
+
 const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
 const NOTIF_PAGE = "https://damiensiri.github.io/push2/notifications.html";
 
-/* LUES */
+/* ===== STORAGE ===== */
+
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
 
-/* MAJ BADGE */
+/* ===== UPDATE BADGE ===== */
+
 function updateBell(){
 
-fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
-.then(r=>r.json())
-.then(data=>{
+  fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
+  .then(r=>r.json())
+  .then(data=>{
 
-  const lues = getLues();
-  let nonLues = 0;
+    let nonLues = 0;
+    const lues = getLues();
 
-  data.forEach((n,i)=>{
-    if(n.expire && new Date(n.expire) < new Date()) return;
-    if(!lues.includes(i)) nonLues++;
+    data.forEach((n,i)=>{
+
+      if(n.actif !== "oui") return;
+      if(n.expire && new Date(n.expire) < new Date()) return;
+
+      if(!lues.includes(i)){
+        nonLues++;
+      }
+    });
+
+    const badge = document.getElementById("badge");
+
+    if(nonLues > 0){
+      badge.style.display="flex";
+      badge.textContent = nonLues;
+    }else{
+      badge.style.display="none";
+    }
+
   });
-
-  const badge = document.getElementById("badge");
-
-  if(nonLues > 0){
-    badge.innerText = nonLues;
-    badge.style.display="flex";
-  }else{
-    badge.style.display="none";
-  }
-
-});
 
 }
 
-/* CLICK */
-document.getElementById("bell").onclick = ()=>{
-  window.location.href = NOTIF_PAGE;
-};
+/* ===== OPEN ===== */
 
-/* INIT */
+function openNotifications(){
+  window.location.href = NOTIF_PAGE;
+}
+
+/* ===== INIT ===== */
+
 updateBell();
 setInterval(updateBell,60000);
+
 </script>
 
 </body>
