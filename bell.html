@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<title>Bell</title>
+
 <style>
 body{
   margin:0;
@@ -13,28 +15,28 @@ body{
   align-items:center;
 }
 
-/* CLOCHE */
+/* cloche */
 #bell{
   position:relative;
   font-size:24px;
   cursor:pointer;
 }
 
-/* BADGE */
+/* badge rouge */
 #badge{
   position:absolute;
   top:-6px;
-  right:-10px;
+  right:-8px;
   background:red;
   color:white;
-  width:18px;
+  font-size:11px;
+  min-width:18px;
   height:18px;
   border-radius:50%;
-  font-size:11px;
   display:none;
   align-items:center;
   justify-content:center;
-  font-weight:600;
+  font-weight:700;
 }
 </style>
 </head>
@@ -43,7 +45,7 @@ body{
 
 <div id="bell">
   🔔
-  <div id="badge"></div>
+  <div id="badge">0</div>
 </div>
 
 <script>
@@ -52,56 +54,46 @@ const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
 const NOTIF_URL = "https://damiensiri.github.io/push2/notifications.html";
 
-/* ========= STORAGE ========= */
-
+/* localStorage */
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
 
-/* ========= COMPTEUR ========= */
-
+/* MAJ compteur */
 function updateBell(){
 
 fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
 .then(r=>r.json())
 .then(data=>{
 
+  let unread = 0;
   const lues = getLues();
-  let nonLues = 0;
 
   data.forEach((n,i)=>{
-    if(n.expire && new Date(n.expire) < new Date()) return;
-    if(!lues.includes(i)) nonLues++;
+    if(n.actif !== "oui") return;
+    if(!lues.includes(i)) unread++;
   });
 
   const badge = document.getElementById("badge");
 
-  if(nonLues > 0){
+  if(unread > 0){
     badge.style.display="flex";
-    badge.innerText = nonLues;
+    badge.innerText = unread;
   }else{
     badge.style.display="none";
   }
 
 });
+
 }
 
-/* ========= OUVERTURE ========= */
-
+/* ouverture PLEIN ECRAN */
 document.getElementById("bell").onclick = ()=>{
-  window.location.href = NOTIF_URL;
+  window.top.location.href = NOTIF_URL;
 };
 
-/* ========= AUTO ========= */
-
 updateBell();
-setInterval(updateBell,60000);
-
-document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden) updateBell();
-});
-
-window.addEventListener("focus",updateBell);
+setInterval(updateBell,30000);
 
 </script>
 
