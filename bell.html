@@ -1,15 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
-body{
+html,body{
   margin:0;
+  padding:0;
   background:transparent;
+}
+
+#wrapper{
+  width:100%;
+  height:100%;
   display:flex;
-  justify-content:center;
   align-items:center;
-  height:100vh;
+  justify-content:center;
 }
 
 #bell{
@@ -24,26 +31,27 @@ body{
   right:-10px;
   background:red;
   color:white;
-  font-size:12px;
-  font-weight:600;
-  width:18px;
+  font-size:11px;
+  min-width:18px;
   height:18px;
   border-radius:50%;
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:center;
+  font-weight:700;
 }
 </style>
 </head>
+
 <body>
 
-<div id="bell">
-  🔔
-  <div id="badge"></div>
+<div id="wrapper">
+  <div id="bell">🔔
+    <div id="badge"></div>
+  </div>
 </div>
 
 <script>
-
 const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
 
@@ -57,34 +65,34 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
 .then(r=>r.json())
 .then(data=>{
 
-  let nonLues = 0;
   const lues = getLues();
+  let count = 0;
 
   data.forEach((n,i)=>{
     if(n.actif !== "oui") return;
-    if(!lues.includes(i)) nonLues++;
+    if(!lues.includes(i)) count++;
   });
 
   const badge = document.getElementById("badge");
 
-  if(nonLues > 0){
-    badge.innerText = nonLues;
+  if(count>0){
     badge.style.display="flex";
+    badge.innerText=count;
   }else{
     badge.style.display="none";
   }
 
 });
-
 }
+
+// clic = ouvrir page notif en pleine page
+document.getElementById("bell").onclick = ()=>{
+  window.top.location.href =
+  "https://damiensiri.github.io/push2/notifications.html";
+};
 
 updateBell();
 setInterval(updateBell,60000);
-
-document.getElementById("bell").onclick = ()=>{
-  window.top.location.href = "https://damiensiri.github.io/push2/notifications.html";
-};
-
 </script>
 
 </body>
