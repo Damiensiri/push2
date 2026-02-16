@@ -13,7 +13,7 @@ body{
   background:#f4f4f4;
 }
 
-/* ===== HEADER ===== */
+/* HEADER */
 #topbar{
   height:60px;
   background:#1f5c8f;
@@ -23,42 +23,35 @@ body{
   justify-content:center;
   position:sticky;
   top:0;
-  z-index:10;
-  font-size:18px;
-  font-weight:600;
 }
 
-#backBtn{
+#back{
   position:absolute;
   left:15px;
   font-size:22px;
   cursor:pointer;
 }
 
-/* ===== COUNTER ===== */
+/* COUNTER */
 #counter{
   text-align:center;
-  margin:10px 0;
+  margin:12px;
   font-weight:600;
 }
 
-/* ===== LISTE ===== */
-#container{
-  padding:12px;
-}
+/* NOTIFS */
+#container{padding:12px;}
 
 .notif{
   background:white;
   padding:15px;
   margin-bottom:12px;
   border-radius:12px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  box-shadow:0 2px 8px rgba(0,0,0,0.1);
   cursor:pointer;
 }
 
-.notif.lu{
-  opacity:0.4;
-}
+.notif.lu{opacity:0.4;}
 
 .notif.epingle{
   border-left:4px solid #1f5c8f;
@@ -67,16 +60,15 @@ body{
 .date{
   font-size:12px;
   opacity:0.6;
-  margin-top:5px;
+  margin-top:6px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <div id="topbar">
-  <div id="backBtn">←</div>
+  <div id="back">←</div>
   Notifications
 </div>
 
@@ -84,107 +76,68 @@ body{
 <div id="container"></div>
 
 <script>
-/* ========= CONFIG ========= */
-
-const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
-const STORAGE_KEY = "notifications_lues";
-
-/* ========= STORAGE ========= */
+const SHEET_ID="1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
+const STORAGE_KEY="notifications_lues";
 
 function getLues(){
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
 }
-
-function setLues(arr){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+function setLues(v){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(v));
 }
-
-function marquerLu(id){
-  const lues = getLues();
-  if(!lues.includes(id)){
-    lues.push(id);
-    setLues(lues);
-  }
-}
-
-function estLu(id){
-  return getLues().includes(id);
-}
-
-/* ========= RESET A MINUIT ========= */
-
-function resetMinuit(){
-  const today = new Date().toDateString();
-  const last = localStorage.getItem("notif_day");
-
-  if(today !== last){
-    setLues([]);
-    localStorage.setItem("notif_day",today);
-  }
-}
-
-/* ========= LOAD ========= */
 
 fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
 .then(r=>r.json())
 .then(data=>{
 
-  resetMinuit();
+const container=document.getElementById("container");
+const counter=document.getElementById("counter");
 
-  const container = document.getElementById("container");
-  const counter = document.getElementById("counter");
+let lues=getLues();
+let nonlus=0;
 
-  container.innerHTML="";
-  let nonLues = 0;
+data.forEach((n,i)=>{
 
-  data.forEach((n,i)=>{
+ if(n.actif!=="oui") return;
 
-    if(n.actif !== "oui") return;
+ const div=document.createElement("div");
+ div.className="notif";
 
-    const div = document.createElement("div");
-    div.className="notif";
+ if(lues.includes(i)){
+   div.classList.add("lu");
+ }else{
+   nonlus++;
+ }
 
-    if(estLu(i)){
-      div.classList.add("lu");
-    }else{
-      nonLues++;
-    }
+ if(n.epingle==="oui") div.classList.add("epingle");
 
-    if(n.epingle==="oui"){
-      div.classList.add("epingle");
-    }
+ div.innerHTML=`
+  <strong>${n.titre}</strong><br>
+  ${n.message}
+  <div class="date">${n.date||""}</div>
+ `;
 
-    div.innerHTML = `
-      <strong>${n.titre}</strong><br>
-      ${n.message}
-      <div class="date">${n.date || ""}</div>
-    `;
+ div.onclick=()=>{
+   if(!lues.includes(i)){
+     lues.push(i);
+     setLues(lues);
+   }
+   div.classList.add("lu");
+ };
 
-    div.onclick = ()=>{
-      marquerLu(i);
-      div.classList.add("lu");
-      nonLues--;
-      updateCounter();
-    };
+ container.appendChild(div);
 
-    container.appendChild(div);
-  });
-
-  function updateCounter(){
-    if(nonLues>0){
-      counter.innerText = nonLues+" notification(s) non lue(s)";
-    }else{
-      counter.innerText = "Aucune nouvelle notification";
-    }
-  }
-
-  updateCounter();
 });
 
-/* ========= RETOUR ========= */
+counter.innerText =
+ nonlus>0 ? nonlus+" notification(s) non lue(s)" :
+ "Aucune nouvelle notification";
 
-document.getElementById("backBtn").onclick = ()=>{
-  history.back();
+});
+
+// RETOUR HOME
+document.getElementById("back").onclick=()=>{
+ window.location.href="https://www.ce-dugrandrang.com/pro";
 };
 </script>
 
