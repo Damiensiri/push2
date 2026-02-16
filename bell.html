@@ -4,95 +4,121 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<title>Bell</title>
+
 <style>
+/* RESET */
 html,body{
   margin:0;
   padding:0;
-  background:transparent;
-}
-
-#wrapper{
   width:100%;
   height:100%;
+}
+
+/* CENTRAGE TOTAL */
+body{
   display:flex;
   align-items:center;
   justify-content:center;
+  background:transparent;
 }
 
-#bell{
+/* CONTENEUR CLOCHE */
+#bellBox{
   position:relative;
   font-size:26px;
   cursor:pointer;
+  user-select:none;
 }
 
+/* BADGE */
 #badge{
   position:absolute;
   top:-6px;
   right:-10px;
+  min-width:18px;
+  height:18px;
   background:red;
   color:white;
   font-size:11px;
-  min-width:18px;
-  height:18px;
+  font-weight:700;
   border-radius:50%;
   display:none;
   align-items:center;
   justify-content:center;
-  font-weight:700;
 }
 </style>
 </head>
 
 <body>
 
-<div id="wrapper">
-  <div id="bell">🔔
-    <div id="badge"></div>
-  </div>
+<div id="bellBox">🔔
+  <div id="badge"></div>
 </div>
 
 <script>
+/* ================= CONFIG ================= */
+
 const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
+const NOTIF_URL = "https://damiensiri.github.io/push2/notifications.html";
+
+/* ================= STORAGE ================= */
 
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
 
+/* ================= UPDATE BELL ================= */
+
 function updateBell(){
 
 fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
-.then(r=>r.json())
-.then(data=>{
+.then(r => r.json())
+.then(data => {
 
   const lues = getLues();
-  let count = 0;
+  let nonLues = 0;
 
   data.forEach((n,i)=>{
+
+    // seulement actives
     if(n.actif !== "oui") return;
-    if(!lues.includes(i)) count++;
+
+    // ignore expirées si un jour tu ajoutes cette colonne
+    if(n.expire && new Date(n.expire) < new Date()) return;
+
+    // si pas lue → compte
+    if(!lues.includes(i)){
+      nonLues++;
+    }
+
   });
 
   const badge = document.getElementById("badge");
 
-  if(count>0){
-    badge.style.display="flex";
-    badge.innerText=count;
+  if(nonLues > 0){
+    badge.innerText = nonLues;
+    badge.style.display = "flex";
   }else{
-    badge.style.display="none";
+    badge.style.display = "none";
   }
 
 });
+
 }
 
-// clic = ouvrir page notif en pleine page
-document.getElementById("bell").onclick = ()=>{
-  window.top.location.href =
-  "https://damiensiri.github.io/push2/notifications.html";
+/* ================= OUVERTURE ================= */
+
+document.getElementById("bellBox").onclick = ()=>{
+  window.top.location.href = NOTIF_URL;
 };
 
+/* ================= INIT ================= */
+
 updateBell();
-setInterval(updateBell,60000);
+setInterval(updateBell, 60000); // refresh 1 min
+
 </script>
 
 </body>
