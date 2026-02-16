@@ -4,34 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Bell</title>
-
 <style>
-/* RESET */
 html,body{
   margin:0;
   padding:0;
   width:100%;
   height:100%;
-}
-
-/* CENTRAGE TOTAL */
-body{
   display:flex;
   align-items:center;
   justify-content:center;
   background:transparent;
 }
 
-/* CONTENEUR CLOCHE */
 #bellBox{
   position:relative;
   font-size:26px;
   cursor:pointer;
-  user-select:none;
 }
 
-/* BADGE */
 #badge{
   position:absolute;
   top:-6px;
@@ -57,39 +47,29 @@ body{
 </div>
 
 <script>
-/* ================= CONFIG ================= */
 
 const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
 const NOTIF_URL = "https://damiensiri.github.io/push2/notifications.html";
 
-/* ================= STORAGE ================= */
-
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
 
-/* ================= UPDATE BELL ================= */
-
 function updateBell(){
 
 fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
-.then(r => r.json())
-.then(data => {
+.then(r=>r.json())
+.then(data=>{
 
   const lues = getLues();
   let nonLues = 0;
 
-  data.forEach((n,i)=>{
+  data.forEach(n=>{
 
-    // seulement actives
-    if(n.actif !== "oui") return;
+    if(n.actif?.trim() !== "oui") return;
 
-    // ignore expirées si un jour tu ajoutes cette colonne
-    if(n.expire && new Date(n.expire) < new Date()) return;
-
-    // si pas lue → compte
-    if(!lues.includes(i)){
+    if(!lues.includes(n.id)){
       nonLues++;
     }
 
@@ -108,16 +88,12 @@ fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
 
 }
 
-/* ================= OUVERTURE ================= */
-
 document.getElementById("bellBox").onclick = ()=>{
   window.top.location.href = NOTIF_URL;
 };
 
-/* ================= INIT ================= */
-
 updateBell();
-setInterval(updateBell, 60000); // refresh 1 min
+setInterval(updateBell,60000);
 
 </script>
 
