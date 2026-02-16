@@ -4,22 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
+<title>Bell</title>
+
 <style>
 body{
   margin:0;
-  background:transparent;
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
+  background:transparent;
   font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
-/* BLOC CLIQUABLE */
-#bell{
+/* CLOCHE */
+#bellBox{
   position:relative;
-  font-size:26px;
+  font-size:24px;
   cursor:pointer;
+  user-select:none;
 }
 
 /* BADGE */
@@ -30,22 +33,21 @@ body{
   background:red;
   color:white;
   font-size:11px;
-  font-weight:600;
-  min-width:18px;
+  width:18px;
   height:18px;
   border-radius:50%;
   display:none;
   align-items:center;
   justify-content:center;
+  font-weight:600;
 }
 </style>
 </head>
-
 <body>
 
-<div id="bell" onclick="openNotifications()">
+<div id="bellBox" onclick="openNotifications()">
   🔔
-  <div id="badge"></div>
+  <span id="badge"></span>
 </div>
 
 <script>
@@ -54,7 +56,7 @@ const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
 const NOTIF_PAGE = "https://damiensiri.github.io/push2/notifications.html";
 
-/* ===== STORAGE ===== */
+/* ===== LOCAL STORAGE ===== */
 
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -68,12 +70,12 @@ function updateBell(){
   .then(r=>r.json())
   .then(data=>{
 
-    let nonLues = 0;
     const lues = getLues();
+    let nonLues = 0;
 
     data.forEach((n,i)=>{
 
-      if(n.actif !== "oui") return;
+      // ignore expirées
       if(n.expire && new Date(n.expire) < new Date()) return;
 
       if(!lues.includes(i)){
@@ -85,19 +87,22 @@ function updateBell(){
 
     if(nonLues > 0){
       badge.style.display="flex";
-      badge.textContent = nonLues;
+      badge.innerText = nonLues;
     }else{
       badge.style.display="none";
     }
 
+  })
+  .catch(err=>{
+    console.log("Erreur notif:",err);
   });
 
 }
 
-/* ===== OPEN ===== */
+/* ===== OUVERTURE FULL SCREEN ===== */
 
 function openNotifications(){
-  window.location.href = NOTIF_PAGE;
+  window.top.location.href = NOTIF_PAGE;
 }
 
 /* ===== INIT ===== */
