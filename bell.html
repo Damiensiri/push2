@@ -1,27 +1,21 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Bell</title>
-
 <style>
 body{
   margin:0;
+  background:transparent;
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
-  background:transparent;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
-#bellBox{
+#bell{
   position:relative;
-  font-size:24px;
+  font-size:26px;
   cursor:pointer;
-  user-select:none;
 }
 
 #badge{
@@ -30,76 +24,66 @@ body{
   right:-10px;
   background:red;
   color:white;
-  font-size:11px;
+  font-size:12px;
+  font-weight:600;
   width:18px;
   height:18px;
   border-radius:50%;
-  display:none;
+  display:flex;
   align-items:center;
   justify-content:center;
-  font-weight:600;
 }
 </style>
 </head>
-
 <body>
 
-<div id="bellBox">🔔<span id="badge"></span></div>
+<div id="bell">
+  🔔
+  <div id="badge"></div>
+</div>
 
 <script>
 
 const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
-const NOTIF_PAGE = "https://damiensiri.github.io/push2/notifications.html";
-
-/* ===== LUES ===== */
 
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
 
-/* ===== BADGE ===== */
-
 function updateBell(){
 
-  fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
-  .then(r=>r.json())
-  .then(data=>{
+fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
+.then(r=>r.json())
+.then(data=>{
 
-    const lues = getLues();
-    let nonLues = 0;
+  let nonLues = 0;
+  const lues = getLues();
 
-    data.forEach((n,i)=>{
-      if(n.expire && new Date(n.expire) < new Date()) return;
-      if(!lues.includes(i)) nonLues++;
-    });
-
-    const badge = document.getElementById("badge");
-
-    if(nonLues > 0){
-      badge.style.display="flex";
-      badge.textContent = nonLues;
-    }else{
-      badge.style.display="none";
-    }
-
+  data.forEach((n,i)=>{
+    if(n.actif !== "oui") return;
+    if(!lues.includes(i)) nonLues++;
   });
 
-}
+  const badge = document.getElementById("badge");
 
-/* ===== FORCE SORTIE IFRAME ===== */
-
-document.getElementById("bellBox").addEventListener("click",()=>{
-
-  // casse l'iframe Wix
-  window.top.location.replace(NOTIF_PAGE);
+  if(nonLues > 0){
+    badge.innerText = nonLues;
+    badge.style.display="flex";
+  }else{
+    badge.style.display="none";
+  }
 
 });
 
-/* INIT */
+}
 
 updateBell();
 setInterval(updateBell,60000);
+
+document.getElementById("bell").onclick = ()=>{
+  window.top.location.href = "https://damiensiri.github.io/push2/notifications.html";
+};
 
 </script>
 
