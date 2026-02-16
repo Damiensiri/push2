@@ -7,103 +7,98 @@
 <title>Bell</title>
 
 <style>
-body{
+html,body{
   margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
   background:transparent;
-}
-
-/* zone cloche */
-#bell{
-  position:relative;
-  width:40px;
-  height:40px;
+  overflow:hidden;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:26px;
-  cursor:pointer;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
 }
 
-/* badge rouge */
+/* BOUTON */
+#bell{
+  position:relative;
+  font-size:22px;
+  cursor:pointer;
+  user-select:none;
+}
+
+/* BADGE */
 #badge{
   position:absolute;
-  top:0px;
-  right:0px;
-  min-width:18px;
-  height:18px;
-  padding:0 5px;
+  top:-6px;
+  right:-8px;
   background:red;
   color:white;
   font-size:11px;
-  font-weight:700;
-  border-radius:20px;
+  min-width:18px;
+  height:18px;
+  border-radius:50%;
   display:none;
   align-items:center;
   justify-content:center;
+  font-weight:700;
 }
 </style>
 </head>
 
 <body>
 
-<div id="bell">
-  🔔
+<div id="bell">🔔
   <div id="badge"></div>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
-
 const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
 const STORAGE_KEY = "notifications_lues";
-const PAGE = "https://damiensiri.github.io/push2/notifications.html";
+const NOTIF_PAGE = "https://damiensiri.github.io/push2/notifications.html";
 
-/* ================= STORAGE ================= */
-
+/* LUES */
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
 }
 
-/* ================= UPDATE BADGE ================= */
-
+/* MAJ BADGE */
 function updateBell(){
 
 fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
-.then(r => r.json())
-.then(data => {
+.then(r=>r.json())
+.then(data=>{
 
   const lues = getLues();
   let nonLues = 0;
 
   data.forEach((n,i)=>{
-    if(n.actif !== "oui") return;
+    if(n.expire && new Date(n.expire) < new Date()) return;
     if(!lues.includes(i)) nonLues++;
   });
 
   const badge = document.getElementById("badge");
 
   if(nonLues > 0){
-    badge.style.display = "flex";
-    badge.textContent = nonLues;
+    badge.innerText = nonLues;
+    badge.style.display="flex";
   }else{
-    badge.style.display = "none";
+    badge.style.display="none";
   }
 
 });
 
 }
 
-/* ================= CLICK ================= */
-
+/* CLICK */
 document.getElementById("bell").onclick = ()=>{
-  window.open(PAGE, "_top");
+  window.location.href = NOTIF_PAGE;
 };
 
-/* ================= RUN ================= */
-
+/* INIT */
 updateBell();
-setInterval(updateBell, 60000);
-
+setInterval(updateBell,60000);
 </script>
 
 </body>
