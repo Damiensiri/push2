@@ -4,65 +4,58 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Notifications</title>
+<title>Alertes</title>
 
 <style>
 body{
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#f5f5f5;
   margin:0;
   padding:20px;
-  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;
-  background:#f4f6f8;
 }
 
 h1{
   text-align:center;
-  margin-bottom:10px;
+  margin-bottom:5px;
 }
 
-#lastUpdate{
+#update{
   text-align:center;
-  color:#666;
+  color:#777;
+  font-size:13px;
   margin-bottom:20px;
 }
 
-/* Carte notification */
-.notif-card{
-  background:#ffffff;
-  border-radius:16px;
-  padding:14px;
-  margin-bottom:14px;
+.card{
+  background:white;
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:12px;
   display:flex;
   gap:12px;
-  align-items:flex-start;
-  box-shadow:0 2px 6px rgba(0,0,0,0.05);
+  box-shadow:0 2px 6px rgba(0,0,0,0.06);
   cursor:pointer;
 }
 
-.notif-heure{
+.time{
   color:#e53935;
-  font-weight:700;
+  font-weight:bold;
   min-width:60px;
 }
 
-.notif-content{
+.content{
   flex:1;
 }
 
-.notif-categorie{
+.category{
   font-size:12px;
-  color:#666;
-  margin-bottom:4px;
-}
-
-.notif-titre{
-  font-size:15px;
-  font-weight:700;
-  color:#1f2a44;
-}
-
-.empty{
-  text-align:center;
   color:#777;
+}
+
+.title{
+  font-weight:700;
+  font-size:16px;
+  color:#0a1f44;
 }
 </style>
 </head>
@@ -70,62 +63,50 @@ h1{
 <body>
 
 <h1>ALERTES</h1>
-<div id="lastUpdate">Chargement...</div>
+<div id="update">Chargement...</div>
 
-<div id="notifications"></div>
+<div id="list"></div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbyzy0KSx-ijhF80yvTCRLTY5RuXfV1j70UHzB2hmwWynlX_zbDagd7LC7lZYBjqPkQ/exec";
 
-async function chargerNotifications(){
-  try{
-    const res = await fetch(API_URL);
-    const data = await res.json();
+const URL = "https://script.google.com/macros/s/AKfycby_-d7ZYKuVp00T6KEgGYRwqgp3GrW_Ef6vzZA5d9ce9BVJDmyfynRSEi0c1uGi4N6K/exec";
 
-    const container = document.getElementById("notifications");
-    const lastUpdate = document.getElementById("lastUpdate");
+fetch(URL)
+.then(r => r.json())
+.then(data => {
 
-    container.innerHTML = "";
+  document.getElementById("update").innerText =
+    "Dernière mise à jour : " + new Date().toLocaleString();
 
-    if(!data || data.length === 0){
-      container.innerHTML = "<p class='empty'>Aucune notification.</p>";
-      lastUpdate.innerHTML = "";
-      return;
-    }
+  const container = document.getElementById("list");
 
-    // Date de mise à jour
-    const now = new Date();
-    lastUpdate.innerHTML =
-      "Dernière mise à jour : " + now.toLocaleString("fr-FR");
+  data.reverse().forEach(item => {
 
-    // plus récente en haut
-    data.reverse().forEach(n => {
+    const card = document.createElement("div");
+    card.className = "card";
 
-      const card = document.createElement("div");
-      card.className = "notif-card";
+    card.innerHTML = `
+      <div class="time">${item.heure}</div>
+      <div class="content">
+        <div class="category">${item.categorie}</div>
+        <div class="title">${item.titre}</div>
+      </div>
+    `;
 
-      card.innerHTML = `
-        <div class="notif-heure">${n.heure || ""}</div>
-        <div class="notif-content">
-          <div class="notif-categorie">${n.categorie || ""}</div>
-          <div class="notif-titre">${n.titre || ""}</div>
-        </div>
-      `;
+    card.onclick = () => {
+      window.location.href =
+        "detail.html?id=" + item.id;
+    };
 
-      card.onclick = () => {
-        localStorage.setItem("notifDetail", JSON.stringify(n));
-        window.location.href = "notification-detail.html";
-      };
+    container.appendChild(card);
+  });
 
-      container.appendChild(card);
-    });
+})
+.catch(err=>{
+  document.getElementById("update").innerText="Erreur chargement";
+  console.error(err);
+});
 
-  }catch(err){
-    console.error("Erreur chargement notifications", err);
-  }
-}
-
-chargerNotifications();
 </script>
 
 </body>
