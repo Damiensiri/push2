@@ -2,86 +2,163 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Alertes</title>
 
 <style>
-body{
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f4f4f4;
-  margin:0;
-  padding:20px;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f4f4f4;
 }
 
-h1{
-  text-align:center;
+h1 {
+  text-align: center;
+  margin: 25px 0 5px 0;
 }
 
-.card{
-  background:white;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.08);
-  cursor:pointer;
+#lastUpdate {
+  text-align: center;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 20px;
 }
 
-.time{
-  color:#d32f2f;
-  font-weight:bold;
+/* Loader */
+
+#loader {
+  position: fixed;
+  inset: 0;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
-.cat{
-  font-size:13px;
-  opacity:0.7;
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ddd;
+  border-top: 4px solid #1f5c8f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
-.title{
-  font-size:18px;
-  font-weight:bold;
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Card */
+
+.card {
+  background: white;
+  margin: 15px;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.card:active {
+  transform: scale(0.98);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-time {
+  color: red;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.card-category {
+  font-size: 13px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.card-title {
+  font-weight: bold;
+  margin-top: 6px;
+  font-size: 18px;
+}
+
+/* Responsive */
+
+@media (max-width: 600px) {
+  body { font-size: 17px; }
+  h1 { font-size: 22px; }
+  .card-title { font-size: 18px; }
 }
 </style>
 </head>
 
 <body>
 
+<div id="loader">
+  <div class="spinner"></div>
+</div>
+
 <h1>ALERTES</h1>
-<div id="list"></div>
+<div id="lastUpdate"></div>
+
+<div id="notifications"></div>
 
 <script>
-const URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-fetch(URL)
-.then(r => r.json())
-.then(data => {
+const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-  const list = document.getElementById("list");
-  list.innerHTML = "";
+async function loadNotifications() {
+  try {
 
-  data.forEach(n => {
+    const response = await fetch(API_URL);
+    const data = await response.json();
 
-    if(n.active !== "oui") return;
+    const container = document.getElementById("notifications");
+    container.innerHTML = "";
 
-    const card = document.createElement("div");
-    card.className = "card";
+    document.getElementById("lastUpdate").innerText =
+      "Dernière mise à jour : " + new Date().toLocaleString();
 
-    card.innerHTML = `
-      <div class="time">${n.heure}</div>
-      <div class="cat">${n.categorie}</div>
-      <div class="title">${n.titre}</div>
-    `;
+    data
+      .filter(n => n.active === "oui")
+      .sort((a, b) => b.id - a.id)
+      .forEach(notification => {
 
-    card.onclick = () => {
-      window.location.href = "detail.html?id=" + n.id;
-    };
+        const card = document.createElement("div");
+        card.className = "card";
 
-    list.appendChild(card);
-  });
+        card.innerHTML = `
+          <div class="card-header">
+            <div class="card-time">${notification.heure || ""}</div>
+          </div>
+          <div class="card-category">${notification.categorie || ""}</div>
+          <div class="card-title">${notification.titre}</div>
+        `;
 
-})
-.catch(err=>{
-  document.getElementById("list").innerHTML="Erreur chargement";
-  console.error(err);
-});
+        card.onclick = () => {
+          window.location.href = "detail.html?id=" + notification.id;
+        };
+
+        container.appendChild(card);
+      });
+
+  } catch (error) {
+    console.error("Erreur chargement :", error);
+  }
+
+  document.getElementById("loader").style.display = "none";
+}
+
+loadNotifications();
+
 </script>
 
 </body>
