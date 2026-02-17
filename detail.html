@@ -1,118 +1,62 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Détail alerte</title>
-
-<style>
-body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f4f4f4;}
-
-#back{padding:15px;font-size:16px;color:#1f5c8f;cursor:pointer;}
-
-#loader{
-position:fixed;inset:0;background:white;
-display:flex;align-items:center;justify-content:center;z-index:9999;
-}
-
-.spinner{
-width:40px;height:40px;border:4px solid #ddd;
-border-top:4px solid #1f5c8f;border-radius:50%;
-animation:spin 1s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg);}}
-
-.card{
-background:white;margin:15px;padding:20px;border-radius:12px;
-box-shadow:0 3px 8px rgba(0,0,0,0.08);
-}
-
-.titre{font-size:22px;font-weight:bold;color:#1f5c8f;}
-.categorie{font-size:14px;color:#888;}
-.heure{font-size:15px;font-weight:bold;color:red;margin:10px 0;}
-.message{white-space:pre-line;}
-</style>
-</head>
-
-<body>
-
-<div id="back" onclick="history.back()">← Retour</div>
-
-<div id="loader"><div class="spinner"></div></div>
-
-<div id="content" style="display:none;">
-  <div class="card">
-    <div id="titre" class="titre"></div>
-    <div id="categorie" class="categorie"></div>
-    <div id="heure" class="heure"></div>
-    <div id="message" class="message"></div>
-  </div>
-</div>
-
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
-
 const STORAGE_KEY="alerts_lues";
-const id=new URLSearchParams(location.search).get("id");
+
+const id=new URLSearchParams(window.location.search).get("id");
 
 function parseDateFR(str){
  if(!str) return null;
  const [d,m,y]=str.split("/");
- return new Date(y,m-1,d,0,0,0);
+ return new Date(y,m-1,d,12,0,0);
 }
 
 function marquerLu(id){
- const l=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
- if(!l.includes(id)){
-   l.push(id);
-   localStorage.setItem(STORAGE_KEY,JSON.stringify(l));
+ const lues=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+ if(!lues.includes(id)){
+   lues.push(id);
+   localStorage.setItem(STORAGE_KEY,JSON.stringify(lues));
  }
 }
 
 async function loadDetail(){
 
+try{
  const res=await fetch(API_URL);
  const data=await res.json();
-
- const notif=data.find(n=>String(n.id)===String(id));
+ const n=data.find(x=>String(x.id)===String(id));
 
  const today=new Date();
  today.setHours(0,0,0,0);
 
- if(!notif){
-   document.getElementById("titre").innerText="Notification introuvable";
+ if(!n){
+   titre.innerText="Notification introuvable";
  }
  else{
+   const d=parseDateFR(n.expire || n.date);
 
-   let autorisee=false;
-
-   if(notif.active==="oui"){
-     if(notif.epingle==="oui"){
-       autorisee=true;
-     }else{
-       const ref = notif.expire ? parseDateFR(notif.expire) : parseDateFR(notif.date);
-       if(!ref || ref>=today) autorisee=true;
-     }
-   }
+   const autorisee=
+     n.active==="oui" &&
+     (n.epingle==="oui" || !d || d>=today);
 
    if(!autorisee){
-     document.getElementById("titre").innerText="Cette notification n’est plus disponible.";
+     titre.innerText="Cette notification n’est plus disponible.";
    }else{
-     marquerLu(notif.id);
-     document.getElementById("titre").innerText=notif.titre;
-     document.getElementById("categorie").innerText=notif.categorie||"";
-     document.getElementById("heure").innerText=notif.heure||"";
-     document.getElementById("message").innerText=notif.message||"";
+     marquerLu(n.id);
+     titre.innerText=n.titre;
+     categorie.innerText=n.categorie||"";
+     heure.innerText=n.heure||"";
+     message.innerText=n.message||"";
    }
  }
 
- document.getElementById("loader").style.display="none";
- document.getElementById("content").style.display="block";
+}catch(e){console.log(e);}
+
+loader.style.display="none";
+content.style.display="block";
 }
 
+function goBack(){history.back();}
 loadDetail();
-</script>
 
-</body>
-</html>
+</script>
