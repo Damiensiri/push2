@@ -3,105 +3,64 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Détail notification</title>
+<title>Détail</title>
 
 <style>
 body{
-  margin:0;
   font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f4f4f4;
+  padding:20px;
 }
 
-/* ===== HEADER ===== */
-#topbar{
-  height:60px;
-  background:#1f5c8f;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:18px;
-  font-weight:600;
-  position:sticky;
-  top:0;
-}
-
-#back{
-  position:absolute;
-  left:15px;
-  font-size:22px;
+.back{
+  margin-bottom:20px;
   cursor:pointer;
+  font-weight:bold;
 }
 
-/* ===== CONTENT ===== */
-#box{
-  padding:16px;
-}
-
-.time{
-  font-size:13px;
-  color:#777;
-}
-
-.title{
-  font-size:20px;
+.titre{
+  font-size:22px;
   font-weight:700;
-  margin-top:8px;
+  margin-bottom:10px;
 }
 
-.category{
-  margin-top:4px;
-  color:#1f5c8f;
-  font-weight:600;
+.meta{
+  font-size:14px;
+  opacity:0.6;
+  margin-bottom:20px;
 }
 
 .message{
-  margin-top:16px;
-  font-size:16px;
   line-height:1.5;
-  white-space:pre-line;
 }
 </style>
 </head>
 
 <body>
 
-<div id="topbar">
-  <div id="back">←</div>
-  Notification
-</div>
-
-<div id="box">
-  <div class="time" id="time"></div>
-  <div class="title" id="title"></div>
-  <div class="category" id="cat"></div>
-  <div class="message" id="msg"></div>
-</div>
+<div class="back" onclick="history.back()">← Retour</div>
+<div id="content"></div>
 
 <script>
 
-const STORAGE_KEY = "eds_notifications";
+const apiURL = "COLLE_TON_URL_ICI";
 
-// ===== GET ID =====
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
-// ===== LOAD STORAGE =====
-const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-const notif = list.find(n => String(n.id) === String(id));
+fetch(apiURL)
+.then(res => res.json())
+.then(data => {
 
-if(notif){
-  document.getElementById("time").innerText =
-    (notif.heure || "") + " " + (notif.date || "");
-  document.getElementById("title").innerText = notif.titre || "";
-  document.getElementById("cat").innerText = notif.categorie || "";
-  document.getElementById("msg").innerText = notif.message || "";
-}
+  const notif = data.find(n => n.id == id);
+  if(!notif) return;
 
-// ===== BACK =====
-document.getElementById("back").onclick = ()=>{
-  window.location.href = "notifications.html";
-};
+  document.getElementById("content").innerHTML = `
+    <div class="titre">${notif.titre}</div>
+    <div class="meta">${notif.date} ${notif.heure} | ${notif.categorie}</div>
+    <div class="message">${notif.message}</div>
+  `;
+
+});
 
 </script>
 
