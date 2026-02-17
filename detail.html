@@ -3,191 +3,115 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Détail alerte</title>
 
 <style>
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f4f4f4;
-}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#f4f4f4;}
 
-/* ===== RETOUR ===== */
-
-#back{
-  padding:15px;
-  font-size:16px;
-  color:#1f5c8f;
-  cursor:pointer;
-}
-
-/* ===== LOADER ===== */
+#back{padding:15px;font-size:16px;color:#1f5c8f;cursor:pointer;}
 
 #loader{
-  position:fixed;
-  inset:0;
-  background:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:9999;
+position:fixed;inset:0;background:white;
+display:flex;align-items:center;justify-content:center;z-index:9999;
 }
 
 .spinner{
-  width:40px;
-  height:40px;
-  border:4px solid #ddd;
-  border-top:4px solid #1f5c8f;
-  border-radius:50%;
-  animation:spin 1s linear infinite;
+width:40px;height:40px;border:4px solid #ddd;
+border-top:4px solid #1f5c8f;border-radius:50%;
+animation:spin 1s linear infinite;
 }
-
-@keyframes spin{
-  to{transform:rotate(360deg);}
-}
-
-/* ===== CARD ===== */
+@keyframes spin{to{transform:rotate(360deg);}}
 
 .card{
-  background:white;
-  margin:15px;
-  padding:20px;
-  border-radius:12px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+background:white;margin:15px;padding:20px;border-radius:12px;
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
 }
 
-.titre{
-  font-size:22px;
-  font-weight:bold;
-  color:#1f5c8f;
-  margin-bottom:6px;
-}
-
-.categorie{
-  font-size:14px;
-  color:#888;
-  margin-bottom:6px;
-}
-
-.heure{
-  font-size:15px;
-  font-weight:bold;
-  color:red;
-  margin-bottom:15px;
-}
-
-.message{
-  font-size:16px;
-  line-height:1.6;
-  white-space:pre-line;
-}
+.titre{font-size:22px;font-weight:bold;color:#1f5c8f;}
+.categorie{font-size:14px;color:#888;}
+.heure{font-size:15px;font-weight:bold;color:red;margin:10px 0;}
+.message{white-space:pre-line;}
 </style>
 </head>
 
 <body>
 
-<div id="back" onclick="goBack()">← Retour</div>
+<div id="back" onclick="history.back()">← Retour</div>
 
-<div id="loader">
-  <div class="spinner"></div>
-</div>
+<div id="loader"><div class="spinner"></div></div>
 
 <div id="content" style="display:none;">
   <div class="card">
-    <div class="titre" id="titre"></div>
-    <div class="categorie" id="categorie"></div>
-    <div class="heure" id="heure"></div>
-    <div class="message" id="message"></div>
+    <div id="titre" class="titre"></div>
+    <div id="categorie" class="categorie"></div>
+    <div id="heure" class="heure"></div>
+    <div id="message" class="message"></div>
   </div>
 </div>
 
 <script>
 
-const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
+const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-const STORAGE_KEY = "alerts_lues";
-
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
-
-/* ===== DATE ===== */
+const STORAGE_KEY="alerts_lues";
+const id=new URLSearchParams(location.search).get("id");
 
 function parseDateFR(str){
-  if(!str) return null;
-  const [d,m,y] = str.split("/");
-  return new Date(y, m-1, d);
+ if(!str) return null;
+ const [d,m,y]=str.split("/");
+ return new Date(y,m-1,d,0,0,0);
 }
-
-/* ===== STORAGE ===== */
 
 function marquerLu(id){
-  const lues = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  if(!lues.includes(Number(id))){
-    lues.push(Number(id));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lues));
-  }
+ const l=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+ if(!l.includes(id)){
+   l.push(id);
+   localStorage.setItem(STORAGE_KEY,JSON.stringify(l));
+ }
 }
-
-/* ===== LOAD ===== */
 
 async function loadDetail(){
 
-  try{
+ const res=await fetch(API_URL);
+ const data=await res.json();
 
-    const res = await fetch(API_URL);
-    const data = await res.json();
+ const notif=data.find(n=>String(n.id)===String(id));
 
-    const notif = data.find(n => String(n.id) === String(id));
+ const today=new Date();
+ today.setHours(0,0,0,0);
 
-    if(!notif){
-      document.getElementById("titre").innerText =
-        "Notification introuvable";
-    }
-    else{
+ if(!notif){
+   document.getElementById("titre").innerText="Notification introuvable";
+ }
+ else{
 
-      const today = new Date();
-      today.setHours(0,0,0,0);
+   let autorisee=false;
 
-      const expireDate = parseDateFR(notif.expire);
+   if(notif.active==="oui"){
+     if(notif.epingle==="oui"){
+       autorisee=true;
+     }else{
+       const ref = notif.expire ? parseDateFR(notif.expire) : parseDateFR(notif.date);
+       if(!ref || ref>=today) autorisee=true;
+     }
+   }
 
-      // 👉 LOGIQUE IDENTIQUE À notifications.html
-      const autorisee =
-        notif.epingle === "oui" ||
-        (
-          notif.active === "oui" &&
-          (!expireDate || expireDate >= today)
-        );
+   if(!autorisee){
+     document.getElementById("titre").innerText="Cette notification n’est plus disponible.";
+   }else{
+     marquerLu(notif.id);
+     document.getElementById("titre").innerText=notif.titre;
+     document.getElementById("categorie").innerText=notif.categorie||"";
+     document.getElementById("heure").innerText=notif.heure||"";
+     document.getElementById("message").innerText=notif.message||"";
+   }
+ }
 
-      if(!autorisee){
-        document.getElementById("titre").innerText =
-          "Cette notification n’est plus disponible.";
-      }
-      else{
-
-        marquerLu(notif.id);
-
-        document.getElementById("titre").innerText = notif.titre;
-        document.getElementById("categorie").innerText = notif.categorie || "";
-        document.getElementById("heure").innerText = notif.heure || "";
-        document.getElementById("message").innerText = notif.message || "";
-      }
-    }
-
-  }catch(e){
-    console.log("Erreur :",e);
-  }
-
-  document.getElementById("loader").style.display="none";
-  document.getElementById("content").style.display="block";
-}
-
-function goBack(){
-  window.history.back();
+ document.getElementById("loader").style.display="none";
+ document.getElementById("content").style.display="block";
 }
 
 loadDetail();
-
 </script>
 
 </body>
