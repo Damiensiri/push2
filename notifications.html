@@ -2,58 +2,42 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Alertes</title>
 
 <style>
 body{
   font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f5f5f5;
+  background:#f4f4f4;
   margin:0;
   padding:20px;
 }
 
 h1{
   text-align:center;
-  margin-bottom:5px;
-}
-
-.update{
-  text-align:center;
-  font-size:14px;
-  opacity:0.6;
-  margin-bottom:20px;
 }
 
 .card{
   background:white;
-  border-radius:14px;
-  padding:16px;
+  padding:15px;
+  border-radius:12px;
   margin-bottom:12px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.05);
+  box-shadow:0 2px 6px rgba(0,0,0,0.08);
   cursor:pointer;
-  transition:0.2s;
-}
-
-.card:hover{
-  transform:scale(1.01);
 }
 
 .time{
   color:#d32f2f;
   font-weight:bold;
-  margin-right:8px;
 }
 
-.categorie{
+.cat{
   font-size:13px;
-  opacity:0.6;
-  margin-bottom:4px;
+  opacity:0.7;
 }
 
-.titre{
-  font-weight:600;
-  font-size:16px;
+.title{
+  font-size:18px;
+  font-weight:bold;
 }
 </style>
 </head>
@@ -61,23 +45,19 @@ h1{
 <body>
 
 <h1>ALERTES</h1>
-<div class="update" id="update"></div>
 <div id="list"></div>
 
 <script>
+const URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-const apiURL = "COLLE_TON_URL_ICI";
-
-fetch(apiURL)
-.then(res => res.json())
+fetch(URL)
+.then(r => r.json())
 .then(data => {
 
-  const container = document.getElementById("list");
+  const list = document.getElementById("list");
+  list.innerHTML = "";
 
-  document.getElementById("update").innerText =
-    "Dernière mise à jour : " + new Date().toLocaleString("fr-FR");
-
-  data.reverse().forEach(n => {
+  data.forEach(n => {
 
     if(n.active !== "oui") return;
 
@@ -85,23 +65,23 @@ fetch(apiURL)
     card.className = "card";
 
     card.innerHTML = `
-      <div>
-        <span class="time">${n.heure || ""}</span>
-        <span class="categorie">${n.categorie || ""}</span>
-      </div>
-      <div class="titre">${n.titre}</div>
+      <div class="time">${n.heure}</div>
+      <div class="cat">${n.categorie}</div>
+      <div class="title">${n.titre}</div>
     `;
 
     card.onclick = () => {
       window.location.href = "detail.html?id=" + n.id;
     };
 
-    container.appendChild(card);
-
+    list.appendChild(card);
   });
 
+})
+.catch(err=>{
+  document.getElementById("list").innerHTML="Erreur chargement";
+  console.error(err);
 });
-
 </script>
 
 </body>
