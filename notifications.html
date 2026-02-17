@@ -112,6 +112,12 @@ h1{
   font-size:18px;
   color:#1f5c8f;
 }
+
+.pin{
+  margin-top:6px;
+  font-size:12px;
+  color:#d35400;
+}
 </style>
 </head>
 
@@ -154,24 +160,34 @@ function marquerLu(id){
   }
 }
 
-/* ===== DATE SAFE ===== */
+/* ===== DATE PARSER BLINDÉ ===== */
 
 function parseDateFR(str){
   if(!str) return null;
 
-  str = String(str).replace(/-/g,"/");
+  if(str.includes("T")){
+    const d = new Date(str);
+    d.setHours(0,0,0,0);
+    return d;
+  }
 
-  const parts = str.split("/");
+  str = String(str).trim();
 
-  if(parts.length !== 3) return null;
+  if(str.includes("-")){
+    const p = str.split("-");
+    if(p.length===3){
+      return new Date(p[0], p[1]-1, p[2], 0,0,0);
+    }
+  }
 
-  const d = parseInt(parts[0],10);
-  const m = parseInt(parts[1],10);
-  const y = parseInt(parts[2],10);
+  if(str.includes("/")){
+    const p = str.split("/");
+    if(p.length===3){
+      return new Date(p[2], p[1]-1, p[0], 0,0,0);
+    }
+  }
 
-  if(!d || !m || !y) return null;
-
-  return new Date(y, m-1, d, 0, 0, 0);
+  return null;
 }
 
 /* ===== LOAD ===== */
@@ -196,17 +212,20 @@ async function loadNotifications(){
     let compteur = 0;
 
     data
-      .filter(n => {
+      .filter(n=>{
 
-        if(n.active !== "oui") return false;
+        if(n.epingle==="oui") return true;
+        if(n.active!=="oui") return false;
 
-        if(n.epingle === "oui") return true;
+        if(!n.expire){
+          const d = parseDateFR(n.date);
+          if(!d) return true;
+          return d >= today;
+        }
 
-        const expireDate = parseDateFR(n.expire || n.date);
-
-        if(!expireDate) return true;
-
-        return expireDate >= today;
+        const exp = parseDateFR(n.expire);
+        if(!exp) return true;
+        return exp >= today;
 
       })
       .sort((a,b)=>b.id-a.id)
@@ -227,6 +246,7 @@ async function loadNotifications(){
           <div class="card-time">${n.heure||""}</div>
           <div class="card-category">${n.categorie||""}</div>
           <div class="card-title">${n.titre}</div>
+          ${n.epingle==="oui" ? `<div class="pin">📌 ÉPINGLÉ</div>` : ``}
         `;
 
         card.onclick=()=>{
@@ -237,12 +257,8 @@ async function loadNotifications(){
         container.appendChild(card);
       });
 
-    if(container.children.length === 0){
-      container.innerHTML = `
-        <div style="text-align:center;color:#777;margin-top:40px;">
-          Aucune notification
-        </div>
-      `;
+    if(container.children.length===0){
+      container.innerHTML=`<div style="text-align:center;color:#777;margin-top:40px;">Aucune notification</div>`;
     }
 
     const badge=document.getElementById("bellBadge");
