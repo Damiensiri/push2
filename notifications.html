@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Alertes</title>
 
 <style>
@@ -14,7 +13,6 @@ body{
 }
 
 /* ===== CLOCHE ===== */
-
 #bellBox{
   position:fixed;
   top:12px;
@@ -41,7 +39,6 @@ body{
 }
 
 /* ===== TITRE ===== */
-
 h1{
   text-align:center;
   margin:25px 0 5px;
@@ -55,7 +52,6 @@ h1{
 }
 
 /* ===== LOADER ===== */
-
 #loader{
   position:fixed;
   inset:0;
@@ -80,7 +76,6 @@ h1{
 }
 
 /* ===== CARDS ===== */
-
 .card{
   background:white;
   margin:15px;
@@ -95,30 +90,13 @@ h1{
   background:#f0f0f0;
 }
 
-.card-time{
-  color:red;
-  font-weight:bold;
-}
-
-.card-category{
-  font-size:13px;
-  color:#888;
-  margin-top:4px;
-}
-
-.card-title{
-  font-weight:bold;
-  margin-top:6px;
-  font-size:18px;
-  color:#1f5c8f;
-}
-
-/* ===== BADGE EPINGLE ===== */
+.card-time{ color:red;font-weight:bold; }
+.card-category{ font-size:13px;color:#888;margin-top:4px; }
+.card-title{ font-weight:bold;margin-top:6px;font-size:18px;color:#1f5c8f; }
 
 .pin{
   font-size:12px;
   color:#1f5c8f;
-  font-weight:600;
   margin-top:6px;
 }
 </style>
@@ -126,13 +104,7 @@ h1{
 
 <body>
 
-<!-- CLOCHE -->
-<div id="bellBox">
-  🔔
-  <span id="bellBadge"></span>
-</div>
-
-<!-- LOADER -->
+<div id="bellBox">🔔 <span id="bellBadge"></span></div>
 <div id="loader"><div class="spinner"></div></div>
 
 <h1>ALERTES</h1>
@@ -143,131 +115,102 @@ h1{
 
 const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-const STORAGE_KEY = "alerts_lues";
+const STORAGE_KEY="alerts_lues";
 
-/* ===== STORAGE ===== */
-
+/* ===== Utils ===== */
 function getLues(){
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-}
-
-function setLues(arr){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
 }
 
 function marquerLu(id){
-  const lues = getLues();
-  if(!lues.includes(id)){
-    lues.push(id);
-    setLues(lues);
+  const l=getLues();
+  if(!l.includes(id)){
+    l.push(id);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(l));
   }
 }
 
-/* ===== DATE ===== */
-
 function parseDateFR(str){
   if(!str) return null;
-  const [d,m,y] = str.split("/");
-  const dt = new Date(Number(y), Number(m)-1, Number(d));
-  dt.setHours(0,0,0,0);
-  return dt;
+  const [d,m,y]=str.split("/");
+  return new Date(y,m-1,d,0,0,0);
 }
 
 /* ===== LOAD ===== */
-
 async function loadNotifications(){
 
-  try{
+  const res=await fetch(API_URL);
+  const data=await res.json();
 
-    const res = await fetch(API_URL);
-    const data = await res.json();
+  const container=document.getElementById("notifications");
+  container.innerHTML="";
 
-    const container = document.getElementById("notifications");
-    container.innerHTML = "";
+  document.getElementById("lastUpdate").innerText =
+    "Dernière mise à jour : "+new Date().toLocaleString();
 
-    document.getElementById("lastUpdate").innerText =
-      "Dernière mise à jour : " + new Date().toLocaleString();
+  const today=new Date();
+  today.setHours(0,0,0,0);
 
-    const today = new Date();
-    today.setHours(0,0,0,0);
+  const lues=getLues();
+  let compteur=0;
 
-    const lues = getLues();
-    let compteur = 0;
+  data
+  .filter(n=>{
 
-    data
-      .filter(n => {
+    if(n.active!=="oui") return false;
 
-        if(n.active !== "oui") return false;
+    if(n.epingle==="oui") return true;
 
-        if(n.epingle === "oui") return true;
+    const ref = n.expire ? parseDateFR(n.expire) : parseDateFR(n.date);
+    if(!ref) return true;
 
-        const d = parseDateFR(n.expire || n.date);
-        if(!d) return true;
+    return ref>=today;
+  })
+  .sort((a,b)=>b.id-a.id)
+  .forEach(n=>{
 
-        return d >= today;
-      })
-      .sort((a,b)=>b.id-a.id)
-      .forEach(n=>{
+    if(!lues.includes(n.id)) compteur++;
 
-        if(!lues.includes(n.id)){
-          compteur++;
-        }
+    const card=document.createElement("div");
+    card.className="card";
 
-        const card=document.createElement("div");
-        card.className="card";
+    if(lues.includes(n.id)) card.classList.add("lu");
 
-        if(lues.includes(n.id)){
-          card.classList.add("lu");
-        }
+    card.innerHTML=`
+      <div class="card-time">${n.heure||""}</div>
+      <div class="card-category">${n.categorie||""}</div>
+      <div class="card-title">${n.titre}</div>
+      ${n.epingle==="oui" ? `<div class="pin">📌 ÉPINGLÉ</div>` : ``}
+    `;
 
-        card.innerHTML=`
-          <div class="card-time">${n.heure||""}</div>
-          <div class="card-category">${n.categorie||""}</div>
-          <div class="card-title">${n.titre}</div>
-          ${n.epingle==="oui" ? `<div class="pin">📌 ÉPINGLÉ</div>` : ``}
-        `;
+    card.onclick=()=>{
+      marquerLu(n.id);
+      window.location.href="detail.html?id="+n.id;
+    };
 
-        card.onclick=()=>{
-          marquerLu(n.id);
-          window.location.href="detail.html?id="+n.id;
-        };
+    container.appendChild(card);
+  });
 
-        container.appendChild(card);
-      });
+  if(container.children.length===0){
+    container.innerHTML="<div style='text-align:center;color:#777;margin-top:40px;'>Aucune notification</div>";
+  }
 
-    if(container.children.length === 0){
-      container.innerHTML = `
-        <div style="text-align:center;color:#777;margin-top:40px;">
-          Aucune notification
-        </div>
-      `;
-    }
-
-    const badge=document.getElementById("bellBadge");
-
-    if(compteur>0){
-      badge.style.display="flex";
-      badge.textContent=compteur;
-    }else{
-      badge.style.display="none";
-    }
-
-  }catch(e){
-    console.log("Erreur :",e);
+  const badge=document.getElementById("bellBadge");
+  if(compteur>0){
+    badge.style.display="flex";
+    badge.textContent=compteur;
+  }else{
+    badge.style.display="none";
   }
 
   document.getElementById("loader").style.display="none";
 }
 
-/* ===== AUTO ===== */
-
 loadNotifications();
 setInterval(loadNotifications,60000);
 
 document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden){
-    loadNotifications();
-  }
+  if(!document.hidden) loadNotifications();
 });
 
 </script>
