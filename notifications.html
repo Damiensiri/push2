@@ -6,89 +6,186 @@
 <title>Notifications</title>
 
 <style>
-body{
-  margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f4f4f4;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f4f4f4;
 }
-
 h1{
   text-align:center;
-  margin:20px 0;
+  padding-top:16px;
+}
+#bell {
+  position: fixed;
+  top: 10px;
+  right: 16px;
+  font-size: 24px;
+  cursor: pointer;
+}
+#badge {
+  background: red;
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 50%;
+  padding: 2px 6px;
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  display: none;
 }
 
 .card{
   background:white;
   margin:12px;
   padding:16px;
-  border-radius:18px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.05);
+  border-radius:14px;
+  box-shadow:0 3px 6px rgba(0,0,0,0.1);
   cursor:pointer;
   transition:0.2s;
 }
-
 .card:hover{
   transform:scale(1.02);
 }
-
 .time{
-  color:#e43b3b;
-  font-weight:bold;
-  margin-bottom:6px;
+  font-size:12px;
+  color:#888;
 }
-
 .title{
   font-weight:700;
-  margin-bottom:4px;
+  margin-top:6px;
 }
-
 .category{
+  font-size:13px;
+  font-weight:500;
   color:#1f2c4c;
-  opacity:0.7;
-  font-size:14px;
-}
-
-.unread{
-  border-left:6px solid #e43b3b;
+  opacity:0.8;
+  margin-top:4px;
 }
 </style>
+
 </head>
 <body>
 
 <h1>Centre de notifications</h1>
+
+<div id="bell">
+  🔔
+  <span id="badge"></span>
+</div>
+
 <div id="list"></div>
 
 <script>
 
-function getNotifications(){
-  return JSON.parse(localStorage.getItem("eds_notifications")) || [];
+// ===== CONFIG =====
+const SHEET_URL = "https://script.google.com/macros/s/AKfycby9GMgMK8D1IQ3a0m1IUE9sB3UAW7Fm7FuHUqHDz335tynVVM9KRc7sSe8Hxtt6EWBX/exec";
+const STORAGE_KEY = "eds_notifications";
+
+// ===== LOCAL STORAGE UTILS =====
+function getStored(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return [];
+  try { return JSON.parse(raw) } catch(e){ return []; }
 }
 
-function render(){
-  const list = document.getElementById("list");
-  list.innerHTML = "";
+function saveStored(data){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
 
-  const data = getNotifications();
+function markRead(id){
+  const list = getStored();
+  const item = list.find(n=>n.id==id);
+  if(item && !item.read){
+    item.read = true;
+    saveStored(list);
+    updateBadge();
+  }
+}
 
-  data.sort((a,b)=> b.id - a.id);
+// ===== FETCH SHEET =====
+async function fetchSheet(){
+  try {
+    const res = await fetch(SHEET_URL,{cache:"no-store"});
+    const data = await res.json();
+    return data;
+  } catch(e){
+    console.error("Fetch Sheet error:",e);
+    return [];
+  }
+}
 
-  data.forEach(n => {
+// ===== RENDER =====
+function updateBadge(){
+  const list = getStored();
+  const unread = list.filter(n=>!n.read).length;
+  const badge = document.getElementById("badge");
+  if(unread>0){
+    badge.innerText = unread;
+    badge.style.display="inline-block";
+  } else {
+    badge.style.display="none";
+  }
+}
+
+function renderList(notifs){
+  const container = document.getElementById("list");
+  container.innerHTML = "";
+  notifs.forEach(n=>{
     const div = document.createElement("div");
-    div.className = "card " + (!n.read ? "unread" : "");
+    div.className="card";
+    if(!n.read) div.classList.add("unread");
+
     div.innerHTML = `
-      <div class="time">${n.time}</div>
-      <div class="title">${n.title}</div>
-      <div class="category">${n.category}</div>
+      <div class="time">${n.heure||""} ${n.date||""}</div>
+      <div class="title">${n.titre||""}</div>
+      <div class="category">${n.categorie||""}</div>
     `;
-    div.onclick = ()=> {
-      window.location.href = "notification.html?id=" + n.id;
+    div.onclick = ()=>{
+      markRead(n.id);
+      window.location.href = "detail.html?id="+n.id;
     };
-    list.appendChild(div);
+    container.appendChild(div);
   });
 }
 
-render();
+// ===== INIT =====
+(async function init(){
+  // fetch sheet
+  const sheetData = await fetchSheet();
+
+  // merge with local storage
+  let stored = getStored();
+
+  // add missing notifications
+  sheetData.forEach(n=>{
+    const exists = stored.find(s=>s.id==n.ID);
+    if(!exists){
+      stored.push({
+        id: n.ID,
+        date: n.date,
+        heure: n.heure,
+        categorie: n.categorie,
+        titre: n.titre,
+        message: n.message,
+        read: false,
+        epingle: n.epingle,
+        expire: n.expire
+      });
+    }
+  });
+
+  // sort newest first
+  stored.sort((a,b)=>b.id - a.id);
+
+  saveStored(stored);
+
+  renderList(stored);
+  updateBadge();
+
+})();
 
 </script>
+
 </body>
 </html>
