@@ -2,62 +2,139 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Détail alerte</title>
 
 <style>
-body{
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#f4f4f4;
-  margin:0;
-  padding:20px;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f4f4f4;
 }
 
-.back{
-  margin-bottom:15px;
-  display:inline-block;
+header {
+  background: white;
+  padding: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
 }
 
-h1{
-  font-size:22px;
+header a {
+  text-decoration: none;
+  color: #1f5c8f;
+  font-weight: bold;
 }
-.cat{
-  color:#666;
+
+.container {
+  padding: 20px;
 }
-.msg{
-  margin-top:15px;
-  font-size:17px;
+
+.time {
+  color: red;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.category {
+  color: #888;
+  margin-top: 6px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.message {
+  margin-top: 20px;
+  font-size: 17px;
+  line-height: 1.5;
+}
+
+/* Loader */
+
+#loader {
+  position: fixed;
+  inset: 0;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #ddd;
+  border-top: 4px solid #1f5c8f;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>
 </head>
 
 <body>
 
-<a class="back" href="notifications.html">← Retour</a>
+<div id="loader">
+  <div class="spinner"></div>
+</div>
 
-<div id="content"></div>
+<header>
+  <a href="notifications.html">← Retour</a>
+</header>
+
+<div class="container">
+  <div class="time" id="time"></div>
+  <div class="category" id="category"></div>
+  <div class="title" id="title"></div>
+  <div class="message" id="message"></div>
+</div>
 
 <script>
-const URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-fetch(URL)
-.then(r=>r.json())
-.then(data=>{
-  const n = data.find(x => String(x.id) === String(id));
+function getIdFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("id");
+}
 
-  if(!n){
-    document.getElementById("content").innerHTML="Alerte introuvable";
-    return;
+async function loadDetail() {
+
+  const id = getIdFromURL();
+  if (!id) return;
+
+  try {
+
+    const response = await fetch(API_URL);
+    const data = await response.json();
+
+    const item = data.find(n => String(n.id) === String(id));
+
+    if (!item) return;
+
+    document.getElementById("time").innerText = item.heure || "";
+    document.getElementById("category").innerText = item.categorie || "";
+    document.getElementById("title").innerText = item.titre;
+    document.getElementById("message").innerText = item.message;
+
+  } catch (error) {
+    console.error("Erreur détail :", error);
   }
 
-  document.getElementById("content").innerHTML = `
-    <h1>${n.titre}</h1>
-    <div class="cat">${n.categorie} • ${n.date} ${n.heure}</div>
-    <div class="msg">${n.message}</div>
-  `;
-});
+  document.getElementById("loader").style.display = "none";
+}
+
+loadDetail();
+
 </script>
 
 </body>
