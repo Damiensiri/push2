@@ -186,11 +186,13 @@ async function loadNotifications(){
     data
       .filter(n => {
 
-        if(n.active !== "oui") return false;
-
         if(n.epingle === "oui") return true;
 
-        const d = parseDateFR(n.expire || n.date);
+        if(n.active !== "oui") return false;
+
+        if(!n.expire) return true;
+
+        const d = parseDateFR(n.expire);
         if(!d) return true;
 
         return d >= today;
