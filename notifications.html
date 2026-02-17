@@ -2,8 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Notifications</title>
 
 <style>
@@ -13,165 +12,83 @@ body{
   background:#f4f4f4;
 }
 
-/* HEADER */
-#topbar{
-  height:60px;
-  background:#1f5c8f;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  position:sticky;
-  top:0;
-  font-size:18px;
-  font-weight:600;
-}
-
-#back{
-  position:absolute;
-  left:15px;
-  font-size:22px;
-  cursor:pointer;
-}
-
-/* COUNTER */
-#counter{
+h1{
   text-align:center;
-  margin:10px 0;
-  font-weight:600;
+  margin:20px 0;
 }
 
-/* LISTE */
-#container{
-  padding:12px;
-}
-
-.notif{
+.card{
   background:white;
-  padding:15px;
-  margin-bottom:12px;
-  border-radius:12px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  margin:12px;
+  padding:16px;
+  border-radius:18px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.05);
   cursor:pointer;
+  transition:0.2s;
 }
 
-.notif.lu{
-  opacity:0.4;
+.card:hover{
+  transform:scale(1.02);
 }
 
-.notif.epingle{
-  border-left:4px solid #1f5c8f;
+.time{
+  color:#e43b3b;
+  font-weight:bold;
+  margin-bottom:6px;
 }
 
-.date{
-  font-size:12px;
-  opacity:0.6;
-  margin-top:5px;
+.title{
+  font-weight:700;
+  margin-bottom:4px;
+}
+
+.category{
+  color:#1f2c4c;
+  opacity:0.7;
+  font-size:14px;
+}
+
+.unread{
+  border-left:6px solid #e43b3b;
 }
 </style>
 </head>
-
 <body>
 
-<div id="topbar">
-  <div id="back">←</div>
-  Notifications
-</div>
-
-<div id="counter"></div>
-<div id="container"></div>
+<h1>Centre de notifications</h1>
+<div id="list"></div>
 
 <script>
 
-const SHEET_ID = "1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI";
-const STORAGE_KEY = "notifications_lues";
-
-/* STORAGE */
-
-function getLues(){
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+function getNotifications(){
+  return JSON.parse(localStorage.getItem("eds_notifications")) || [];
 }
 
-function setLues(ids){
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(ids));
-}
+function render(){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
 
-function marquerLu(id){
-  const lues = getLues();
-  if(!lues.includes(id)){
-    lues.push(id);
-    setLues(lues);
-  }
-}
+  const data = getNotifications();
 
-function estLu(id){
-  return getLues().includes(id);
-}
+  data.sort((a,b)=> b.id - a.id);
 
-/* LOAD */
-
-fetch(`https://opensheet.elk.sh/${SHEET_ID}/notifications`)
-.then(r=>r.json())
-.then(data=>{
-
-  const container=document.getElementById("container");
-  const counter=document.getElementById("counter");
-
-  container.innerHTML="";
-  let nonLues=0;
-
-  data.forEach((n,i)=>{
-
-    if(n.expire && new Date(n.expire)<new Date()) return;
-
-    const div=document.createElement("div");
-    div.className="notif";
-
-    if(estLu(i)){
-      div.classList.add("lu");
-    }else{
-      nonLues++;
-    }
-
-    if(n.epingle==="oui"){
-      div.classList.add("epingle");
-    }
-
-    div.innerHTML=`
-      <strong>${n.titre}</strong><br>
-      ${n.message}
-      <div class="date">${n.date||""}</div>
+  data.forEach(n => {
+    const div = document.createElement("div");
+    div.className = "card " + (!n.read ? "unread" : "");
+    div.innerHTML = `
+      <div class="time">${n.time}</div>
+      <div class="title">${n.title}</div>
+      <div class="category">${n.category}</div>
     `;
-
-    div.onclick=()=>{
-      marquerLu(i);
-      div.classList.add("lu");
-      nonLues--;
-      updateCounter();
+    div.onclick = ()=> {
+      window.location.href = "notification.html?id=" + n.id;
     };
-
-    container.appendChild(div);
+    list.appendChild(div);
   });
+}
 
-  function updateCounter(){
-    if(nonLues>0){
-      counter.innerText=nonLues+" notification(s) non lue(s)";
-    }else{
-      counter.innerText="Aucune nouvelle notification";
-    }
-  }
-
-  updateCounter();
-
-});
-
-/* RETOUR */
-
-document.getElementById("back").onclick=()=>{
-  history.back();
-};
+render();
 
 </script>
-
 </body>
 </html>
