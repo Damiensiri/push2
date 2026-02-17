@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Alertes</title>
 
 <style>
@@ -19,10 +18,10 @@ h1{
   margin-bottom:5px;
 }
 
-#update{
+.update{
   text-align:center;
-  color:#777;
-  font-size:13px;
+  font-size:14px;
+  opacity:0.6;
   margin-bottom:20px;
 }
 
@@ -31,31 +30,30 @@ h1{
   border-radius:14px;
   padding:16px;
   margin-bottom:12px;
-  display:flex;
-  gap:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.06);
+  box-shadow:0 4px 10px rgba(0,0,0,0.05);
   cursor:pointer;
+  transition:0.2s;
+}
+
+.card:hover{
+  transform:scale(1.01);
 }
 
 .time{
-  color:#e53935;
+  color:#d32f2f;
   font-weight:bold;
-  min-width:60px;
+  margin-right:8px;
 }
 
-.content{
-  flex:1;
+.categorie{
+  font-size:13px;
+  opacity:0.6;
+  margin-bottom:4px;
 }
 
-.category{
-  font-size:12px;
-  color:#777;
-}
-
-.title{
-  font-weight:700;
+.titre{
+  font-weight:600;
   font-size:16px;
-  color:#0a1f44;
 }
 </style>
 </head>
@@ -63,48 +61,45 @@ h1{
 <body>
 
 <h1>ALERTES</h1>
-<div id="update">Chargement...</div>
-
+<div class="update" id="update"></div>
 <div id="list"></div>
 
 <script>
 
-const URL = "https://script.google.com/macros/s/AKfycby_-d7ZYKuVp00T6KEgGYRwqgp3GrW_Ef6vzZA5d9ce9BVJDmyfynRSEi0c1uGi4N6K/exec";
+const apiURL = "COLLE_TON_URL_ICI";
 
-fetch(URL)
-.then(r => r.json())
+fetch(apiURL)
+.then(res => res.json())
 .then(data => {
-
-  document.getElementById("update").innerText =
-    "Dernière mise à jour : " + new Date().toLocaleString();
 
   const container = document.getElementById("list");
 
-  data.reverse().forEach(item => {
+  document.getElementById("update").innerText =
+    "Dernière mise à jour : " + new Date().toLocaleString("fr-FR");
+
+  data.reverse().forEach(n => {
+
+    if(n.active !== "oui") return;
 
     const card = document.createElement("div");
     card.className = "card";
 
     card.innerHTML = `
-      <div class="time">${item.heure}</div>
-      <div class="content">
-        <div class="category">${item.categorie}</div>
-        <div class="title">${item.titre}</div>
+      <div>
+        <span class="time">${n.heure || ""}</span>
+        <span class="categorie">${n.categorie || ""}</span>
       </div>
+      <div class="titre">${n.titre}</div>
     `;
 
     card.onclick = () => {
-      window.location.href =
-        "detail.html?id=" + item.id;
+      window.location.href = "detail.html?id=" + n.id;
     };
 
     container.appendChild(card);
+
   });
 
-})
-.catch(err=>{
-  document.getElementById("update").innerText="Erreur chargement";
-  console.error(err);
 });
 
 </script>
