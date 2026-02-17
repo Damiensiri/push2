@@ -127,10 +127,6 @@ h1 {
   font-size: 18px;
 }
 
-/* ======================
-   RESPONSIVE
-====================== */
-
 @media (max-width: 600px) {
   body { font-size: 17px; }
   h1 { font-size: 22px; }
@@ -141,13 +137,11 @@ h1 {
 
 <body>
 
-<!-- ===== CLOCHE ===== -->
 <div id="bellBox">
   🔔
   <span id="bellBadge"></span>
 </div>
 
-<!-- ===== LOADER ===== -->
 <div id="loader">
   <div class="spinner"></div>
 </div>
@@ -160,6 +154,28 @@ h1 {
 <script>
 
 const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
+
+const STORAGE_KEY = "alerts_lues";
+
+function getLues(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+}
+
+function setLues(arr){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+function marquerLu(id){
+  const lues = getLues();
+  if(!lues.includes(id)){
+    lues.push(id);
+    setLues(lues);
+  }
+}
+
+function estLu(id){
+  return getLues().includes(id);
+}
 
 async function loadNotifications() {
 
@@ -174,6 +190,7 @@ async function loadNotifications() {
     document.getElementById("lastUpdate").innerText =
       "Dernière mise à jour : " + new Date().toLocaleString();
 
+    const lues = getLues();
     let compteur = 0;
 
     data
@@ -181,7 +198,9 @@ async function loadNotifications() {
       .sort((a, b) => b.id - a.id)
       .forEach(notification => {
 
-        compteur++;
+        if(!lues.includes(notification.id)){
+          compteur++;
+        }
 
         const card = document.createElement("div");
         card.className = "card";
@@ -195,6 +214,7 @@ async function loadNotifications() {
         `;
 
         card.onclick = () => {
+          marquerLu(notification.id);
           window.location.href = "detail.html?id=" + notification.id;
         };
 
