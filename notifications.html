@@ -43,7 +43,7 @@ body {
 }
 
 /* ======================
-   TITRE
+   TITRE PAGE
 ====================== */
 
 h1 {
@@ -96,11 +96,6 @@ h1 {
   border-radius: 12px;
   box-shadow: 0 3px 8px rgba(0,0,0,0.08);
   cursor: pointer;
-  transition: transform 0.1s ease;
-}
-
-.card:active {
-  transform: scale(0.98);
 }
 
 .card-header {
@@ -115,17 +110,24 @@ h1 {
   font-size: 15px;
 }
 
+/* TITRE BLEU */
+.card-title {
+  font-weight: bold;
+  margin-top: 8px;
+  font-size: 18px;
+  color:#1f5c8f;
+}
+
+/* CATEGORIE SOUS TITRE */
 .card-category {
   font-size: 13px;
   color: #888;
   margin-top: 4px;
 }
 
-.card-title {
-  font-weight: bold;
-  margin-top: 6px;
-  font-size: 18px;
-}
+/* ======================
+   RESPONSIVE
+====================== */
 
 @media (max-width: 600px) {
   body { font-size: 17px; }
@@ -137,11 +139,13 @@ h1 {
 
 <body>
 
+<!-- ===== CLOCHE ===== -->
 <div id="bellBox">
   🔔
   <span id="bellBadge"></span>
 </div>
 
+<!-- ===== LOADER ===== -->
 <div id="loader">
   <div class="spinner"></div>
 </div>
@@ -154,28 +158,6 @@ h1 {
 <script>
 
 const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
-
-const STORAGE_KEY = "alerts_lues";
-
-function getLues(){
-  return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-}
-
-function setLues(arr){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
-}
-
-function marquerLu(id){
-  const lues = getLues();
-  if(!lues.includes(id)){
-    lues.push(id);
-    setLues(lues);
-  }
-}
-
-function estLu(id){
-  return getLues().includes(id);
-}
 
 async function loadNotifications() {
 
@@ -190,7 +172,6 @@ async function loadNotifications() {
     document.getElementById("lastUpdate").innerText =
       "Dernière mise à jour : " + new Date().toLocaleString();
 
-    const lues = getLues();
     let compteur = 0;
 
     data
@@ -198,9 +179,7 @@ async function loadNotifications() {
       .sort((a, b) => b.id - a.id)
       .forEach(notification => {
 
-        if(!lues.includes(notification.id)){
-          compteur++;
-        }
+        compteur++;
 
         const card = document.createElement("div");
         card.className = "card";
@@ -209,12 +188,12 @@ async function loadNotifications() {
           <div class="card-header">
             <div class="card-time">${notification.heure || ""}</div>
           </div>
-          <div class="card-category">${notification.categorie || ""}</div>
+
           <div class="card-title">${notification.titre}</div>
+          <div class="card-category">${notification.categorie || ""}</div>
         `;
 
         card.onclick = () => {
-          marquerLu(notification.id);
           window.location.href = "detail.html?id=" + notification.id;
         };
 
@@ -237,7 +216,11 @@ async function loadNotifications() {
   document.getElementById("loader").style.display = "none";
 }
 
+/* ===== CHARGEMENT INITIAL ===== */
 loadNotifications();
+
+/* ===== REFRESH AUTO 60s ===== */
+setInterval(loadNotifications, 60000);
 
 </script>
 
