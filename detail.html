@@ -2,66 +2,62 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Détail</title>
+<title>Détail alerte</title>
 
 <style>
 body{
   font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#f4f4f4;
+  margin:0;
   padding:20px;
 }
 
 .back{
-  margin-bottom:20px;
-  cursor:pointer;
-  font-weight:bold;
+  margin-bottom:15px;
+  display:inline-block;
 }
 
-.titre{
+h1{
   font-size:22px;
-  font-weight:700;
-  margin-bottom:10px;
 }
-
-.meta{
-  font-size:14px;
-  opacity:0.6;
-  margin-bottom:20px;
+.cat{
+  color:#666;
 }
-
-.message{
-  line-height:1.5;
+.msg{
+  margin-top:15px;
+  font-size:17px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="back" onclick="history.back()">← Retour</div>
+<a class="back" href="notifications.html">← Retour</a>
+
 <div id="content"></div>
 
 <script>
-
-const apiURL = "COLLE_TON_URL_ICI";
+const URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
-fetch(apiURL)
-.then(res => res.json())
-.then(data => {
+fetch(URL)
+.then(r=>r.json())
+.then(data=>{
+  const n = data.find(x => String(x.id) === String(id));
 
-  const notif = data.find(n => n.id == id);
-  if(!notif) return;
+  if(!n){
+    document.getElementById("content").innerHTML="Alerte introuvable";
+    return;
+  }
 
   document.getElementById("content").innerHTML = `
-    <div class="titre">${notif.titre}</div>
-    <div class="meta">${notif.date} ${notif.heure} | ${notif.categorie}</div>
-    <div class="message">${notif.message}</div>
+    <h1>${n.titre}</h1>
+    <div class="cat">${n.categorie} • ${n.date} ${n.heure}</div>
+    <div class="msg">${n.message}</div>
   `;
-
 });
-
 </script>
 
 </body>
