@@ -13,12 +13,11 @@ body{
   background:#f4f4f4;
 }
 
-/* ===== HEADER ===== */
+/* ===== BARRE RETOUR BLANCHE ===== */
 
 #topbar{
   height:60px;
-  background:#1f5c8f;
-  color:white;
+  background:white;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -26,6 +25,7 @@ body{
   top:0;
   font-size:18px;
   font-weight:600;
+  border-bottom:1px solid #ddd;
 }
 
 #backBtn{
@@ -35,7 +35,7 @@ body{
   cursor:pointer;
 }
 
-/* ===== CONTAINER ===== */
+/* ===== CONTENU ===== */
 
 #content{
   padding:20px;
@@ -96,7 +96,7 @@ body{
 
 <body>
 
-<!-- HEADER -->
+<!-- HEADER BLANC -->
 <div id="topbar">
   <div id="backBtn">←</div>
   Alerte
@@ -114,7 +114,7 @@ body{
 
 const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-/* ===== RECUP ID URL ===== */
+/* ===== RECUP ID ===== */
 
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
@@ -124,7 +124,6 @@ const id = params.get("id");
 async function loadDetail(){
 
   try{
-
     const res = await fetch(API_URL);
     const data = await res.json();
 
