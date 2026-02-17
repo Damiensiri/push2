@@ -154,12 +154,24 @@ function marquerLu(id){
   }
 }
 
-/* ===== DATE ===== */
+/* ===== DATE SAFE ===== */
 
 function parseDateFR(str){
   if(!str) return null;
-  const [d,m,y] = str.split("/");
-  return new Date(y, m-1, d);
+
+  str = String(str).replace(/-/g,"/");
+
+  const parts = str.split("/");
+
+  if(parts.length !== 3) return null;
+
+  const d = parseInt(parts[0],10);
+  const m = parseInt(parts[1],10);
+  const y = parseInt(parts[2],10);
+
+  if(!d || !m || !y) return null;
+
+  return new Date(y, m-1, d, 0, 0, 0);
 }
 
 /* ===== LOAD ===== */
@@ -186,15 +198,16 @@ async function loadNotifications(){
     data
       .filter(n => {
 
-        if(n.epingle === "oui") return true;
         if(n.active !== "oui") return false;
 
-        // ⭐ CORRECTION ICI
+        if(n.epingle === "oui") return true;
+
         const expireDate = parseDateFR(n.expire || n.date);
 
         if(!expireDate) return true;
 
         return expireDate >= today;
+
       })
       .sort((a,b)=>b.id-a.id)
       .forEach(n=>{
