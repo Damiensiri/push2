@@ -90,6 +90,11 @@ h1{
   cursor:pointer;
 }
 
+.card.lu{
+  opacity:0.55;
+  background:#f0f0f0;
+}
+
 .card-time{
   color:red;
   font-weight:bold;
@@ -179,6 +184,10 @@ async function loadNotifications(){
         const card=document.createElement("div");
         card.className="card";
 
+        if(lues.includes(n.id)){
+          card.classList.add("lu");
+        }
+
         card.innerHTML=`
           <div class="card-time">${n.heure||""}</div>
           <div class="card-category">${n.categorie||""}</div>
@@ -209,8 +218,17 @@ async function loadNotifications(){
   document.getElementById("loader").style.display="none";
 }
 
+/* ===== AUTO ===== */
+
 loadNotifications();
 setInterval(loadNotifications,60000);
+
+/* Recalcul quand on revient depuis detail */
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden){
+    loadNotifications();
+  }
+});
 
 </script>
 
