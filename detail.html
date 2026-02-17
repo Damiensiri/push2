@@ -111,6 +111,16 @@ const STORAGE_KEY = "alerts_lues";
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
+/* ===== UTILS ===== */
+
+function parseDateFR(str){
+  if(!str) return null;
+  const [d,m,y] = str.split("/");
+  return new Date(y, m-1, d);
+}
+
+/* ===== STORAGE ===== */
+
 function marquerLu(id){
   const lues = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
   if(!lues.includes(Number(id))){
@@ -119,9 +129,12 @@ function marquerLu(id){
   }
 }
 
+/* ===== LOAD ===== */
+
 async function loadDetail(){
 
   try{
+
     const res = await fetch(API_URL);
     const data = await res.json();
 
@@ -129,14 +142,30 @@ async function loadDetail(){
 
     if(!notif){
       document.getElementById("titre").innerText = "Notification introuvable";
-    }else{
+    }
+    else{
 
-      marquerLu(notif.id);
+      const today = new Date();
+      today.setHours(0,0,0,0);
 
-      document.getElementById("titre").innerText = notif.titre;
-      document.getElementById("categorie").innerText = notif.categorie || "";
-      document.getElementById("heure").innerText = notif.heure || "";
-      document.getElementById("message").innerText = notif.message || "";
+      const expireDate = parseDateFR(notif.expire || notif.date);
+
+      const autorisee =
+        notif.active === "oui" &&
+        (notif.epingle === "oui" || !expireDate || expireDate >= today);
+
+      if(!autorisee){
+        document.getElementById("titre").innerText =
+          "Cette notification n’est plus disponible.";
+      }else{
+
+        marquerLu(notif.id);
+
+        document.getElementById("titre").innerText = notif.titre;
+        document.getElementById("categorie").innerText = notif.categorie || "";
+        document.getElementById("heure").innerText = notif.heure || "";
+        document.getElementById("message").innerText = notif.message || "";
+      }
     }
 
   }catch(e){
