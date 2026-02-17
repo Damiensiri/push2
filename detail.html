@@ -111,14 +111,12 @@ const STORAGE_KEY = "alerts_lues";
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
-/* ===== DATE UTILS ===== */
+/* ===== DATE ===== */
 
 function parseDateFR(str){
   if(!str) return null;
   const [d,m,y] = str.split("/");
-  const date = new Date(y, m-1, d);
-  date.setHours(0,0,0,0);
-  return date;
+  return new Date(y, m-1, d);
 }
 
 /* ===== STORAGE ===== */
@@ -131,7 +129,7 @@ function marquerLu(id){
   }
 }
 
-/* ===== LOAD ===== */
+/* ===== LOAD DETAIL ===== */
 
 async function loadDetail(){
 
@@ -153,11 +151,13 @@ async function loadDetail(){
 
       const expireDate = parseDateFR(notif.expire);
 
+      /* 🔥 MÊME LOGIQUE QUE notifications.html */
       const autorisee =
-        notif.epingle === "oui" ||
+        notif.active === "oui" &&
         (
-          notif.active === "oui" &&
-          (!expireDate || expireDate >= today)
+          notif.epingle === "oui" ||
+          !expireDate ||
+          expireDate >= today
         );
 
       if(!autorisee){
