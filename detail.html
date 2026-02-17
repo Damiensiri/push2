@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Détail notification</title>
+
+<style>
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#f4f4f4;
+}
+
+/* ===== HEADER ===== */
+#topbar{
+  height:60px;
+  background:#1f5c8f;
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  font-weight:600;
+  position:sticky;
+  top:0;
+}
+
+#back{
+  position:absolute;
+  left:15px;
+  font-size:22px;
+  cursor:pointer;
+}
+
+/* ===== CONTENT ===== */
+#box{
+  padding:16px;
+}
+
+.time{
+  font-size:13px;
+  color:#777;
+}
+
+.title{
+  font-size:20px;
+  font-weight:700;
+  margin-top:8px;
+}
+
+.category{
+  margin-top:4px;
+  color:#1f5c8f;
+  font-weight:600;
+}
+
+.message{
+  margin-top:16px;
+  font-size:16px;
+  line-height:1.5;
+  white-space:pre-line;
+}
+</style>
+</head>
+
+<body>
+
+<div id="topbar">
+  <div id="back">←</div>
+  Notification
+</div>
+
+<div id="box">
+  <div class="time" id="time"></div>
+  <div class="title" id="title"></div>
+  <div class="category" id="cat"></div>
+  <div class="message" id="msg"></div>
+</div>
+
+<script>
+
+const STORAGE_KEY = "eds_notifications";
+
+// ===== GET ID =====
+const params = new URLSearchParams(window.location.search);
+const id = params.get("id");
+
+// ===== LOAD STORAGE =====
+const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+const notif = list.find(n => String(n.id) === String(id));
+
+if(notif){
+  document.getElementById("time").innerText =
+    (notif.heure || "") + " " + (notif.date || "");
+  document.getElementById("title").innerText = notif.titre || "";
+  document.getElementById("cat").innerText = notif.categorie || "";
+  document.getElementById("msg").innerText = notif.message || "";
+}
+
+// ===== BACK =====
+document.getElementById("back").onclick = ()=>{
+  window.location.href = "notifications.html";
+};
+
+</script>
+
+</body>
+</html>
