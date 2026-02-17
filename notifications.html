@@ -154,6 +154,14 @@ function marquerLu(id){
   }
 }
 
+/* ===== DATE ===== */
+
+function parseDateFR(str){
+  if(!str) return null;
+  const [d,m,y] = str.split("/");
+  return new Date(y, m-1, d);
+}
+
 /* ===== LOAD ===== */
 
 async function loadNotifications(){
@@ -169,11 +177,25 @@ async function loadNotifications(){
     document.getElementById("lastUpdate").innerText =
       "Dernière mise à jour : " + new Date().toLocaleString();
 
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
     const lues = getLues();
     let compteur = 0;
 
     data
-      .filter(n => n.active === "oui")
+      .filter(n => {
+
+        if(n.active !== "oui") return false;
+
+        if(n.epingle === "oui") return true;
+
+        const d = parseDateFR(n.expire || n.date);
+        if(!d) return true;
+
+        return d >= today;
+
+      })
       .sort((a,b)=>b.id-a.id)
       .forEach(n=>{
 
@@ -202,6 +224,14 @@ async function loadNotifications(){
         container.appendChild(card);
       });
 
+    if(container.children.length === 0){
+      container.innerHTML = `
+        <div style="text-align:center;color:#777;margin-top:40px;">
+          Aucune notification
+        </div>
+      `;
+    }
+
     const badge=document.getElementById("bellBadge");
 
     if(compteur>0){
@@ -223,7 +253,6 @@ async function loadNotifications(){
 loadNotifications();
 setInterval(loadNotifications,60000);
 
-/* Recalcul quand on revient depuis detail */
 document.addEventListener("visibilitychange",()=>{
   if(!document.hidden){
     loadNotifications();
