@@ -111,7 +111,7 @@ const STORAGE_KEY = "alerts_lues";
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
-/* ===== UTILS ===== */
+/* ===== DATE ===== */
 
 function parseDateFR(str){
   if(!str) return null;
@@ -141,23 +141,29 @@ async function loadDetail(){
     const notif = data.find(n => String(n.id) === String(id));
 
     if(!notif){
-      document.getElementById("titre").innerText = "Notification introuvable";
+      document.getElementById("titre").innerText =
+        "Notification introuvable";
     }
     else{
 
       const today = new Date();
       today.setHours(0,0,0,0);
 
-      const expireDate = parseDateFR(notif.expire || notif.date);
+      const expireDate = parseDateFR(notif.expire);
 
+      // 👉 LOGIQUE IDENTIQUE À notifications.html
       const autorisee =
-        notif.active === "oui" &&
-        (notif.epingle === "oui" || !expireDate || expireDate >= today);
+        notif.epingle === "oui" ||
+        (
+          notif.active === "oui" &&
+          (!expireDate || expireDate >= today)
+        );
 
       if(!autorisee){
         document.getElementById("titre").innerText =
           "Cette notification n’est plus disponible.";
-      }else{
+      }
+      else{
 
         marquerLu(notif.id);
 
