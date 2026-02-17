@@ -112,6 +112,15 @@ h1{
   font-size:18px;
   color:#1f5c8f;
 }
+
+/* ===== BADGE EPINGLE ===== */
+
+.pin{
+  font-size:12px;
+  color:#1f5c8f;
+  font-weight:600;
+  margin-top:6px;
+}
 </style>
 </head>
 
@@ -159,7 +168,9 @@ function marquerLu(id){
 function parseDateFR(str){
   if(!str) return null;
   const [d,m,y] = str.split("/");
-  return new Date(y, m-1, d);
+  const dt = new Date(Number(y), Number(m)-1, Number(d));
+  dt.setHours(0,0,0,0);
+  return dt;
 }
 
 /* ===== LOAD ===== */
@@ -186,17 +197,14 @@ async function loadNotifications(){
     data
       .filter(n => {
 
-        if(n.epingle === "oui") return true;
-
         if(n.active !== "oui") return false;
 
-        if(!n.expire) return true;
+        if(n.epingle === "oui") return true;
 
-        const d = parseDateFR(n.expire);
+        const d = parseDateFR(n.expire || n.date);
         if(!d) return true;
 
         return d >= today;
-
       })
       .sort((a,b)=>b.id-a.id)
       .forEach(n=>{
@@ -216,6 +224,7 @@ async function loadNotifications(){
           <div class="card-time">${n.heure||""}</div>
           <div class="card-category">${n.categorie||""}</div>
           <div class="card-title">${n.titre}</div>
+          ${n.epingle==="oui" ? `<div class="pin">📌 ÉPINGLÉ</div>` : ``}
         `;
 
         card.onclick=()=>{
