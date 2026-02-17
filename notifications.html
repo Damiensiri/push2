@@ -3,188 +3,129 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Notifications</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f4f4f4;
+body{
+  margin:0;
+  padding:20px;
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;
+  background:#f4f6f8;
 }
+
 h1{
   text-align:center;
-  padding-top:16px;
-}
-#bell {
-  position: fixed;
-  top: 10px;
-  right: 16px;
-  font-size: 24px;
-  cursor: pointer;
-}
-#badge {
-  background: red;
-  color: white;
-  font-size: 12px;
-  font-weight: bold;
-  border-radius: 50%;
-  padding: 2px 6px;
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  display: none;
+  margin-bottom:10px;
 }
 
-.card{
-  background:white;
-  margin:12px;
-  padding:16px;
-  border-radius:14px;
-  box-shadow:0 3px 6px rgba(0,0,0,0.1);
+#lastUpdate{
+  text-align:center;
+  color:#666;
+  margin-bottom:20px;
+}
+
+/* Carte notification */
+.notif-card{
+  background:#ffffff;
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:14px;
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  box-shadow:0 2px 6px rgba(0,0,0,0.05);
   cursor:pointer;
-  transition:0.2s;
 }
-.card:hover{
-  transform:scale(1.02);
-}
-.time{
-  font-size:12px;
-  color:#888;
-}
-.title{
+
+.notif-heure{
+  color:#e53935;
   font-weight:700;
-  margin-top:6px;
+  min-width:60px;
 }
-.category{
-  font-size:13px;
-  font-weight:500;
-  color:#1f2c4c;
-  opacity:0.8;
-  margin-top:4px;
+
+.notif-content{
+  flex:1;
+}
+
+.notif-categorie{
+  font-size:12px;
+  color:#666;
+  margin-bottom:4px;
+}
+
+.notif-titre{
+  font-size:15px;
+  font-weight:700;
+  color:#1f2a44;
+}
+
+.empty{
+  text-align:center;
+  color:#777;
 }
 </style>
-
 </head>
+
 <body>
 
-<h1>Centre de notifications</h1>
+<h1>ALERTES</h1>
+<div id="lastUpdate">Chargement...</div>
 
-<div id="bell">
-  🔔
-  <span id="badge"></span>
-</div>
-
-<div id="list"></div>
+<div id="notifications"></div>
 
 <script>
+const API_URL = "https://script.google.com/macros/s/AKfycbyzy0KSx-ijhF80yvTCRLTY5RuXfV1j70UHzB2hmwWynlX_zbDagd7LC7lZYBjqPkQ/exec";
 
-// ===== CONFIG =====
-const SHEET_URL = "https://script.google.com/macros/s/AKfycby9GMgMK8D1IQ3a0m1IUE9sB3UAW7Fm7FuHUqHDz335tynVVM9KRc7sSe8Hxtt6EWBX/exec";
-const STORAGE_KEY = "eds_notifications";
-
-// ===== LOCAL STORAGE UTILS =====
-function getStored(){
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if(!raw) return [];
-  try { return JSON.parse(raw) } catch(e){ return []; }
-}
-
-function saveStored(data){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}
-
-function markRead(id){
-  const list = getStored();
-  const item = list.find(n=>n.id==id);
-  if(item && !item.read){
-    item.read = true;
-    saveStored(list);
-    updateBadge();
-  }
-}
-
-// ===== FETCH SHEET =====
-async function fetchSheet(){
-  try {
-    const res = await fetch(SHEET_URL,{cache:"no-store"});
+async function chargerNotifications(){
+  try{
+    const res = await fetch(API_URL);
     const data = await res.json();
-    return data;
-  } catch(e){
-    console.error("Fetch Sheet error:",e);
-    return [];
-  }
-}
 
-// ===== RENDER =====
-function updateBadge(){
-  const list = getStored();
-  const unread = list.filter(n=>!n.read).length;
-  const badge = document.getElementById("badge");
-  if(unread>0){
-    badge.innerText = unread;
-    badge.style.display="inline-block";
-  } else {
-    badge.style.display="none";
-  }
-}
+    const container = document.getElementById("notifications");
+    const lastUpdate = document.getElementById("lastUpdate");
 
-function renderList(notifs){
-  const container = document.getElementById("list");
-  container.innerHTML = "";
-  notifs.forEach(n=>{
-    const div = document.createElement("div");
-    div.className="card";
-    if(!n.read) div.classList.add("unread");
+    container.innerHTML = "";
 
-    div.innerHTML = `
-      <div class="time">${n.heure||""} ${n.date||""}</div>
-      <div class="title">${n.titre||""}</div>
-      <div class="category">${n.categorie||""}</div>
-    `;
-    div.onclick = ()=>{
-      markRead(n.id);
-      window.location.href = "detail.html?id="+n.id;
-    };
-    container.appendChild(div);
-  });
-}
-
-// ===== INIT =====
-(async function init(){
-  // fetch sheet
-  const sheetData = await fetchSheet();
-
-  // merge with local storage
-  let stored = getStored();
-
-  // add missing notifications
-  sheetData.forEach(n=>{
-    const exists = stored.find(s=>s.id==n.ID);
-    if(!exists){
-      stored.push({
-        id: n.ID,
-        date: n.date,
-        heure: n.heure,
-        categorie: n.categorie,
-        titre: n.titre,
-        message: n.message,
-        read: false,
-        epingle: n.epingle,
-        expire: n.expire
-      });
+    if(!data || data.length === 0){
+      container.innerHTML = "<p class='empty'>Aucune notification.</p>";
+      lastUpdate.innerHTML = "";
+      return;
     }
-  });
 
-  // sort newest first
-  stored.sort((a,b)=>b.id - a.id);
+    // Date de mise à jour
+    const now = new Date();
+    lastUpdate.innerHTML =
+      "Dernière mise à jour : " + now.toLocaleString("fr-FR");
 
-  saveStored(stored);
+    // plus récente en haut
+    data.reverse().forEach(n => {
 
-  renderList(stored);
-  updateBadge();
+      const card = document.createElement("div");
+      card.className = "notif-card";
 
-})();
+      card.innerHTML = `
+        <div class="notif-heure">${n.heure || ""}</div>
+        <div class="notif-content">
+          <div class="notif-categorie">${n.categorie || ""}</div>
+          <div class="notif-titre">${n.titre || ""}</div>
+        </div>
+      `;
 
+      card.onclick = () => {
+        localStorage.setItem("notifDetail", JSON.stringify(n));
+        window.location.href = "notification-detail.html";
+      };
+
+      container.appendChild(card);
+    });
+
+  }catch(err){
+    console.error("Erreur chargement notifications", err);
+  }
+}
+
+chargerNotifications();
 </script>
 
 </body>
