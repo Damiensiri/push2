@@ -112,12 +112,6 @@ h1{
   font-size:18px;
   color:#1f5c8f;
 }
-
-.pin{
-  font-size:12px;
-  color:#1f5c8f;
-  margin-top:6px;
-}
 </style>
 </head>
 
@@ -165,9 +159,7 @@ function marquerLu(id){
 function parseDateFR(str){
   if(!str) return null;
   const [d,m,y] = str.split("/");
-  const date = new Date(y, m-1, d);
-  date.setHours(0,0,0,0);
-  return date;
+  return new Date(y, m-1, d);
 }
 
 /* ===== LOAD ===== */
@@ -194,19 +186,15 @@ async function loadNotifications(){
     data
       .filter(n => {
 
-        const active = String(n.active).toLowerCase() === "oui";
-        const epingle = String(n.epingle).toLowerCase() === "oui";
-        const expireStr = (n.expire || "").trim();
+        if(n.epingle === "oui") return true;
+        if(n.active !== "oui") return false;
 
-        if(epingle) return true;
-        if(!active) return false;
+        // ⭐ CORRECTION ICI
+        const expireDate = parseDateFR(n.expire || n.date);
 
-        if(expireStr === "") return true;
+        if(!expireDate) return true;
 
-        const d = parseDateFR(expireStr);
-        if(!d) return true;
-
-        return d >= today;
+        return expireDate >= today;
       })
       .sort((a,b)=>b.id-a.id)
       .forEach(n=>{
@@ -226,7 +214,6 @@ async function loadNotifications(){
           <div class="card-time">${n.heure||""}</div>
           <div class="card-category">${n.categorie||""}</div>
           <div class="card-title">${n.titre}</div>
-          ${String(n.epingle).toLowerCase()==="oui" ? `<div class="pin">📌 ÉPINGLÉ</div>` : ""}
         `;
 
         card.onclick=()=>{
