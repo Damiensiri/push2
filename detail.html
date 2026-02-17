@@ -13,97 +13,93 @@ body{
   background:#f4f4f4;
 }
 
-/* ===== BARRE HAUT ===== */
-#topbar{
-  height:60px;
-  display:flex;
-  align-items:center;
-  padding:0 15px;
-  background:white;
-  border-bottom:1px solid #ddd;
-}
+/* RETOUR */
 
-#backBtn{
-  font-size:22px;
+#back{
+  padding:15px;
+  font-size:16px;
+  color:#1f5c8f;
   cursor:pointer;
 }
 
-/* ===== CONTENU ===== */
-#content{
-  padding:20px;
+/* TITRE */
+
+h1{
+  text-align:center;
+  margin:10px 15px;
+  color:#1f5c8f;
 }
 
-.time{
+/* CATEGORIE */
+
+#categorie{
+  text-align:center;
+  color:#888;
+  margin-bottom:10px;
+}
+
+/* MESSAGE */
+
+#message{
+  background:white;
+  margin:15px;
+  padding:15px;
+  border-radius:12px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  line-height:1.5;
+}
+
+/* HEURE */
+
+#heure{
+  text-align:center;
   color:red;
   font-weight:bold;
-  font-size:16px;
-}
-
-.category{
-  font-size:13px;
-  color:#888;
-  margin-top:6px;
-}
-
-.title{
-  font-size:22px;
-  font-weight:bold;
-  color:#1f5c8f;
-  margin-top:10px;
-}
-
-.message{
-  margin-top:15px;
-  font-size:17px;
-  line-height:1.4;
+  margin-bottom:10px;
 }
 </style>
 </head>
 
 <body>
 
-<!-- TOP BAR -->
-<div id="topbar">
-  <div id="backBtn">←</div>
-</div>
+<div id="back" onclick="goBack()">← Retour</div>
 
-<div id="content">
-  <div class="time" id="time"></div>
-  <div class="category" id="category"></div>
-  <div class="title" id="title"></div>
-  <div class="message" id="message"></div>
-</div>
+<h1 id="titre"></h1>
+<div id="categorie"></div>
+<div id="heure"></div>
+<div id="message"></div>
 
 <script>
 
 const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-// récupérer id depuis l'URL
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
-// bouton retour
-document.getElementById("backBtn").onclick = ()=>{
-  window.history.back();
-};
+async function loadDetail(){
 
-fetch(API_URL)
-.then(r=>r.json())
-.then(data=>{
+  const res = await fetch(API_URL);
+  const data = await res.json();
 
   const notif = data.find(n => String(n.id) === String(id));
 
   if(!notif){
-    document.getElementById("title").innerText = "Notification introuvable";
+    document.getElementById("message").innerText = "Notification introuvable";
     return;
   }
 
-  document.getElementById("time").innerText = notif.heure || "";
-  document.getElementById("category").innerText = notif.categorie || "";
-  document.getElementById("title").innerText = notif.titre || "";
+  document.getElementById("titre").innerText = notif.titre;
+  document.getElementById("categorie").innerText = notif.categorie || "";
+  document.getElementById("heure").innerText = notif.heure || "";
   document.getElementById("message").innerText = notif.message || "";
 
-});
+}
+
+function goBack(){
+  window.history.back();
+}
+
+loadDetail();
 
 </script>
 
