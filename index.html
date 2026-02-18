@@ -21,6 +21,7 @@ OneSignalDeferred.push(async function(OneSignal) {
 </script>
 
 <style>
+
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
@@ -31,15 +32,19 @@ body{
 
 header{
   padding:20px;
-  display:flex;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
   align-items:center;
-  justify-content:space-between;
 }
 
 .header-left{
   display:flex;
   align-items:center;
   gap:12px;
+}
+
+.header-center{
+  text-align:center;
 }
 
 header img{
@@ -53,7 +58,7 @@ header h1{
   font-weight:700;
 }
 
-/* CLOCHE */
+/* ===== CLOCHE ===== */
 
 #bellBox{
   position:relative;
@@ -114,7 +119,7 @@ header h1{
   font-size:14px;
 }
 
-/* GRID */
+/* ================= GRID ================= */
 
 .grid{
   display:grid;
@@ -143,7 +148,7 @@ header h1{
   color:#111;
 }
 
-/* LIST BUTTON */
+/* ================= LIST BUTTON ================= */
 
 .list-btn{
   background:white;
@@ -161,6 +166,7 @@ header h1{
 .list-btn img{
   width:26px;
 }
+
 </style>
 </head>
 
@@ -168,8 +174,12 @@ header h1{
 
 <!-- HEADER -->
 <header>
+
   <div class="header-left">
     <img src="apple-touch-icon.png">
+  </div>
+
+  <div class="header-center">
     <h1>ECURIE DAMIEN SIRI</h1>
   </div>
 
@@ -177,8 +187,10 @@ header h1{
     🔔
     <span id="bellBadge"></span>
   </div>
+
 </header>
 
+<!-- TITRE -->
 <div id="welcome">BIENVENUE</div>
 
 <!-- BANDEAU -->
@@ -188,6 +200,7 @@ header h1{
 <div class="section-title">ESPACES</div>
 
 <div class="grid">
+
   <div class="card" onclick="go('travail.html')">
     <img src="horse.svg">
     <div>TRAVAIL</div>
@@ -197,6 +210,7 @@ header h1{
     <img src="leaf.svg">
     <div>PADDOCK</div>
   </div>
+
 </div>
 
 <div class="list-btn" onclick="go('plan.html')">
@@ -207,6 +221,7 @@ header h1{
 <div class="section-title">PRATIQUE</div>
 
 <div class="grid">
+
   <div class="card" onclick="go('horaires.html')">
     <img src="clock.svg">
     <div>HORAIRES</div>
@@ -236,6 +251,7 @@ header h1{
     <img src="care.svg">
     <div>SOINS</div>
   </div>
+
 </div>
 
 <!-- AUTRES -->
@@ -276,7 +292,7 @@ function external(url){
   window.open(url,"_blank");
 }
 
-/* BANDEAU */
+/* BANDEAU ALERTES */
 
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const ESPACE="accueil";
@@ -296,11 +312,6 @@ async function loadAlert(){
 
 loadAlert();
 setInterval(loadAlert,60000);
-
-/* BADGE DEMO (branché plus tard sur centre notif) */
-
-document.getElementById("bellBadge").style.display="flex";
-document.getElementById("bellBadge").innerText="1";
 
 </script>
 
