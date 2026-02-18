@@ -6,7 +6,6 @@
 
 <title>Ecurie Damien Siri</title>
 
-<!-- POLICE -->
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
 <!-- OneSignal -->
@@ -27,15 +26,18 @@ body{
   background:#f4f4f4;
 }
 
-/* ===== HEADER ===== */
+/* ================= HEADER ================= */
 
 header{
+  position:relative;
   background:#f4f4f4;
-  padding:15px;
+  height:70px;
   display:flex;
   align-items:center;
-  justify-content:space-between;
+  padding:0 15px;
 }
+
+/* LOGO */
 
 .header-left{
   display:flex;
@@ -43,20 +45,26 @@ header{
   gap:10px;
 }
 
-header img{
+.header-left img{
   height:40px;
 }
 
+/* TITRE CENTRÉ RÉEL */
+
 header h1{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
   font-size:20px;
   color:#181E3B;
   margin:0;
   font-weight:700;
 }
 
-/* ===== CLOCHE ===== */
+/* CLOCHE */
 
 #bellBox{
+  margin-left:auto;
   position:relative;
   font-size:22px;
   cursor:pointer;
@@ -77,7 +85,7 @@ header h1{
   justify-content:center;
 }
 
-/* ===== TITRE ===== */
+/* ================= TITRE ================= */
 
 #welcome{
   text-align:center;
@@ -87,7 +95,7 @@ header h1{
   margin:10px 0 15px;
 }
 
-/* ===== BANDEAU ===== */
+/* ================= BANDEAU ================= */
 
 #alert-box{
   width:100%;
@@ -95,14 +103,13 @@ header h1{
   background:#E88B00;
   display:none;
   align-items:center;
-  gap:8px;
   padding:0 12px;
   box-sizing:border-box;
   color:white;
   font-size:14px;
 }
 
-/* ===== SECTIONS ===== */
+/* ================= SECTIONS ================= */
 
 .section-title{
   background:#181E3B;
@@ -114,7 +121,7 @@ header h1{
   font-size:14px;
 }
 
-/* ===== GRID ===== */
+/* ================= GRID ================= */
 
 .grid{
   display:grid;
@@ -140,10 +147,9 @@ header h1{
 .card div{
   font-size:16px;
   font-weight:700;
-  color:#111;
 }
 
-/* ===== LIST ===== */
+/* ================= LIST ================= */
 
 .list-btn{
   background:white;
@@ -169,8 +175,9 @@ header h1{
 <header>
   <div class="header-left">
     <img src="apple-touch-icon.png">
-    <h1>ECURIE DAMIEN SIRI</h1>
   </div>
+
+  <h1>ECURIE DAMIEN SIRI</h1>
 
   <div id="bellBox" onclick="go('notifications.html')">
     🔔
@@ -179,20 +186,14 @@ header h1{
 </header>
 
 <div id="welcome">BIENVENUE</div>
-
 <div id="alert-box"></div>
 
 <!-- ESPACES -->
 <div class="section-title">ESPACES</div>
 
 <div class="grid">
-  <div class="card" onclick="go('travail.html')">
-    <img src="horse.svg"><div>TRAVAIL</div>
-  </div>
-
-  <div class="card" onclick="go('paddocks.html')">
-    <img src="leaf.svg"><div>PADDOCK</div>
-  </div>
+  <div class="card" onclick="go('travail.html')"><img src="horse.svg"><div>TRAVAIL</div></div>
+  <div class="card" onclick="go('paddocks.html')"><img src="leaf.svg"><div>PADDOCK</div></div>
 </div>
 
 <div class="list-btn" onclick="go('plan.html')">
@@ -203,29 +204,12 @@ header h1{
 <div class="section-title">PRATIQUE</div>
 
 <div class="grid">
-  <div class="card" onclick="go('horaires.html')">
-    <img src="clock.svg"><div>HORAIRES</div>
-  </div>
-
-  <div class="card" onclick="go('notifications.html')">
-    <img src="info.svg"><div>NEWS</div>
-  </div>
-
-  <div class="card" onclick="external('https://ce-grand-rang.cavasoft.fr')">
-    <img src="rider.svg"><div>COURS</div>
-  </div>
-
-  <div class="card" onclick="external('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')">
-    <img src="bell.svg"><div>SERVICES</div>
-  </div>
-
-  <div class="card" onclick="go('concours.html')">
-    <img src="calendar.svg"><div>CONCOURS</div>
-  </div>
-
-  <div class="card" onclick="external('https://www.ce-dugrandrang.com/category/soins')">
-    <img src="care.svg"><div>SOINS</div>
-  </div>
+  <div class="card" onclick="go('horaires.html')"><img src="clock.svg"><div>HORAIRES</div></div>
+  <div class="card" onclick="go('notifications.html')"><img src="info.svg"><div>NEWS</div></div>
+  <div class="card" onclick="external('https://ce-grand-rang.cavasoft.fr')"><img src="rider.svg"><div>COURS</div></div>
+  <div class="card" onclick="external('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')"><img src="bell.svg"><div>SERVICES</div></div>
+  <div class="card" onclick="go('concours.html')"><img src="calendar.svg"><div>CONCOURS</div></div>
+  <div class="card" onclick="external('https://www.ce-dugrandrang.com/category/soins')"><img src="care.svg"><div>SOINS</div></div>
 </div>
 
 <!-- AUTRES -->
@@ -261,13 +245,15 @@ function go(url){
   window.location.href = url;
 }
 
-/* NAV EXTERNE => navigateur */
+/* NAV EXTERNE -> SAFARI */
 function external(url){
-  if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches){
-    window.open(url, "_blank");
-  } else {
-    window.location.href = url;
-  }
+  const a=document.createElement("a");
+  a.href=url;
+  a.target="_blank";
+  a.rel="noopener noreferrer";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 /* ===== CLOCHE SYNC ===== */
@@ -290,7 +276,6 @@ async function updateBell(){
   });
 
   const badge=document.getElementById("bellBadge");
-
   if(count>0){
     badge.style.display="flex";
     badge.textContent=count;
