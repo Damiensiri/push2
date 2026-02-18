@@ -6,8 +6,9 @@
 
 <title>Ecurie Damien Siri</title>
 
-<!-- POLICE -->
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+
+<meta name="theme-color" content="#f4f4f4">
 
 <!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
@@ -21,7 +22,6 @@ OneSignalDeferred.push(async function(OneSignal) {
 </script>
 
 <style>
-
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
@@ -31,44 +31,37 @@ body{
 /* ================= HEADER ================= */
 
 header{
-  padding:20px;
-  display:grid;
-  grid-template-columns:auto 1fr auto;
-  align-items:center;
-}
-
-.header-left{
+  position:relative;
   display:flex;
   align-items:center;
-  gap:12px;
+  justify-content:center;
+  padding:18px 15px;
+  background:#f4f4f4;
 }
 
-.header-center{
+.logo{
+  position:absolute;
+  left:15px;
+  height:42px;
+}
+
+.title{
+  font-size:20px;
+  font-weight:700;
+  color:#181E3B;
   text-align:center;
 }
 
-header img{
-  height:40px;
-}
-
-header h1{
-  font-size:20px;
-  color:#181E3B;
-  margin:0;
-  font-weight:700;
-}
-
-/* ===== CLOCHE ===== */
-
-#bellBox{
-  position:relative;
+.bell{
+  position:absolute;
+  right:15px;
   font-size:22px;
   cursor:pointer;
 }
 
-#bellBadge{
+.badge{
   position:absolute;
-  top:-6px;
+  top:-5px;
   right:-8px;
   background:red;
   color:white;
@@ -86,7 +79,7 @@ header h1{
 
 #welcome{
   text-align:center;
-  font-size:36px;
+  font-size:34px;
   font-weight:700;
   color:#181E3B;
   margin:10px 0 15px;
@@ -115,7 +108,7 @@ header h1{
   display:inline-block;
   padding:6px 12px;
   margin:20px 15px 10px;
-  border-radius:4px;
+  border-radius:6px;
   font-size:14px;
 }
 
@@ -130,8 +123,8 @@ header h1{
 
 .card{
   background:white;
-  border-radius:20px;
-  padding:20px;
+  border-radius:22px;
+  padding:22px;
   text-align:center;
   box-shadow:0 3px 8px rgba(0,0,0,0.08);
   cursor:pointer;
@@ -139,7 +132,7 @@ header h1{
 
 .card img{
   width:55px;
-  margin-bottom:10px;
+  margin-bottom:12px;
 }
 
 .card div{
@@ -154,7 +147,7 @@ header h1{
   background:white;
   margin:10px 15px;
   padding:18px;
-  border-radius:20px;
+  border-radius:22px;
   display:flex;
   align-items:center;
   gap:12px;
@@ -166,41 +159,30 @@ header h1{
 .list-btn img{
   width:26px;
 }
-
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <header>
+  <img src="apple-touch-icon.png" class="logo">
 
-  <div class="header-left">
-    <img src="apple-touch-icon.png">
-  </div>
+  <div class="title">ECURIE DAMIEN SIRI</div>
 
-  <div class="header-center">
-    <h1>ECURIE DAMIEN SIRI</h1>
-  </div>
-
-  <div id="bellBox" onclick="go('notifications.html')">
+  <div class="bell" onclick="go('notifications.html')">
     🔔
-    <span id="bellBadge"></span>
+    <span id="bellBadge" class="badge"></span>
   </div>
-
 </header>
 
-<!-- TITRE -->
 <div id="welcome">BIENVENUE</div>
 
-<!-- BANDEAU -->
 <div id="alert-box"></div>
 
 <!-- ESPACES -->
 <div class="section-title">ESPACES</div>
 
 <div class="grid">
-
   <div class="card" onclick="go('travail.html')">
     <img src="horse.svg">
     <div>TRAVAIL</div>
@@ -210,7 +192,6 @@ header h1{
     <img src="leaf.svg">
     <div>PADDOCK</div>
   </div>
-
 </div>
 
 <div class="list-btn" onclick="go('plan.html')">
@@ -221,7 +202,6 @@ header h1{
 <div class="section-title">PRATIQUE</div>
 
 <div class="grid">
-
   <div class="card" onclick="go('horaires.html')">
     <img src="clock.svg">
     <div>HORAIRES</div>
@@ -251,7 +231,6 @@ header h1{
     <img src="care.svg">
     <div>SOINS</div>
   </div>
-
 </div>
 
 <!-- AUTRES -->
@@ -282,17 +261,21 @@ header h1{
 
 <script>
 
-/* NAV */
+/* NAVIGATION */
 
 function go(url){
-  window.location.href=url;
+  window.location.href = url;
 }
 
 function external(url){
-  window.open(url,"_blank");
+  window.location.href = url;
 }
 
-/* BANDEAU ALERTES */
+/* BADGE (optionnel futur) */
+
+document.getElementById("bellBadge").style.display="none";
+
+/* BANDEAU SHEET */
 
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const ESPACE="accueil";
