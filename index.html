@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Ecurie Damien Siri</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+
+<meta name="theme-color" content="#f4f4f4">
+
+<!-- OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+  await OneSignal.init({
+    appId: "85a477ff-3d8d-4975-960d-c7e69100a0ff",
+  });
+});
+</script>
+
+<style>
+body{
+  margin:0;
+  font-family:'Montserrat',sans-serif;
+  background:#f4f4f4;
+}
+
+/* ================= HEADER ================= */
+
+header{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px 15px;
+  background:#f4f4f4;
+}
+
+.logo{
+  position:absolute;
+  left:15px;
+  height:42px;
+}
+
+.title{
+  font-size:20px;
+  font-weight:700;
+  color:#181E3B;
+  text-align:center;
+}
+
+.bell{
+  position:absolute;
+  right:15px;
+  font-size:22px;
+  cursor:pointer;
+}
+
+.badge{
+  position:absolute;
+  top:-5px;
+  right:-8px;
+  background:red;
+  color:white;
+  font-size:11px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+}
+
+/* ================= TITRE ================= */
+
+#welcome{
+  text-align:center;
+  font-size:34px;
+  font-weight:700;
+  color:#181E3B;
+  margin:10px 0 15px;
+}
+
+/* ================= BANDEAU ================= */
+
+#alert-box{
+  width:100%;
+  height:27px;
+  background:#E88B00;
+  display:none;
+  align-items:center;
+  gap:8px;
+  padding:0 12px;
+  box-sizing:border-box;
+  color:white;
+  font-size:14px;
+}
+
+/* ================= SECTIONS ================= */
+
+.section-title{
+  background:#181E3B;
+  color:white;
+  display:inline-block;
+  padding:6px 12px;
+  margin:20px 15px 10px;
+  border-radius:6px;
+  font-size:14px;
+}
+
+/* ================= GRID ================= */
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  padding:0 15px;
+}
+
+.card{
+  background:white;
+  border-radius:22px;
+  padding:22px;
+  text-align:center;
+  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  cursor:pointer;
+}
+
+.card img{
+  width:55px;
+  margin-bottom:12px;
+}
+
+.card div{
+  font-size:16px;
+  font-weight:700;
+  color:#111;
+}
+
+/* ================= LIST BUTTON ================= */
+
+.list-btn{
+  background:white;
+  margin:10px 15px;
+  padding:18px;
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  font-weight:700;
+  cursor:pointer;
+}
+
+.list-btn img{
+  width:26px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <img src="apple-touch-icon.png" class="logo">
+
+  <div class="title">ECURIE DAMIEN SIRI</div>
+
+  <div class="bell" onclick="go('notifications.html')">
+    🔔
+    <span id="bellBadge" class="badge"></span>
+  </div>
+</header>
+
+<div id="welcome">BIENVENUE</div>
+
+<div id="alert-box"></div>
+
+<!-- ESPACES -->
+<div class="section-title">ESPACES</div>
+
+<div class="grid">
+  <div class="card" onclick="go('travail.html')">
+    <img src="horse.svg">
+    <div>TRAVAIL</div>
+  </div>
+
+  <div class="card" onclick="go('paddocks.html')">
+    <img src="leaf.svg">
+    <div>PADDOCK</div>
+  </div>
+</div>
+
+<div class="list-btn" onclick="go('plan.html')">
+  <img src="pin.svg"> PLAN INTERACTIF
+</div>
+
+<!-- PRATIQUE -->
+<div class="section-title">PRATIQUE</div>
+
+<div class="grid">
+  <div class="card" onclick="go('horaires.html')">
+    <img src="clock.svg">
+    <div>HORAIRES</div>
+  </div>
+
+  <div class="card" onclick="go('notifications.html')">
+    <img src="info.svg">
+    <div>NEWS</div>
+  </div>
+
+  <div class="card" onclick="external('https://ce-grand-rang.cavasoft.fr')">
+    <img src="rider.svg">
+    <div>COURS</div>
+  </div>
+
+  <div class="card" onclick="external('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')">
+    <img src="bell.svg">
+    <div>SERVICES</div>
+  </div>
+
+  <div class="card" onclick="go('concours.html')">
+    <img src="calendar.svg">
+    <div>CONCOURS</div>
+  </div>
+
+  <div class="card" onclick="external('https://www.ce-dugrandrang.com/category/soins')">
+    <img src="care.svg">
+    <div>SOINS</div>
+  </div>
+</div>
+
+<!-- AUTRES -->
+<div class="section-title">AUTRES</div>
+
+<div class="list-btn" onclick="external('https://www.ce-dugrandrang.com/category/laverie')">
+  <img src="wash.svg"> LAVERIE
+</div>
+
+<div class="list-btn" onclick="external('tarifs.pdf')">
+  <img src="euro.svg"> TARIFS
+</div>
+
+<!-- COMPTE -->
+<div class="section-title">COMPTE</div>
+
+<div class="list-btn" onclick="external('https://www.ce-dugrandrang.com/profile/my/profile')">
+  <img src="user.svg"> MON COMPTE
+</div>
+
+<div class="list-btn" onclick="external('https://www.ce-dugrandrang.com/my-bookings')">
+  <img src="bell.svg"> MES RÉSERVATIONS
+</div>
+
+<div class="list-btn" onclick="external('https://www.ce-dugrandrang.com/cart-page')">
+  <img src="bag.svg"> MON PANIER
+</div>
+
+<script>
+
+/* NAVIGATION */
+
+function go(url){
+  window.location.href = url;
+}
+
+function external(url){
+  window.location.href = url;
+}
+
+/* BADGE (optionnel futur) */
+
+document.getElementById("bellBadge").style.display="none";
+
+/* BANDEAU SHEET */
+
+const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
+const ESPACE="accueil";
+
+async function loadAlert(){
+  const res=await fetch(SHEET_URL,{cache:"no-store"});
+  const data=await res.json();
+  const row=data.find(e=>e.espace===ESPACE);
+  const box=document.getElementById("alert-box");
+
+  box.style.display="none";
+  if(!row || !row.alerte) return;
+
+  box.innerHTML=`⚠️ ${row.alerte}`;
+  box.style.display="flex";
+}
+
+loadAlert();
+setInterval(loadAlert,60000);
+
+</script>
+
+</body>
+</html>
