@@ -27,11 +27,16 @@ body{
   background:#f4f4f4;
 }
 
-/* HEADER */
+/* ================= HEADER ================= */
 
 header{
-  background:white;
   padding:20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.header-left{
   display:flex;
   align-items:center;
   gap:12px;
@@ -48,7 +53,31 @@ header h1{
   font-weight:700;
 }
 
-/* TITRE */
+/* CLOCHE */
+
+#bellBox{
+  position:relative;
+  font-size:22px;
+  cursor:pointer;
+}
+
+#bellBadge{
+  position:absolute;
+  top:-6px;
+  right:-8px;
+  background:red;
+  color:white;
+  font-size:11px;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+}
+
+/* ================= TITRE ================= */
 
 #welcome{
   text-align:center;
@@ -58,7 +87,7 @@ header h1{
   margin:10px 0 15px;
 }
 
-/* BANDEAU ALERTE */
+/* ================= BANDEAU ================= */
 
 #alert-box{
   width:100%;
@@ -73,7 +102,7 @@ header h1{
   font-size:14px;
 }
 
-/* SECTIONS */
+/* ================= SECTIONS ================= */
 
 .section-title{
   background:#181E3B;
@@ -137,9 +166,17 @@ header h1{
 
 <body>
 
+<!-- HEADER -->
 <header>
-  <img src="apple-touch-icon.png">
-  <h1>ECURIE DAMIEN SIRI</h1>
+  <div class="header-left">
+    <img src="apple-touch-icon.png">
+    <h1>ECURIE DAMIEN SIRI</h1>
+  </div>
+
+  <div id="bellBox" onclick="go('notifications.html')">
+    🔔
+    <span id="bellBadge"></span>
+  </div>
 </header>
 
 <div id="welcome">BIENVENUE</div>
@@ -239,7 +276,7 @@ function external(url){
   window.open(url,"_blank");
 }
 
-/* BANDEAU SHEET */
+/* BANDEAU */
 
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const ESPACE="accueil";
@@ -259,6 +296,11 @@ async function loadAlert(){
 
 loadAlert();
 setInterval(loadAlert,60000);
+
+/* BADGE DEMO (branché plus tard sur centre notif) */
+
+document.getElementById("bellBadge").style.display="flex";
+document.getElementById("bellBadge").innerText="1";
 
 </script>
 
