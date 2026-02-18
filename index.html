@@ -4,25 +4,83 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Chargement...</title>
+<title>Activer les notifications</title>
 
-<!-- OneSignal -->
+<!-- OneSignal SDK -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
+<style>
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  background:#f4f4f4;
+  text-align:center;
+}
+
+.container{
+  padding:40px 20px;
+}
+
+h1{
+  margin-top:40px;
+  font-size:28px;
+}
+
+button{
+  margin-top:30px;
+  padding:14px 20px;
+  font-size:16px;
+  border-radius:12px;
+  border:none;
+  background:#1f5c8f;
+  color:white;
+  font-weight:600;
+  cursor:pointer;
+}
+
+button:active{
+  transform:scale(0.98);
+}
+
+.small{
+  margin-top:20px;
+  font-size:14px;
+  color:#666;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>🔔 Activer les notifications</h1>
+
+  <button id="enablePush">
+    Activer maintenant
+  </button>
+
+  <div class="small">
+    Vous pourrez ensuite revenir au centre d’alertes.
+  </div>
+</div>
+
 <script>
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-OneSignalDeferred.push(async function(OneSignal) {
-  await OneSignal.init({
-    appId: "85a477ff-3d8d-4975-960d-c7e69100a0ff"
+document.getElementById("enablePush").addEventListener("click", function () {
+
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+
+  OneSignalDeferred.push(async function(OneSignal) {
+
+    await OneSignal.init({
+      appId: "85a477ff-3d8d-4975-960d-c7e69100a0ff",
+    });
+
+    OneSignal.Slidedown.promptPush();
+
   });
+
 });
 </script>
 
-<!-- Redirection -->
-<script>
-  window.location.replace("notifications.html");
-</script>
-
-</head>
-<body>
 </body>
 </html>
