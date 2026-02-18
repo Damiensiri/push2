@@ -6,23 +6,59 @@
 
 <title>Détail alerte</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+
 <style>
 body{
   margin:0;
-  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  font-family:'Montserrat',sans-serif;
   background:#f4f4f4;
 }
 
-/* ===== RETOUR ===== */
+/* ================= HEADER ================= */
 
-#back{
-  padding:15px;
-  font-size:16px;
-  color:#1f5c8f;
-  cursor:pointer;
+header{
+  position:relative;
+  background:#f4f4f4;
+  padding:15px 12px;
+  height:70px;
 }
 
-/* ===== LOADER ===== */
+/* BOUTON RETOUR ROND */
+
+#backBtn{
+  position:absolute;
+  left:12px;
+  top:50%;
+  transform:translateY(-50%);
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,0.15);
+  font-size:18px;
+  cursor:pointer;
+  color:#181E3B;
+}
+
+/* TITRE CENTRÉ */
+
+header h1{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  margin:0;
+  font-size:20px;
+  font-weight:700;
+  color:#181E3B;
+  white-space:nowrap;
+}
+
+/* ================= LOADER ================= */
 
 #loader{
   position:fixed;
@@ -47,7 +83,7 @@ body{
   to{transform:rotate(360deg);}
 }
 
-/* ===== CARD ===== */
+/* ================= CARD ================= */
 
 .card{
   background:white;
@@ -59,7 +95,7 @@ body{
 
 .titre{
   font-size:22px;
-  font-weight:bold;
+  font-weight:700;
   color:#1f5c8f;
   margin-bottom:6px;
 }
@@ -87,12 +123,16 @@ body{
 
 <body>
 
-<div id="back" onclick="goBack()">← Retour</div>
+<!-- HEADER -->
+<header>
+  <div id="backBtn" onclick="goBack()">←</div>
+  <h1>ALERTE</h1>
+</header>
 
-<div id="loader">
-  <div class="spinner"></div>
-</div>
+<!-- LOADER -->
+<div id="loader"><div class="spinner"></div></div>
 
+<!-- CONTENT -->
 <div id="content" style="display:none;">
   <div class="card">
     <div class="titre" id="titre"></div>
@@ -104,74 +144,88 @@ body{
 
 <script>
 
-const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
+const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-const STORAGE_KEY = "alerts_lues";
+const STORAGE_KEY="alerts_lues";
 
-const params = new URLSearchParams(window.location.search);
-const id = params.get("id");
+const params=new URLSearchParams(window.location.search);
+const id=params.get("id");
 
-/* ===== DATE ===== */
+/* ===== DATE PARSER ===== */
 
 function parseDateFR(str){
   if(!str) return null;
-  const [d,m,y] = str.split("/");
-  return new Date(y, m-1, d);
+
+  if(str.includes("T")){
+    const d=new Date(str);
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  if(str.includes("-")){
+    const p=str.split("-");
+    return new Date(p[0],p[1]-1,p[2],0,0,0);
+  }
+
+  if(str.includes("/")){
+    const p=str.split("/");
+    return new Date(p[2],p[1]-1,p[0],0,0,0);
+  }
+
+  return null;
 }
 
 /* ===== STORAGE ===== */
 
 function marquerLu(id){
-  const lues = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-  if(!lues.includes(Number(id))){
-    lues.push(Number(id));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lues));
+  const lues=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+  if(!lues.includes(id)){
+    lues.push(id);
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(lues));
   }
 }
 
-/* ===== LOAD DETAIL ===== */
+/* ===== LOAD ===== */
 
 async function loadDetail(){
 
   try{
 
-    const res = await fetch(API_URL);
-    const data = await res.json();
+    const res=await fetch(API_URL);
+    const data=await res.json();
 
-    const notif = data.find(n => String(n.id) === String(id));
+    const notif=data.find(n=>String(n.id)===String(id));
 
     if(!notif){
-      document.getElementById("titre").innerText =
-        "Notification introuvable";
+      document.getElementById("titre").innerText="Notification introuvable";
     }
     else{
 
-      const today = new Date();
+      const today=new Date();
       today.setHours(0,0,0,0);
 
-      const expireDate = parseDateFR(notif.expire);
+      const expireDate=parseDateFR(notif.expire);
 
-      /* 🔥 MÊME LOGIQUE QUE notifications.html */
       const autorisee =
-        notif.active === "oui" &&
+        notif.active==="oui" &&
         (
-          notif.epingle === "oui" ||
+          notif.epingle==="oui" ||
           !expireDate ||
-          expireDate >= today
+          expireDate>=today
         );
 
       if(!autorisee){
-        document.getElementById("titre").innerText =
+        document.getElementById("titre").innerText=
           "Cette notification n’est plus disponible.";
       }
       else{
 
         marquerLu(notif.id);
 
-        document.getElementById("titre").innerText = notif.titre;
-        document.getElementById("categorie").innerText = notif.categorie || "";
-        document.getElementById("heure").innerText = notif.heure || "";
-        document.getElementById("message").innerText = notif.message || "";
+        document.getElementById("titre").innerText=notif.titre;
+        document.getElementById("categorie").innerText=notif.categorie||"";
+        document.getElementById("heure").innerText=notif.heure||"";
+        document.getElementById("message").innerText=notif.message||"";
       }
     }
 
