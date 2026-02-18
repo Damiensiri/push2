@@ -54,7 +54,7 @@ header h1{
   font-weight:700;
 }
 
-/* CLOCHE */
+/* ===== CLOCHE ===== */
 
 #bellBox{
   position:relative;
@@ -72,7 +72,7 @@ header h1{
   height:16px;
   font-size:10px;
   border-radius:50%;
-  display:flex;
+  display:none;
   align-items:center;
   justify-content:center;
 }
@@ -87,7 +87,7 @@ header h1{
   margin:10px 0 15px;
 }
 
-/* ===== BANDEAU SHEET ===== */
+/* ===== BANDEAU ===== */
 
 #alert-box{
   width:100%;
@@ -143,7 +143,7 @@ header h1{
   color:#111;
 }
 
-/* ===== LIST BUTTON ===== */
+/* ===== LIST ===== */
 
 .list-btn{
   background:white;
@@ -166,7 +166,6 @@ header h1{
 
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="header-left">
     <img src="apple-touch-icon.png">
@@ -175,13 +174,12 @@ header h1{
 
   <div id="bellBox" onclick="go('notifications.html')">
     🔔
-    <span id="bellBadge">1</span>
+    <span id="bellBadge"></span>
   </div>
 </header>
 
 <div id="welcome">BIENVENUE</div>
 
-<!-- BANDEAU -->
 <div id="alert-box"></div>
 
 <!-- ESPACES -->
@@ -189,13 +187,11 @@ header h1{
 
 <div class="grid">
   <div class="card" onclick="go('travail.html')">
-    <img src="horse.svg">
-    <div>TRAVAIL</div>
+    <img src="horse.svg"><div>TRAVAIL</div>
   </div>
 
   <div class="card" onclick="go('paddocks.html')">
-    <img src="leaf.svg">
-    <div>PADDOCK</div>
+    <img src="leaf.svg"><div>PADDOCK</div>
   </div>
 </div>
 
@@ -208,33 +204,27 @@ header h1{
 
 <div class="grid">
   <div class="card" onclick="go('horaires.html')">
-    <img src="clock.svg">
-    <div>HORAIRES</div>
+    <img src="clock.svg"><div>HORAIRES</div>
   </div>
 
   <div class="card" onclick="go('notifications.html')">
-    <img src="info.svg">
-    <div>NEWS</div>
+    <img src="info.svg"><div>NEWS</div>
   </div>
 
   <div class="card" onclick="external('https://ce-grand-rang.cavasoft.fr')">
-    <img src="rider.svg">
-    <div>COURS</div>
+    <img src="rider.svg"><div>COURS</div>
   </div>
 
   <div class="card" onclick="external('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')">
-    <img src="bell.svg">
-    <div>SERVICES</div>
+    <img src="bell.svg"><div>SERVICES</div>
   </div>
 
   <div class="card" onclick="go('concours.html')">
-    <img src="calendar.svg">
-    <div>CONCOURS</div>
+    <img src="calendar.svg"><div>CONCOURS</div>
   </div>
 
   <div class="card" onclick="external('https://www.ce-dugrandrang.com/category/soins')">
-    <img src="care.svg">
-    <div>SOINS</div>
+    <img src="care.svg"><div>SOINS</div>
   </div>
 </div>
 
@@ -266,17 +256,53 @@ header h1{
 
 <script>
 
-/* ===== NAVIGATION ===== */
-
+/* NAV INTERNE */
 function go(url){
   window.location.href = url;
 }
 
+/* NAV EXTERNE => navigateur */
 function external(url){
-  window.open(url, "_blank");
+  if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches){
+    window.open(url, "_blank");
+  } else {
+    window.location.href = url;
+  }
 }
 
-/* ===== BANDEAU SHEET ===== */
+/* ===== CLOCHE SYNC ===== */
+
+const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
+const STORAGE_KEY="alerts_lues";
+
+function getLues(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+}
+
+async function updateBell(){
+  const res=await fetch(API_URL);
+  const data=await res.json();
+  const lues=getLues();
+  let count=0;
+
+  data.filter(n=>n.active==="oui").forEach(n=>{
+    if(!lues.includes(n.id)) count++;
+  });
+
+  const badge=document.getElementById("bellBadge");
+
+  if(count>0){
+    badge.style.display="flex";
+    badge.textContent=count;
+  }else{
+    badge.style.display="none";
+  }
+}
+
+updateBell();
+setInterval(updateBell,60000);
+
+/* BANDEAU */
 
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const ESPACE="accueil";
@@ -288,7 +314,7 @@ async function loadAlert(){
   const box=document.getElementById("alert-box");
 
   box.style.display="none";
-  if(!row || !row.alerte) return;
+  if(!row||!row.alerte) return;
 
   box.innerHTML=`⚠️ ${row.alerte}`;
   box.style.display="flex";
