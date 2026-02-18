@@ -6,8 +6,10 @@
 
 <title>Ecurie Damien Siri</title>
 
+<!-- POLICE -->
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
+<!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
 window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -31,9 +33,8 @@ body{
 header{
   position:relative;
   background:#f4f4f4;
-  padding:15px 12px;
-  height:70px;
-  margin-bottom:-10px; /* 🔥 Remonte tout le contenu */
+  padding:12px;
+  height:65px;
 }
 
 .header-left{
@@ -47,6 +48,8 @@ header{
   height:40px;
 }
 
+/* TITRE CENTRÉ */
+
 header h1{
   position:absolute;
   left:50%;
@@ -58,6 +61,8 @@ header h1{
   color:#181E3B;
   white-space:nowrap;
 }
+
+/* CLOCHE */
 
 #bellBox{
   position:absolute;
@@ -87,23 +92,18 @@ header h1{
 
 #welcome{
   text-align:center;
-  font-size:36px;
+  font-size:32px;
   font-weight:700;
   color:#181E3B;
-  margin:10px 0 15px;
+  margin:6px 0 10px;
 }
 
-/* ================= BANDEAU ================= */
+/* ================= IFRAME ALERTE ================= */
 
-#alert-box{
+#alerteFrame{
   width:100%;
   height:27px;
-  background:#E88B00;
-  display:none;
-  align-items:center;
-  padding:0 12px;
-  color:white;
-  font-size:14px;
+  border:none;
 }
 
 /* ================= SECTIONS ================= */
@@ -113,7 +113,7 @@ header h1{
   color:white;
   display:inline-block;
   padding:6px 12px;
-  margin:20px 15px 10px;
+  margin:18px 15px 10px;
   border-radius:4px;
   font-size:14px;
 }
@@ -185,52 +185,131 @@ header h1{
 
 <div id="welcome">BIENVENUE</div>
 
-<div id="alert-box"></div>
+<!-- IFRAME ALERTE -->
+<iframe id="alerteFrame" src="alerte.html"></iframe>
 
 <!-- ESPACES -->
 <div class="section-title">ESPACES</div>
 
 <div class="grid">
-  <div class="card" onclick="go('travail.html')"><img src="horse.svg"><div>TRAVAIL</div></div>
-  <div class="card" onclick="go('paddocks.html')"><img src="leaf.svg"><div>PADDOCK</div></div>
+  <div class="card" onclick="go('travail.html')">
+    <img src="horse.svg"><div>TRAVAIL</div>
+  </div>
+
+  <div class="card" onclick="go('paddocks.html')">
+    <img src="leaf.svg"><div>PADDOCK</div>
+  </div>
 </div>
 
-<div class="list-btn" onclick="go('plan.html')"><img src="pin.svg"> PLAN INTERACTIF</div>
+<div class="list-btn" onclick="go('plan.html')">
+  <img src="pin.svg"> PLAN INTERACTIF
+</div>
 
 <!-- PRATIQUE -->
 <div class="section-title">PRATIQUE</div>
 
 <div class="grid">
-  <div class="card" onclick="go('horaires.html')"><img src="clock.svg"><div>HORAIRES</div></div>
-  <div class="card" onclick="go('notifications.html')"><img src="info.svg"><div>NEWS</div></div>
-  <div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')"><img src="rider.svg"><div>COURS</div></div>
-  <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')"><img src="bell.svg"><div>SERVICES</div></div>
-  <div class="card" onclick="go('concours.html')"><img src="calendar.svg"><div>CONCOURS</div></div>
-  <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')"><img src="care.svg"><div>SOINS</div></div>
+
+  <div class="card" onclick="go('horaires.html')">
+    <img src="clock.svg"><div>HORAIRES</div>
+  </div>
+
+  <div class="card" onclick="go('notifications.html')">
+    <img src="info.svg"><div>NEWS</div>
+  </div>
+
+  <div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')">
+    <img src="rider.svg"><div>COURS</div>
+  </div>
+
+  <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')">
+    <img src="bell.svg"><div>SERVICES</div>
+  </div>
+
+  <div class="card" onclick="go('concours.html')">
+    <img src="calendar.svg"><div>CONCOURS</div>
+  </div>
+
+  <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')">
+    <img src="care.svg"><div>SOINS</div>
+  </div>
+
 </div>
 
 <!-- AUTRES -->
 <div class="section-title">AUTRES</div>
 
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/category/laverie')"><img src="wash.svg"> LAVERIE</div>
-<div class="list-btn" onclick="openExternal('tarifs.pdf')"><img src="euro.svg"> TARIFS</div>
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/category/laverie')">
+  <img src="wash.svg"> LAVERIE
+</div>
+
+<div class="list-btn" onclick="openExternal('tarifs.pdf')">
+  <img src="euro.svg"> TARIFS
+</div>
 
 <!-- COMPTE -->
 <div class="section-title">COMPTE</div>
 
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/profile/my/profile')"><img src="user.svg"> MON COMPTE</div>
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/my-bookings')"><img src="bell.svg"> MES RÉSERVATIONS</div>
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/cart-page')"><img src="bag.svg"> MON PANIER</div>
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/profile/my/profile')">
+  <img src="user.svg"> MON COMPTE
+</div>
+
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/my-bookings')">
+  <img src="bell.svg"> MES RÉSERVATIONS
+</div>
+
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/cart-page')">
+  <img src="bag.svg"> MON PANIER
+</div>
 
 <script>
 
+/* NAV INTERNE */
 function go(url){
   window.location.href = url;
 }
 
+/* NAV EXTERNE */
 function openExternal(url){
   window.open(url, "_blank");
 }
+
+/* ===== BADGE CLOCHE ===== */
+
+const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
+
+const STORAGE_KEY="alerts_lues";
+
+function getLues(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+}
+
+async function updateBell(){
+
+  const res=await fetch(API_URL);
+  const data=await res.json();
+
+  const lues=getLues();
+  let count=0;
+
+  data.filter(n=>n.active==="oui").forEach(n=>{
+    if(!lues.includes(n.id)){
+      count++;
+    }
+  });
+
+  const badge=document.getElementById("bellBadge");
+
+  if(count>0){
+    badge.style.display="flex";
+    badge.textContent=count;
+  }else{
+    badge.style.display="none";
+  }
+}
+
+updateBell();
+setInterval(updateBell,60000);
 
 </script>
 
