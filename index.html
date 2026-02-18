@@ -99,12 +99,19 @@ header h1{
 
 /* ================= BANDEAU ================= */
 
+#alert-wrapper{
+  width:100%;
+  display:flex;
+  justify-content:center;
+}
+
 #alert-box{
   width:100%;
   height:27px;
   background:#E88B00;
   display:none;
   align-items:center;
+  gap:8px;
   padding:0 12px;
   color:white;
   font-size:14px;
@@ -189,7 +196,10 @@ header h1{
 
 <div id="welcome">BIENVENUE</div>
 
-<div id="alert-box"></div>
+<!-- BANDEAU -->
+<div id="alert-wrapper">
+  <div id="alert-box"></div>
+</div>
 
 <!-- ESPACES -->
 <div class="section-title">ESPACES</div>
@@ -232,7 +242,7 @@ header h1{
 
 <script>
 
-/* ================= NAV ================= */
+/* NAV */
 
 function go(url){
   window.location.href = url;
@@ -242,45 +252,73 @@ function openExternal(url){
   window.open(url, "_blank");
 }
 
-/* ================= BANDEAU ROBUSTE ================= */
+/* ===== BADGE ===== */
 
-const SHEET_URL = "https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
-const ESPACE = "accueil";
-const REFRESH_MS = 60000;
+const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
-async function loadAlert(){
+const STORAGE_KEY="alerts_lues";
 
-  try{
-    const res = await fetch(
-      SHEET_URL + "?t=" + Date.now(),
-      { cache:"no-store" }
-    );
+function getLues(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+}
 
-    const data = await res.json();
-    const row = data.find(e => e.espace === ESPACE);
-    const box = document.getElementById("alert-box");
+async function updateBell(){
+  const res=await fetch(API_URL);
+  const data=await res.json();
+  const lues=getLues();
+  let count=0;
 
-    box.style.display="none";
-    box.innerHTML="";
+  data.filter(n=>n.active==="oui").forEach(n=>{
+    if(!lues.includes(n.id)) count++;
+  });
 
-    if(!row || !row.alerte || row.alerte.trim()==="") return;
+  const badge=document.getElementById("bellBadge");
 
-    box.innerHTML = "⚠️ " + row.alerte;
-    box.style.display="flex";
-
-  }catch(e){
-    console.log("Erreur bandeau:",e);
+  if(count>0){
+    badge.style.display="flex";
+    badge.textContent=count;
+  }else{
+    badge.style.display="none";
   }
 }
 
-loadAlert();
-setInterval(loadAlert,REFRESH_MS);
+updateBell();
+setInterval(updateBell,60000);
 
-document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden){
-    loadAlert();
-  }
-});
+/* ===== BANDEAU WIX ===== */
+
+const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
+const ESPACE="accueil";
+
+function loadAlert(){
+  fetch(SHEET_URL,{cache:"no-store"})
+  .then(r=>r.json())
+  .then(data=>{
+    const row=data.find(e=>e.espace===ESPACE);
+    const box=document.getElementById("alert-box");
+
+    box.innerHTML="";
+    box.style.display="none";
+
+    if(!row||!row.alerte) return;
+
+    box.style.display="flex";
+
+    const icon=document.createElement("img");
+    icon.src="https://static.wixstatic.com/shapes/ff7f34_8db0b910e97b4e37af20514452d5c4f4.svg";
+    icon.style.width="16px";
+    icon.style.height="16px";
+
+    const text=document.createElement("div");
+    text.textContent=row.alerte;
+
+    box.appendChild(icon);
+    box.appendChild(text);
+  });
+}
+
+loadAlert();
+setInterval(loadAlert,60000);
 
 </script>
 
