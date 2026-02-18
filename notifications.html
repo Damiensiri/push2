@@ -17,25 +17,32 @@ body{
 
 /* ================= HEADER ================= */
 
-header{
+.sub-header{
   position:relative;
   background:#f4f4f4;
-  padding:15px 12px;
   height:70px;
 }
 
-.header-left{
+/* Bouton retour rond */
+
+.back-btn{
   position:absolute;
   left:12px;
   top:50%;
   transform:translateY(-50%);
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  border:none;
+  background:white;
+  box-shadow:0 3px 8px rgba(0,0,0,0.15);
+  font-size:20px;
+  cursor:pointer;
 }
 
-.header-left img{
-  height:40px;
-}
+/* Titre centré */
 
-header h1{
+.sub-title{
   position:absolute;
   left:50%;
   top:50%;
@@ -47,19 +54,7 @@ header h1{
   white-space:nowrap;
 }
 
-/* BOUTON RETOUR */
-
-#backBtn{
-  position:absolute;
-  right:12px;
-  top:50%;
-  transform:translateY(-50%);
-  font-size:20px;
-  cursor:pointer;
-  color:#181E3B;
-}
-
-/* ================= TITRE PAGE ================= */
+/* ================= DATE ================= */
 
 #lastUpdate{
   text-align:center;
@@ -138,14 +133,9 @@ header h1{
 <body>
 
 <!-- HEADER -->
-<header>
-  <div class="header-left">
-    <img src="apple-touch-icon.png">
-  </div>
-
-  <h1>ALERTES</h1>
-
-  <div id="backBtn" onclick="goHome()">←</div>
+<header class="sub-header">
+  <button class="back-btn" onclick="goHome()">←</button>
+  <h1 class="sub-title">ALERTES</h1>
 </header>
 
 <!-- LOADER -->
@@ -214,7 +204,7 @@ async function loadNotifications(){
     const container=document.getElementById("notifications");
     container.innerHTML="";
 
-    document.getElementById("lastUpdate").innerText=
+    document.getElementById("lastUpdate").innerText =
       "Dernière mise à jour : "+new Date().toLocaleString();
 
     const today=new Date();
