@@ -8,7 +8,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
-<!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
 window.OneSignalDeferred = window.OneSignalDeferred || [];
@@ -34,6 +33,7 @@ header{
   background:#f4f4f4;
   padding:15px 12px;
   height:70px;
+  margin-bottom:-10px; /* 🔥 Remonte tout le contenu */
 }
 
 .header-left{
@@ -58,8 +58,6 @@ header h1{
   color:#181E3B;
   white-space:nowrap;
 }
-
-/* CLOCHE */
 
 #bellBox{
   position:absolute;
@@ -187,7 +185,6 @@ header h1{
 
 <div id="welcome">BIENVENUE</div>
 
-<!-- BANDEAU -->
 <div id="alert-box"></div>
 
 <!-- ESPACES -->
@@ -206,13 +203,9 @@ header h1{
 <div class="grid">
   <div class="card" onclick="go('horaires.html')"><img src="clock.svg"><div>HORAIRES</div></div>
   <div class="card" onclick="go('notifications.html')"><img src="info.svg"><div>NEWS</div></div>
-
   <div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')"><img src="rider.svg"><div>COURS</div></div>
-
   <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')"><img src="bell.svg"><div>SERVICES</div></div>
-
   <div class="card" onclick="go('concours.html')"><img src="calendar.svg"><div>CONCOURS</div></div>
-
   <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')"><img src="care.svg"><div>SOINS</div></div>
 </div>
 
@@ -231,8 +224,6 @@ header h1{
 
 <script>
 
-/* NAV */
-
 function go(url){
   window.location.href = url;
 }
@@ -240,90 +231,6 @@ function go(url){
 function openExternal(url){
   window.open(url, "_blank");
 }
-
-/* ===== STORAGE ===== */
-
-const STORAGE_KEY="alerts_lues";
-
-function getLues(){
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
-}
-
-/* ===== DATE PARSER ===== */
-
-function parseDateFR(str){
-  if(!str) return null;
-
-  if(str.includes("T")){
-    const d=new Date(str);
-    d.setHours(0,0,0,0);
-    return d;
-  }
-
-  str=String(str).trim();
-
-  if(str.includes("-")){
-    const p=str.split("-");
-    return new Date(p[0],p[1]-1,p[2],0,0,0);
-  }
-
-  if(str.includes("/")){
-    const p=str.split("/");
-    return new Date(p[2],p[1]-1,p[0],0,0,0);
-  }
-
-  return null;
-}
-
-/* ===== API ===== */
-
-const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
-
-/* ===== BADGE ===== */
-
-async function updateBell(){
-
-  const res = await fetch(API_URL);
-  const data = await res.json();
-
-  const today=new Date();
-  today.setHours(0,0,0,0);
-
-  const lues=getLues();
-  let count=0;
-
-  data.filter(n=>{
-
-    if(n.epingle==="oui") return true;
-    if(n.active!=="oui") return false;
-
-    if(!n.expire){
-      const d=parseDateFR(n.date);
-      if(!d) return true;
-      return d>=today;
-    }
-
-    const exp=parseDateFR(n.expire);
-    if(!exp) return true;
-    return exp>=today;
-
-  }).forEach(n=>{
-    if(!lues.includes(n.id)) count++;
-  });
-
-  const badge=document.getElementById("bellBadge");
-
-  if(count>0){
-    badge.style.display="flex";
-    badge.textContent=count;
-  }else{
-    badge.style.display="none";
-  }
-
-}
-
-updateBell();
-setInterval(updateBell,60000);
 
 </script>
 
