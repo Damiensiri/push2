@@ -305,7 +305,23 @@ if(e.statut_auto==="prevision"){statut.innerText="Ouverture prévue";statut.styl
 if(e.statut_auto==="ferme"){statut.innerText="Fermé";statut.style.color="red";}
 if(e.statut_auto==="hors-service"){statut.innerText="Hors service";statut.style.color="gray";}
 
-horaire.innerText=e.horaire_special||e.horaire_affiche||"---";
+/* ===== SEULE MODIF ICI ===== */
+const special = e.horaire_special && String(e.horaire_special).trim() !== "";
+const texteHoraire = special ? e.horaire_special : e.horaire_affiche;
+
+horaire.innerText = texteHoraire || "---";
+
+if(special){
+  horaire.style.color="#E88B00";
+  horaire.style.fontWeight="700";
+  horaire.style.fontSize="15px";
+}else{
+  horaire.style.color="#000";
+  horaire.style.fontWeight="500";
+  horaire.style.fontSize="14px";
+}
+/* ========================= */
+
 info.innerText=e.info||"Aucune info";
 
 let show=false;
