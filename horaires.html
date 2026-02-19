@@ -15,6 +15,25 @@ body{
   background:#f4f4f4;
 }
 
+/* ===== SLIDE ANIMATION ===== */
+
+body{
+  transform:translateX(100%);
+  animation:slideIn 0.35s ease forwards;
+}
+
+@keyframes slideIn{
+  to{ transform:translateX(0); }
+}
+
+body.slide-out{
+  animation:slideOut 0.35s ease forwards;
+}
+
+@keyframes slideOut{
+  to{ transform:translateX(100%); }
+}
+
 /* ===== HEADER ===== */
 
 header{
@@ -147,7 +166,10 @@ fetch(SHEET_URL,{cache:"no-store"})
 /* ===== NAV ===== */
 
 function goBack(){
-  location.href="index.html";
+  document.body.classList.add("slide-out");
+  setTimeout(()=>{
+    location.href="index.html";
+  },350);
 }
 
 loadHoraires();
