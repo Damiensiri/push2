@@ -15,6 +15,22 @@ body{
   font-family:'Montserrat',sans-serif;
 }
 
+/* ===== ANIMATION PAGE ===== */
+
+.page{
+  min-height:100vh;
+  transform:translateX(100%);
+  transition:transform .35s ease;
+}
+
+.page.active{
+  transform:translateX(0);
+}
+
+.page.exit{
+  transform:translateX(100%);
+}
+
 /* ===== HEADER ===== */
 
 header{
@@ -193,6 +209,8 @@ header h1{
 
 <body>
 
+<div class="page" id="page">
+
 <header>
   <div id="backBtn" onclick="goBack()">←</div>
   <h1>PLAN INTERACTIF</h1>
@@ -250,7 +268,19 @@ header h1{
 
 </div>
 
+</div>
+
 <script>
+
+/* ===== ANIMATION ===== */
+
+window.addEventListener("DOMContentLoaded",()=>{
+  requestAnimationFrame(()=>{
+    document.getElementById("page").classList.add("active");
+  });
+});
+
+/* ===== CONFIG ===== */
 
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const RESERVE_URL="https://www.ce-dugrandrang.com/book-online?category=ebb4678d-9213-49a4-9c62-168e3bdce954";
@@ -305,7 +335,7 @@ if(e.statut_auto==="prevision"){statut.innerText="Ouverture prévue";statut.styl
 if(e.statut_auto==="ferme"){statut.innerText="Fermé";statut.style.color="red";}
 if(e.statut_auto==="hors-service"){statut.innerText="Hors service";statut.style.color="gray";}
 
-/* ===== SEULE MODIF ICI ===== */
+/* HORAIRE SPECIAL */
 const special = e.horaire_special && String(e.horaire_special).trim() !== "";
 const texteHoraire = special ? e.horaire_special : e.horaire_affiche;
 
@@ -320,7 +350,6 @@ if(special){
   horaire.style.fontWeight="500";
   horaire.style.fontSize="14px";
 }
-/* ========================= */
 
 info.innerText=e.info||"Aucune info";
 
@@ -346,7 +375,18 @@ panel.classList.add("active");
 }
 
 closePanel.onclick=()=>panel.classList.remove("active");
-function goBack(){location.href="index.html";}
+
+/* NAV */
+
+function goBack(){
+  const page=document.getElementById("page");
+  page.classList.remove("active");
+  page.classList.add("exit");
+  setTimeout(()=>{
+    location.href="index.html";
+  },300);
+}
+
 function goReserve(){window.open(RESERVE_URL,"_blank");}
 
 </script>
