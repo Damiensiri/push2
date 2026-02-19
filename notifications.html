@@ -15,6 +15,25 @@ body{
   background:#f4f4f4;
 }
 
+/* ===== SLIDE ANIMATION ===== */
+
+body{
+  transform:translateX(100%);
+  animation:slideIn 0.35s ease forwards;
+}
+
+@keyframes slideIn{
+  to{ transform:translateX(0); }
+}
+
+body.slide-out{
+  animation:slideOut 0.35s ease forwards;
+}
+
+@keyframes slideOut{
+  to{ transform:translateX(100%); }
+}
+
 /* ================= HEADER ================= */
 
 .sub-header{
@@ -246,7 +265,10 @@ async function loadNotifications(){
 
         card.onclick=()=>{
           marquerLu(n.id);
-          window.location.href="detail.html?id="+n.id;
+          document.body.classList.add("slide-out");
+          setTimeout(()=>{
+            window.location.href="detail.html?id="+n.id;
+          },350);
         };
 
         container.appendChild(card);
@@ -269,7 +291,10 @@ async function loadNotifications(){
 /* ===== NAV ===== */
 
 function goHome(){
-  window.location.href="index.html";
+  document.body.classList.add("slide-out");
+  setTimeout(()=>{
+    window.location.href="index.html";
+  },350);
 }
 
 /* ===== AUTO ===== */
