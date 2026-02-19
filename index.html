@@ -28,7 +28,7 @@ body{
   font-family:'Montserrat',sans-serif;
   background:#f4f4f4;
   height:100vh;
-  overflow:hidden; /* bloque scroll body */
+  overflow:hidden;
 }
 
 /* zone scrollable */
@@ -50,28 +50,29 @@ header{
   top:0;
   left:0;
   width:100%;
-  background:#f4f4f4;
-  padding:15px 12px;
   height:70px;
+  background:#f4f4f4;
   z-index:1000;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
+
+/* LOGO */
 
 .header-left{
   position:absolute;
   left:12px;
-  top:50%;
-  transform:translateY(-50%);
 }
 
 .header-left img{
   height:40px;
 }
 
+/* TITRE */
+
 header h1{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
   margin:0;
   font-size:20px;
   font-weight:700;
@@ -84,8 +85,6 @@ header h1{
 #bellBox{
   position:absolute;
   right:12px;
-  top:50%;
-  transform:translateY(-50%);
   font-size:22px;
   cursor:pointer;
 }
@@ -264,9 +263,8 @@ header h1{
 <div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/my-bookings')"><img src="bell.svg"> MES RÉSERVATIONS</div>
 <div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/cart-page')"><img src="bag.svg"> MON PANIER</div>
 
-</div> <!-- FIN page-content -->
+</div>
 
-<!-- ===== SCRIPTS EXISTANTS CONSERVÉS ===== -->
 <script>
 function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
