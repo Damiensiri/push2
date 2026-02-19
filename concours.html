@@ -15,6 +15,22 @@ body{
   font-family:'Montserrat',sans-serif;
 }
 
+/* ===== ANIMATION PAGE ===== */
+
+.page{
+  min-height:100vh;
+  transform:translateX(100%);
+  transition:transform .35s ease;
+}
+
+.page.active{
+  transform:translateX(0);
+}
+
+.page.exit{
+  transform:translateX(100%);
+}
+
 /* ===== HEADER ===== */
 
 header{
@@ -95,10 +111,13 @@ header h1{
   font-size:14px;
   line-height:1.6;
 }
+
 </style>
 </head>
 
 <body>
+
+<div class="page" id="page">
 
 <header>
   <div id="backBtn" onclick="goBack()">←</div>
@@ -134,10 +153,27 @@ header h1{
   </div>
 </div>
 
+</div>
+
 <script>
+
+/* ===== ANIMATION ===== */
+
+window.addEventListener("DOMContentLoaded",()=>{
+  requestAnimationFrame(()=>{
+    document.getElementById("page").classList.add("active");
+  });
+});
+
 function goBack(){
-  window.location.href="index.html";
+  const page=document.getElementById("page");
+  page.classList.remove("active");
+  page.classList.add("exit");
+  setTimeout(()=>{
+    window.location.href="index.html";
+  },300);
 }
+
 </script>
 
 </body>
