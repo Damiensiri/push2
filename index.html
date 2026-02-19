@@ -202,7 +202,7 @@ header h1{
 
 <body>
 
-<!-- HEADER FIXE -->
+<!-- HEADER -->
 <header>
   <div class="header-left">
     <img src="image/logo.png">
@@ -216,15 +216,17 @@ header h1{
   </div>
 </header>
 
-<!-- CONTENU SCROLLABLE -->
+<!-- CONTENU -->
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
 
+<!-- BANDEAU -->
 <div id="alert-wrapper">
   <div id="alert-box"></div>
 </div>
 
+<!-- ESPACES -->
 <div class="section-title">ESPACES</div>
 
 <div class="grid">
@@ -234,6 +236,7 @@ header h1{
 
 <div class="list-btn" onclick="go('plan.html')"><img src="image/plan.svg"> PLAN INTERACTIF</div>
 
+<!-- PRATIQUE -->
 <div class="section-title">PRATIQUE</div>
 
 <div class="grid">
@@ -249,11 +252,13 @@ header h1{
   <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')"><img src="care.svg"><div>SOINS</div></div>
 </div>
 
+<!-- AUTRES -->
 <div class="section-title">AUTRES</div>
 
 <div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/category/laverie')"><img src="wash.svg"> LAVERIE</div>
 <div class="list-btn" onclick="openExternal('tarifs.pdf')"><img src="euro.svg"> TARIFS</div>
 
+<!-- COMPTE -->
 <div class="section-title">COMPTE</div>
 
 <div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/profile/my/profile')"><img src="user.svg"> MON COMPTE</div>
@@ -268,7 +273,42 @@ function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
 </script>
 
-<!-- BADGE CLOCHE -->
+<!-- ===== BANDEAU ACCUEIL ===== -->
+<script>
+const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
+const ESPACE="accueil";
+
+function loadAlert(){
+  fetch(SHEET_URL,{cache:"no-store"})
+  .then(r=>r.json())
+  .then(data=>{
+    const row=data.find(e=>e.espace===ESPACE);
+    const box=document.getElementById("alert-box");
+
+    box.innerHTML="";
+    box.style.display="none";
+
+    if(!row || !row.alerte || row.alerte.trim()==="") return;
+
+    box.style.display="flex";
+
+    const icon=document.createElement("img");
+    icon.src="https://static.wixstatic.com/shapes/ff7f34_8db0b910e97b4e37af20514452d5c4f4.svg";
+    icon.style.width="16px";
+
+    const text=document.createElement("div");
+    text.textContent=row.alerte;
+
+    box.appendChild(icon);
+    box.appendChild(text);
+  });
+}
+
+loadAlert();
+setInterval(loadAlert,60000);
+</script>
+
+<!-- ===== BADGE CLOCHE CORRIGÉ ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
@@ -281,11 +321,8 @@ function getLues(){
 
 function parseDateFR(str){
   if(!str) return null;
-
   if(str.includes("T")){
-    const d=new Date(str);
-    d.setHours(0,0,0,0);
-    return d;
+    const d=new Date(str); d.setHours(0,0,0,0); return d;
   }
   if(str.includes("-")){
     const p=str.split("-");
@@ -300,48 +337,47 @@ function parseDateFR(str){
 
 async function updateBell(){
 
-  try{
+  const res=await fetch(API_URL,{cache:"no-store"});
+  const data=await res.json();
+  if(!Array.isArray(data)) return;
 
-    const res = await fetch(API_URL,{cache:"no-store"});
-    const data = await res.json();
-    if(!Array.isArray(data)) return;
+  const today=new Date();
+  today.setHours(0,0,0,0);
 
-    const today=new Date();
-    today.setHours(0,0,0,0);
+  const lues=getLues();
+  let count=0;
 
-    const lues=getLues();
-    let count=0;
+  data.forEach(n=>{
 
-    data.forEach(n=>{
+    const id=String(n.id);
 
-      const id = String(n.id);
-
-      if(n.active!=="oui") return;
-
-      if(n.expire){
-        const exp=parseDateFR(n.expire);
-        if(exp && exp<today) return;
-      }
-
-      if(!lues.includes(id)){
-        count++;
-      }
-
-    });
-
-    const badge=document.getElementById("bellBadge");
-
-    if(count>0){
-      badge.style.display="flex";
-      badge.textContent=count;
-    }else{
-      badge.style.display="none";
+    if(n.epingle==="oui"){
+      if(!lues.includes(id)) count++;
+      return;
     }
 
-  }catch(e){
-    console.log("Erreur cloche :",e);
-  }
+    if(n.active!=="oui") return;
 
+    if(n.expire){
+      const exp=parseDateFR(n.expire);
+      if(exp && exp<today) return;
+    }else{
+      const d=parseDateFR(n.date);
+      if(d && d<today) return;
+    }
+
+    if(!lues.includes(id)) count++;
+
+  });
+
+  const badge=document.getElementById("bellBadge");
+
+  if(count>0){
+    badge.style.display="flex";
+    badge.textContent=count;
+  }else{
+    badge.style.display="none";
+  }
 }
 
 updateBell();
