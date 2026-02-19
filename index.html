@@ -1,312 +1,3 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Ecurie Damien Siri</title>
-
-<link rel="manifest" href="manifest.json"> <!-- ✅ AJOUT ANDROID -->
-
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
-
-<!-- OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-OneSignalDeferred.push(async function(OneSignal) {
-  await OneSignal.init({
-    appId: "85a477ff-3d8d-4975-960d-c7e69100a0ff",
-  });
-});
-</script>
-
-<style>
-
-/* ===== BASE ===== */
-
-body{
-  margin:0;
-  font-family:'Montserrat',sans-serif;
-  background:#f4f4f4;
-  height:100vh;
-  overflow:hidden;
-}
-
-/* zone scrollable */
-
-.page-content{
-  position:absolute;
-  top:70px;
-  left:0;
-  right:0;
-  bottom:0;
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-}
-
-/* ================= HEADER ================= */
-
-header{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:70px;
-  background:#f4f4f4;
-  z-index:1000;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-/* LOGO */
-
-.header-left{
-  position:absolute;
-  left:12px;
-}
-
-.header-left img{
-  height:40px;
-}
-
-/* TITRE */
-
-header h1{
-  margin:0;
-  font-size:20px;
-  font-weight:700;
-  color:#181E3B;
-  white-space:nowrap;
-}
-
-/* CLOCHE */
-
-#bellBox{
-  position:absolute;
-  right:12px;
-  font-size:22px;
-  cursor:pointer;
-}
-
-#bellBadge{
-  position:absolute;
-  top:-6px;
-  right:-6px;
-  background:red;
-  color:white;
-  width:16px;
-  height:16px;
-  font-size:10px;
-  border-radius:50%;
-  display:none;
-  align-items:center;
-  justify-content:center;
-}
-
-/* ================= BIENVENUE ================= */
-
-#welcome{
-  text-align:center;
-  font-size:36px;
-  font-weight:700;
-  color:#181E3B;
-  margin:4px 0 15px;
-}
-
-/* ================= BANDEAU ================= */
-
-#alert-wrapper{
-  width:100%;
-  display:flex;
-  justify-content:center;
-}
-
-#alert-box{
-  width:100%;
-  height:27px;
-  background:#E88B00;
-  display:none;
-  align-items:center;
-  gap:8px;
-  padding:0 12px;
-  box-sizing:border-box;
-  color:white;
-  font-size:14px;
-  font-weight:500;
-}
-
-/* ================= SECTIONS ================= */
-
-.section-title{
-  background:#181E3B;
-  color:white;
-  display:inline-block;
-  padding:6px 12px;
-  margin:20px 15px 10px;
-  border-radius:4px;
-  font-size:14px;
-}
-
-/* ================= GRID ================= */
-
-.grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:15px;
-  padding:0 15px;
-}
-
-.card{
-  background:white;
-  border-radius:20px;
-  padding:20px;
-  text-align:center;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
-  cursor:pointer;
-}
-
-.card img{
-  width:55px;
-  margin-bottom:10px;
-}
-
-.card div{
-  font-size:16px;
-  font-weight:700;
-}
-
-/* ================= LIST ================= */
-
-.list-btn{
-  background:white;
-  margin:10px 15px;
-  padding:18px;
-  border-radius:20px;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
-  font-weight:700;
-  cursor:pointer;
-}
-
-.list-btn img{
-  width:26px;
-}
-
-</style>
-</head>
-
-<body>
-
-<!-- HEADER FIXE -->
-<header>
-  <div class="header-left">
-    <img src="image/logo.png">
-  </div>
-
-  <h1>ECURIE DAMIEN SIRI</h1>
-
-  <div id="bellBox" onclick="go('notifications.html')">
-    🔔
-    <span id="bellBadge"></span>
-  </div>
-</header>
-
-<!-- CONTENU SCROLLABLE -->
-<div class="page-content">
-
-<div id="welcome">BIENVENUE</div>
-
-<!-- BANDEAU -->
-<div id="alert-wrapper">
-  <div id="alert-box"></div>
-</div>
-
-<!-- ESPACES -->
-<div class="section-title">ESPACES</div>
-
-<div class="grid">
-  <div class="card" onclick="go('travail.html')"><img src="image/travail.svg"><div>TRAVAIL</div></div>
-  <div class="card" onclick="go('paddocks.html')"><img src="image/paddock.svg"><div>PADDOCK</div></div>
-</div>
-
-<div class="list-btn" onclick="go('plan.html')"><img src="image/plan.svg"> PLAN INTERACTIF</div>
-
-<!-- PRATIQUE -->
-<div class="section-title">PRATIQUE</div>
-
-<div class="grid">
-  <div class="card" onclick="go('horaires.html')"><img src="image/time.svg"><div>HORAIRES</div></div>
-  <div class="card" onclick="go('notifications.html')"><img src="info.svg"><div>NEWS</div></div>
-
-  <div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')"><img src="rider.svg"><div>COURS</div></div>
-
-  <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')"><img src="bell.svg"><div>SERVICES</div></div>
-
-  <div class="card" onclick="go('concours.html')"><img src="calendar.svg"><div>CONCOURS</div></div>
-
-  <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')"><img src="care.svg"><div>SOINS</div></div>
-</div>
-
-<!-- AUTRES -->
-<div class="section-title">AUTRES</div>
-
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/category/laverie')"><img src="wash.svg"> LAVERIE</div>
-<div class="list-btn" onclick="openExternal('tarifs.pdf')"><img src="euro.svg"> TARIFS</div>
-
-<!-- COMPTE -->
-<div class="section-title">COMPTE</div>
-
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/profile/my/profile')"><img src="user.svg"> MON COMPTE</div>
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/my-bookings')"><img src="bell.svg"> MES RÉSERVATIONS</div>
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/cart-page')"><img src="bag.svg"> MON PANIER</div>
-
-</div>
-
-<script>
-function go(url){ window.location.href=url; }
-function openExternal(url){ window.open(url,"_blank"); }
-</script>
-
-<script>
-/* ================= BADGE CLOCHE ================= */
-
-const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
-
-const STORAGE_KEY="alerts_lues";
-
-/* lire localStorage */
-function getLues(){
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
-}
-
-/* parser dates FR */
-function parseDateFR(str){
-  if(!str) return null;
-
-  if(str.includes("T")){
-    const d=new Date(str);
-    d.setHours(0,0,0,0);
-    return d;
-  }
-
-  if(str.includes("-")){
-    const p=str.split("-");
-    return new Date(p[0],p[1]-1,p[2],0,0,0);
-  }
-
-  if(str.includes("/")){
-    const p=str.split("/");
-    return new Date(p[2],p[1]-1,p[0],0,0,0);
-  }
-
-  return null;
-}
-
 /* calcul badge */
 async function updateBell(){
 
@@ -317,31 +8,36 @@ async function updateBell(){
 
     if(!Array.isArray(data)) return;
 
-    const today=new Date();
+    const today = new Date();
     today.setHours(0,0,0,0);
 
-    const lues=getLues();
-    let count=0;
+    const lues = getLues();
+    let count = 0;
 
-    data.forEach(n=>{
+    data
+      .filter(n => {
 
-      if(n.epingle==="oui"){
-        if(!lues.includes(n.id)) count++;
-        return;
-      }
+        if(n.epingle === "oui") return true;
 
-      if(n.active!=="oui") return;
+        if(n.active !== "oui") return false;
 
-      if(n.expire){
-        const exp=parseDateFR(n.expire);
-        if(exp && exp<today) return;
-      }
+        // si pas d'expire → vérifier la date
+        if(!n.expire){
+          const d = parseDateFR(n.date);
+          if(!d) return true;
+          return d >= today;
+        }
 
-      if(!lues.includes(n.id)){
-        count++;
-      }
-
-    });
+        // sinon vérifier expiration
+        const exp = parseDateFR(n.expire);
+        if(!exp) return true;
+        return exp >= today;
+      })
+      .forEach(n=>{
+        if(!lues.includes(n.id)){
+          count++;
+        }
+      });
 
     const badge=document.getElementById("bellBadge");
 
@@ -357,11 +53,3 @@ async function updateBell(){
   }
 
 }
-
-/* lancement auto */
-updateBell();
-setInterval(updateBell,60000);
-</script>
-  
-</body>
-</html>
