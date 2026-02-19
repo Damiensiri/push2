@@ -55,7 +55,6 @@ header{
   height:70px;
   background:#f4f4f4;
   z-index:1000;
-
   display:flex;
   align-items:center;
   justify-content:center;
@@ -202,7 +201,6 @@ header h1{
 
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="header-left">
     <img src="image/logo.png">
@@ -216,17 +214,14 @@ header h1{
   </div>
 </header>
 
-<!-- CONTENU -->
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
 
-<!-- BANDEAU -->
 <div id="alert-wrapper">
   <div id="alert-box"></div>
 </div>
 
-<!-- ESPACES -->
 <div class="section-title">ESPACES</div>
 
 <div class="grid">
@@ -236,7 +231,6 @@ header h1{
 
 <div class="list-btn" onclick="go('plan.html')"><img src="image/plan.svg"> PLAN INTERACTIF</div>
 
-<!-- PRATIQUE -->
 <div class="section-title">PRATIQUE</div>
 
 <div class="grid">
@@ -244,21 +238,16 @@ header h1{
   <div class="card" onclick="go('notifications.html')"><img src="info.svg"><div>NEWS</div></div>
 
   <div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')"><img src="rider.svg"><div>COURS</div></div>
-
   <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')"><img src="bell.svg"><div>SERVICES</div></div>
-
   <div class="card" onclick="go('concours.html')"><img src="calendar.svg"><div>CONCOURS</div></div>
-
   <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')"><img src="care.svg"><div>SOINS</div></div>
 </div>
 
-<!-- AUTRES -->
 <div class="section-title">AUTRES</div>
 
 <div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/category/laverie')"><img src="wash.svg"> LAVERIE</div>
 <div class="list-btn" onclick="openExternal('tarifs.pdf')"><img src="euro.svg"> TARIFS</div>
 
-<!-- COMPTE -->
 <div class="section-title">COMPTE</div>
 
 <div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/profile/my/profile')"><img src="user.svg"> MON COMPTE</div>
@@ -267,13 +256,12 @@ header h1{
 
 </div>
 
-<!-- NAV -->
 <script>
 function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
 </script>
 
-<!-- ===== BANDEAU ACCUEIL ===== -->
+<!-- ===== BANDEAU ===== -->
 <script>
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const ESPACE="accueil";
@@ -308,7 +296,7 @@ loadAlert();
 setInterval(loadAlert,60000);
 </script>
 
-<!-- ===== BADGE CLOCHE CORRIGÉ ===== -->
+<!-- ===== BADGE CLOCHE FIX FINAL ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
@@ -344,29 +332,23 @@ async function updateBell(){
   const today=new Date();
   today.setHours(0,0,0,0);
 
-  const lues=getLues();
+  const lues=getLues().map(String);
   let count=0;
 
   data.forEach(n=>{
 
     const id=String(n.id);
 
-    if(n.epingle==="oui"){
-      if(!lues.includes(id)) count++;
-      return;
-    }
-
     if(n.active!=="oui") return;
 
     if(n.expire){
       const exp=parseDateFR(n.expire);
       if(exp && exp<today) return;
-    }else{
-      const d=parseDateFR(n.date);
-      if(d && d<today) return;
     }
 
-    if(!lues.includes(id)) count++;
+    if(!lues.includes(id)){
+      count++;
+    }
 
   });
 
