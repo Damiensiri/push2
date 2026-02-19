@@ -3,44 +3,28 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paddocks</title>
 
-<title>Travail</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
   background:#f4f4f4;
 }
 
-/* ================= HEADER ================= */
+/* ===== HEADER ===== */
 
 header{
   position:relative;
-  background:#f4f4f4;
-  padding:15px 12px;
   height:70px;
+  background:#f4f4f4;
 }
-
-header h1{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  margin:0;
-  font-size:20px;
-  font-weight:700;
-  color:#181E3B;
-}
-
-/* ===== BOUTON RETOUR ===== */
 
 #backBtn{
   position:absolute;
-  left:12px;
+  left:15px;
   top:50%;
   transform:translateY(-50%);
   width:42px;
@@ -50,25 +34,114 @@ header h1{
   display:flex;
   align-items:center;
   justify-content:center;
+  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  cursor:pointer;
   font-size:20px;
+}
+
+header h1{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  margin:0;
+  font-size:18px;
+  font-weight:700;
   color:#181E3B;
-  box-shadow:0 3px 8px rgba(0,0,0,0.15);
+}
+
+/* ===== CARDS ===== */
+
+.card{
+  background:white;
+  margin:0 15px 20px;
+  padding:15px;
+  border-radius:18px;
+  box-shadow:0 5px 12px rgba(0,0,0,0.12);
+}
+
+.card-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.left-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.left-title img{
+  width:26px;
+  height:26px;
+}
+
+.card-title{
+  font-size:20px;
+  font-weight:700;
+}
+
+/* statut icon */
+.card-top img.statut{
+  width:26px;
+  height:26px;
+}
+
+/* middle */
+.card-middle{
+  display:flex;
+  justify-content:space-between;
+  margin-top:10px;
+  font-size:14px;
+}
+
+/* info */
+.card-info{
+  margin-top:10px;
+  font-size:13px;
+  color:#E88B00;
+  white-space:pre-line;
+}
+
+/* ===== BOUTON RESERVER ===== */
+
+#reserveBox{
+  margin:30px 15px;
+  background:#E88B00;
+  color:white;
+  border-radius:12px;
+  padding:14px;
+  text-align:center;
+  font-weight:600;
+  font-size:16px;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
   cursor:pointer;
 }
 
-/* ================= CONTENU ================= */
-
-.content{
-  padding:20px 15px;
+#reserveBox img{
+  width:20px;
 }
 
-.box{
-  background:white;
-  border-radius:16px;
-  padding:18px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
-  line-height:1.6;
-  font-size:16px;
+/* ===== LEGENDE ===== */
+
+.legend{
+  margin:25px 20px;
+  font-size:15px;
+}
+
+.legend-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.legend-item img{
+  width:22px;
 }
 
 </style>
@@ -81,21 +154,139 @@ header h1{
   <h1>PADDOCKS</h1>
 </header>
 
-<div class="content">
-
-  <!-- 🔽 COLLER ICI LE TEXTE DE WIX 🔽 -->
-
-  <div class="box">
-    Texte de la page Paddock à venir...
+<!-- ===== MAISON ===== -->
+<div class="card">
+  <div class="card-top">
+    <div class="left-title">
+      <img src="image/paddock.svg">
+      <div class="card-title">Maison</div>
+    </div>
+    <img id="maison-statut" class="statut">
   </div>
 
+  <div class="card-middle">
+    <div id="maison-horaire"></div>
+  </div>
+
+  <div class="card-info" id="maison-info"></div>
+</div>
+
+<!-- ===== GRANDE VOIE ===== -->
+<div class="card">
+  <div class="card-top">
+    <div class="left-title">
+      <img src="image/paddock.svg">
+      <div class="card-title">Grande voie</div>
+    </div>
+    <img id="grande-voie-statut" class="statut">
+  </div>
+
+  <div class="card-middle">
+    <div id="grande-voie-horaire"></div>
+  </div>
+
+  <div class="card-info" id="grande-voie-info"></div>
+</div>
+
+<!-- ===== BEUDOT ===== -->
+<div class="card">
+  <div class="card-top">
+    <div class="left-title">
+      <img src="image/paddock.svg">
+      <div class="card-title">Beudot</div>
+    </div>
+    <img id="beudot-statut" class="statut">
+  </div>
+
+  <div class="card-middle">
+    <div id="beudot-horaire"></div>
+  </div>
+
+  <div class="card-info" id="beudot-info"></div>
+</div>
+
+<!-- ===== BOUTON ===== -->
+<div id="reserveBox" onclick="goReserve()">
+  <img src="https://static.wixstatic.com/shapes/ff7f34_9b4da08e0dd544ec9a450433caf8c376.svg">
+  Réserver
+</div>
+
+<!-- ===== LEGENDE ===== -->
+<div class="legend">
+  <div class="legend-item"><img src="image/ouvert.png"> Ouvert</div>
+  <div class="legend-item"><img src="image/prevision.png"> Prévision d'ouverture</div>
+  <div class="legend-item"><img src="image/ferme.png"> Fermé</div>
+  <div class="legend-item"><img src="image/horsservice.png"> Hors service</div>
 </div>
 
 <script>
 
-function goBack(){
-  window.history.back();
+/* ===== CONFIG ===== */
+
+const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
+const REFRESH=60000;
+
+const ICONS_STATUT={
+  "ouvert":"image/ouvert.png",
+  "ferme":"image/ferme.png",
+  "prevision":"image/prevision.png",
+  "hors-service":"image/horsservice.png"
+};
+
+const ESPACES=["maison","grande-voie","beudot"];
+
+const RESERVE_URL="https://www.ce-dugrandrang.com/book-online?category=ebb4678d-9213-49a4-9c62-168e3bdce954";
+
+/* ===== LOAD ===== */
+
+function loadData(){
+
+fetch(SHEET_URL,{cache:"no-store"})
+.then(r=>r.json())
+.then(data=>{
+
+  let afficherBouton=false;
+
+  ESPACES.forEach(espace=>{
+
+    const row=data.find(e=>e.espace===espace);
+    if(!row) return;
+
+    document.getElementById(espace+"-statut").src =
+      ICONS_STATUT[row.statut_auto] || "";
+
+    const horaire=row.horaire_special || row.horaire_affiche || "";
+    document.getElementById(espace+"-horaire").innerText=horaire;
+
+    document.getElementById(espace+"-info").innerText=row.info || "";
+
+    if(row.statut_auto==="ouvert" || row.statut_auto==="prevision"){
+      afficherBouton=true;
+    }
+
+  });
+
+  document.getElementById("reserveBox").style.display =
+    afficherBouton ? "flex" : "none";
+
+});
+
 }
+
+/* NAV */
+
+function goBack(){
+  window.location.href="index.html";
+}
+
+function goReserve(){
+  window.open(RESERVE_URL,"_blank");
+}
+
+/* INIT */
+
+loadData();
+setInterval(loadData,REFRESH);
 
 </script>
 
