@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan interactif</title>
 
-<title>Travail</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+
+/* ================= BASE ================= */
 
 body{
   margin:0;
@@ -16,31 +17,14 @@ body{
   background:#f4f4f4;
 }
 
-/* ================= HEADER ================= */
-
 header{
   position:relative;
-  background:#f4f4f4;
-  padding:15px 12px;
   height:70px;
 }
 
-header h1{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  margin:0;
-  font-size:20px;
-  font-weight:700;
-  color:#181E3B;
-}
-
-/* ===== BOUTON RETOUR ===== */
-
 #backBtn{
   position:absolute;
-  left:12px;
+  left:15px;
   top:50%;
   transform:translateY(-50%);
   width:42px;
@@ -50,25 +34,141 @@ header h1{
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:20px;
-  color:#181E3B;
   box-shadow:0 3px 8px rgba(0,0,0,0.15);
+  cursor:pointer;
+  font-size:20px;
+}
+
+header h1{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  margin:0;
+  font-size:18px;
+  font-weight:700;
+}
+
+/* ================= PLAN ================= */
+
+#map-wrapper{
+  position:relative;
+  width:100%;
+  max-width:500px;
+  margin:0 auto;
+}
+
+#map-wrapper img{
+  width:100%;
+  display:block;
+}
+
+/* ================= SPOTS ================= */
+
+.spot{
+  position:absolute;
+  width:42px;
+  height:42px;
+  border-radius:12px;
+  background:#1f2a82;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 10px rgba(0,0,0,0.3);
   cursor:pointer;
 }
 
-/* ================= CONTENU ================= */
-
-.content{
-  padding:20px 15px;
+.spot img{
+  width:22px;
+  height:22px;
 }
 
-.box{
-  background:white;
-  border-radius:16px;
-  padding:18px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
-  line-height:1.6;
-  font-size:16px;
+/* positions approximatives */
+#carriere{ top:20%; left:25%; }
+#beudot{ top:20%; left:55%; }
+#manege{ top:40%; left:38%; }
+#grandevoie{ top:40%; left:70%; }
+#maison{ top:65%; left:60%; }
+
+/* ================= LEGENDE ================= */
+
+.legend{
+  margin:25px 20px;
+  font-size:15px;
+}
+
+.legend-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.legend-item img{
+  width:22px;
+}
+
+/* ================= PANEL ================= */
+
+#panel{
+  position:fixed;
+  left:0;
+  bottom:0;
+  width:100%;
+  height:75%;
+  background:#fff;
+  border-radius:20px 20px 0 0;
+  transform:translateY(100%);
+  transition:0.3s;
+  padding:20px;
+  box-sizing:border-box;
+  z-index:999;
+}
+
+#panel.active{ transform:translateY(0); }
+
+#panelHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+#panelTitle{
+  font-size:20px;
+  font-weight:700;
+}
+
+#closePanel{
+  font-size:22px;
+  cursor:pointer;
+}
+
+.row{ margin-top:14px; }
+.label{ font-size:12px;color:#888; }
+.value{ font-size:16px;font-weight:600; }
+
+#horaire{ font-size:14px; }
+
+.optionText{ font-size:13px; font-weight:600; margin-right:14px; }
+
+#reserveBox{
+  display:none;
+  margin-top:18px;
+  background:#E88B00;
+  color:white;
+  border-radius:10px;
+  padding:12px;
+  text-align:center;
+  font-weight:600;
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  cursor:pointer;
+}
+
+#reserveBox img{
+  width:18px;
+  height:18px;
 }
 
 </style>
@@ -78,23 +178,163 @@ header h1{
 
 <header>
   <div id="backBtn" onclick="goBack()">←</div>
-  <h1>PLAN</h1>
+  <h1>PLAN INTERACTIF</h1>
 </header>
 
-<div class="content">
+<!-- ================= MAP ================= -->
 
-  <!-- 🔽 COLLER ICI LE TEXTE DE WIX 🔽 -->
+<div id="map-wrapper">
+  <img src="image/plan.png">
 
-  <div class="box">
-    Texte de la page plan à venir...
+  <div class="spot" id="carriere" onclick="openSpace('carriere')"><img id="icon-carriere"></div>
+  <div class="spot" id="beudot" onclick="openSpace('beudot')"><img id="icon-beudot"></div>
+  <div class="spot" id="manege" onclick="openSpace('manege')"><img id="icon-manege"></div>
+  <div class="spot" id="grandevoie" onclick="openSpace('grande-voie')"><img id="icon-grande-voie"></div>
+  <div class="spot" id="maison" onclick="openSpace('maison')"><img id="icon-maison"></div>
+
+</div>
+
+<!-- ================= LEGENDE ================= -->
+
+<div class="legend">
+  <div class="legend-item"><img src="image/ouvert.png"> Ouvert</div>
+  <div class="legend-item"><img src="image/prevision.png"> Prévision d'ouverture</div>
+  <div class="legend-item"><img src="image/ferme.png"> Fermé</div>
+  <div class="legend-item"><img src="image/horsservice.png"> Hors service</div>
+</div>
+
+<!-- ================= PANEL ================= -->
+
+<div id="panel">
+
+  <div id="panelHeader">
+    <div id="panelTitle">---</div>
+    <div id="closePanel">✕</div>
+  </div>
+
+  <div class="row">
+    <div class="label">Statut</div>
+    <div class="value" id="pStatut">---</div>
+  </div>
+
+  <div class="row">
+    <div class="label">Horaires</div>
+    <div class="value" id="pHoraire">---</div>
+  </div>
+
+  <div class="row" id="optRow">
+    <div class="label">Activités possible</div>
+    <div>
+      <span class="optionText" id="pLiberte"></span>
+      <span class="optionText" id="pLonge"></span>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="label">Infos</div>
+    <div class="value" id="pInfo">---</div>
+  </div>
+
+  <div id="reserveBox" onclick="goReserve()">
+    <img src="image/plan.png">
+    Réserver
   </div>
 
 </div>
 
 <script>
 
+/* ================= CONFIG ================= */
+
+const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
+const RESERVE_URL="https://www.ce-dugrandrang.com/book-online?category=ebb4678d-9213-49a4-9c62-168e3bdce954";
+
+const ICONS={
+  "ouvert":"image/ouvert.png",
+  "prevision":"image/prevision.png",
+  "ferme":"image/ferme.png",
+  "hors-service":"image/horsservice.png"
+};
+
+let DATA=[];
+
+/* ================= LOAD ================= */
+
+function loadData(){
+fetch(SHEET_URL,{cache:"no-store"})
+.then(r=>r.json())
+.then(d=>{
+  DATA=d;
+  updateSpots();
+});
+}
+loadData();
+setInterval(loadData,60000);
+
+/* ================= SPOTS ================= */
+
+function updateSpots(){
+["carriere","manege","maison","beudot","grande-voie"].forEach(e=>{
+  const row=DATA.find(x=>x.espace===e);
+  if(!row) return;
+  document.getElementById("icon-"+e).src=ICONS[row.statut_auto];
+});
+}
+
+/* ================= OPEN PANEL ================= */
+
+function openSpace(espace){
+
+const item=DATA.find(x=>x.espace===espace);
+if(!item) return;
+
+document.getElementById("panelTitle").innerText=espace;
+
+const stat=document.getElementById("pStatut");
+if(item.statut_auto==="ouvert"){stat.innerText="Ouvert";stat.style.color="green";}
+if(item.statut_auto==="prevision"){stat.innerText="Ouverture prévue";stat.style.color="#E88B00";}
+if(item.statut_auto==="ferme"){stat.innerText="Fermé";stat.style.color="red";}
+if(item.statut_auto==="hors-service"){stat.innerText="Hors service";stat.style.color="gray";}
+
+const special=item.horaire_special && item.horaire_special.trim()!=="";
+document.getElementById("pHoraire").innerText=special?item.horaire_special:item.horaire_affiche;
+
+document.getElementById("pInfo").innerText=item.info||"Aucune info";
+
+if(espace==="carriere"||espace==="manege"){
+document.getElementById("pLiberte").innerHTML=
+`Liberté : <span style="color:${item.liberte==="oui"?"green":"red"}">${item.liberte.toUpperCase()}</span>`;
+document.getElementById("pLonge").innerHTML=
+`Longe : <span style="color:${item.longe==="oui"?"green":"red"}">${item.longe.toUpperCase()}</span>`;
+document.getElementById("optRow").style.display="block";
+}else{
+document.getElementById("optRow").style.display="none";
+}
+
+if(
+ (espace==="maison"||espace==="grande-voie"||espace==="beudot") &&
+ (item.statut_auto==="ouvert"||item.statut_auto==="prevision")
+){
+ document.getElementById("reserveBox").style.display="flex";
+}else{
+ document.getElementById("reserveBox").style.display="none";
+}
+
+document.getElementById("panel").classList.add("active");
+}
+
+/* ================= CLOSE ================= */
+
+document.getElementById("closePanel").onclick=()=>{
+document.getElementById("panel").classList.remove("active");
+}
+
+function goReserve(){
+window.open(RESERVE_URL,"_blank");
+}
+
 function goBack(){
-  window.history.back();
+window.location.href="index.html";
 }
 
 </script>
