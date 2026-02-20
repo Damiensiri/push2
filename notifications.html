@@ -176,12 +176,13 @@ function marquerLu(id){
   }
 }
 
-/* ===== DATE ===== */
+/* ===== DATE / HEURE ===== */
 
-function parseDateFR(str){
-  if(!str) return null;
-  const p=str.split("/");
-  return new Date(p[2],p[1]-1,p[0],0,0,0);
+function parseDateHeure(dateStr,heureStr){
+  if(!dateStr) return null;
+  const p=dateStr.split("/");
+  const h=heureStr ? heureStr.split(":") : ["00","00"];
+  return new Date(p[2],p[1]-1,p[0],h[0],h[1],0);
 }
 
 /* ===== LOAD ===== */
@@ -199,29 +200,30 @@ async function loadNotifications(){
     document.getElementById("lastUpdate").innerText =
       "Dernière mise à jour : "+new Date().toLocaleString();
 
-    const today=new Date();
-    today.setHours(0,0,0,0);
-
+    const now=new Date();
     const lues=getLues();
 
-    const clean=data.filter(n=>{
+    const visibles=data.filter(n=>{
 
-      if(n.epingle==="oui") return true;
       if(n.active!=="oui") return false;
 
-      const d=parseDateFR(n.date);
-      if(!d || d>today) return false;
+      if(n.epingle==="oui") return true;
+
+      const d=parseDateHeure(n.date,n.heure);
+      if(!d) return false;
+
+      if(d>now) return false;
 
       if(n.expire){
-        const exp=parseDateFR(n.expire);
-        if(exp && exp<today) return false;
+        const exp=parseDateHeure(n.expire,"23:59");
+        if(exp && exp<now) return false;
       }
 
       return true;
     });
 
-    const pinned=clean.filter(n=>n.epingle==="oui");
-    const normal=clean.filter(n=>n.epingle!=="oui");
+    const pinned=visibles.filter(n=>n.epingle==="oui");
+    const normal=visibles.filter(n=>n.epingle!=="oui");
 
     pinned.sort((a,b)=>b.id-a.id);
     normal.sort((a,b)=>b.id-a.id);
@@ -267,8 +269,7 @@ document.getElementById("markAll").onclick=()=>{
   fetch(API_URL)
     .then(r=>r.json())
     .then(data=>{
-      const ids=data.map(n=>String(n.id));
-      setLues(ids);
+      setLues(data.map(n=>String(n.id)));
       loadNotifications();
     });
 }
