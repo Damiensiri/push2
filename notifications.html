@@ -15,11 +15,15 @@ body{
   background:#f4f4f4;
 }
 
+/* ================= HEADER ================= */
+
 .sub-header{
   position:relative;
   background:#f4f4f4;
   height:70px;
 }
+
+/* Bouton retour rond */
 
 .back-btn{
   position:absolute;
@@ -36,6 +40,8 @@ body{
   cursor:pointer;
 }
 
+/* Titre centré */
+
 .sub-title{
   position:absolute;
   left:50%;
@@ -45,7 +51,10 @@ body{
   font-size:20px;
   font-weight:700;
   color:#181E3B;
+  white-space:nowrap;
 }
+
+/* ================= DATE ================= */
 
 #lastUpdate{
   text-align:center;
@@ -54,12 +63,45 @@ body{
   margin-bottom:20px;
 }
 
+/* ================= LOADER ================= */
+
+#loader{
+  position:fixed;
+  inset:0;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+}
+
+.spinner{
+  width:40px;
+  height:40px;
+  border:4px solid #ddd;
+  border-top:4px solid #1f5c8f;
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
+
+@keyframes spin{
+  to{transform:rotate(360deg);}
+}
+
+/* ================= CARDS ================= */
+
 .card{
   background:white;
   margin:15px;
   padding:15px;
   border-radius:12px;
   box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  cursor:pointer;
+}
+
+.card.lu{
+  opacity:0.55;
+  background:#f0f0f0;
 }
 
 .card-time{
@@ -70,6 +112,7 @@ body{
 .card-category{
   font-size:13px;
   color:#888;
+  margin-top:4px;
 }
 
 .card-title{
@@ -89,114 +132,156 @@ body{
 
 <body>
 
+<!-- HEADER -->
 <header class="sub-header">
   <button class="back-btn" onclick="goHome()">←</button>
   <h1 class="sub-title">ALERTES</h1>
 </header>
+
+<!-- LOADER -->
+<div id="loader"><div class="spinner"></div></div>
 
 <div id="lastUpdate"></div>
 <div id="notifications"></div>
 
 <script>
 
-const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
+const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
+
+const STORAGE_KEY="alerts_lues";
+
+/* ===== STORAGE ===== */
+
+function getLues(){
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+}
+
+function setLues(arr){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(arr));
+}
+
+function marquerLu(id){
+  const lues=getLues();
+  if(!lues.includes(id)){
+    lues.push(id);
+    setLues(lues);
+  }
+}
+
+/* ===== DATE PARSER ===== */
 
 function parseDateFR(str){
   if(!str) return null;
 
   if(str.includes("T")){
-    const d = new Date(str);
+    const d=new Date(str);
     d.setHours(0,0,0,0);
     return d;
   }
 
   if(str.includes("-")){
-    const p = str.split("-");
+    const p=str.split("-");
     return new Date(p[0],p[1]-1,p[2],0,0,0);
   }
 
   if(str.includes("/")){
-    const p = str.split("/");
+    const p=str.split("/");
     return new Date(p[2],p[1]-1,p[0],0,0,0);
   }
 
   return null;
 }
 
+/* ===== LOAD ===== */
+
 async function loadNotifications(){
 
   try{
 
-    const res = await fetch(API_URL);
-    const text = await res.text();
-    const data = JSON.parse(text);
+    const res=await fetch(API_URL);
+    const data=await res.json();
 
-    const container = document.getElementById("notifications");
-    container.innerHTML = "";
+    const container=document.getElementById("notifications");
+    container.innerHTML="";
 
     document.getElementById("lastUpdate").innerText =
-      "Dernière mise à jour : " + new Date().toLocaleString();
+      "Dernière mise à jour : "+new Date().toLocaleString();
 
-    const today = new Date();
+    const today=new Date();
     today.setHours(0,0,0,0);
 
-    const visibles = data.filter(n => {
+    const lues=getLues();
 
-      if(n.epingle === "oui") return true;
-      if(n.activ_auto !== "oui") return false;
+    data
+      .filter(n=>{
+        if(n.epingle==="oui") return true;
+        if(n.active!=="oui") return false;
 
-      if(!n.expire){
-        const d = parseDateFR(n.date);
-        if(!d) return true;
-        return d >= today;
-      }
+        if(!n.expire){
+          const d=parseDateFR(n.date);
+          if(!d) return true;
+          return d>=today;
+        }
 
-      const e = parseDateFR(n.expire);
-      if(!e) return true;
-      return e >= today;
-
-    });
-
-    visibles
+        const exp=parseDateFR(n.expire);
+        if(!exp) return true;
+        return exp>=today;
+      })
       .sort((a,b)=>b.id-a.id)
       .forEach(n=>{
 
-        const card = document.createElement("div");
-        card.className = "card";
+        const card=document.createElement("div");
+        card.className="card";
 
-        card.innerHTML = `
-  <div class="card-time">${n.heure || ""}</div>
-  <div class="card-category">${n.categorie || ""}</div>
-  <div class="card-title">${n.titre || ""}</div>
-  <div style="margin-top:6px;color:#444;">
-    ${n.message || ""}
-  </div>
-  ${n.epingle==="oui" ? `<div class="pin">📌 ÉPINGLÉ</div>` : ``}
-`;
+        if(lues.includes(n.id)){
+          card.classList.add("lu");
+        }
+
+        card.innerHTML=`
+          <div class="card-time">${n.heure||""}</div>
+          <div class="card-category">${n.categorie||""}</div>
+          <div class="card-title">${n.titre}</div>
+          ${n.epingle==="oui" ? `<div class="pin">📌 ÉPINGLÉ</div>` : ``}
+        `;
+
+        card.onclick=()=>{
+          marquerLu(n.id);
+          window.location.href="detail.html?id="+n.id;
+        };
 
         container.appendChild(card);
-
       });
 
-    if(container.children.length === 0){
-      container.innerHTML =
+    if(container.children.length===0){
+      container.innerHTML=
         `<div style="text-align:center;color:#777;margin-top:40px;">
           Aucune notification
         </div>`;
     }
 
   }catch(e){
-    console.log("ERREUR :", e);
+    console.log("Erreur :",e);
   }
 
+  document.getElementById("loader").style.display="none";
 }
+
+/* ===== NAV ===== */
 
 function goHome(){
   window.location.href="index.html";
 }
 
+/* ===== AUTO ===== */
+
 loadNotifications();
 setInterval(loadNotifications,60000);
+
+document.addEventListener("visibilitychange",()=>{
+  if(!document.hidden){
+    loadNotifications();
+  }
+});
 
 </script>
 
