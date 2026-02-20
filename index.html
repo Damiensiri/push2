@@ -226,26 +226,78 @@ function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
 </script>
 
-<!-- ===== TEST BACKEND CLOCHE ===== -->
+<!-- ===== CLOCHE SIMPLE & STABLE ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
+const STORAGE_KEY="alerts_lues";
+
+function getLues(){
+  try{
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  }catch(e){
+    return [];
+  }
+}
+
+function todayISO(){
+  return new Date().toISOString().slice(0,10);
+}
+
+function frToIso(fr){
+  const p=fr.split("/");
+  return `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
+}
+
 async function updateBell(){
 
-  try{
-    const res = await fetch(API_URL,{cache:"no-store"});
-    const data = await res.json();
+  const badge=document.getElementById("bellBadge");
 
-    alert("API OK - Notifications reçues : " + data.length);
+  try{
+
+    const res=await fetch(API_URL,{cache:"no-store"});
+    const data=await res.json();
+
+    const today=todayISO();
+    const lues=getLues().map(String);
+
+    let count=0;
+
+    data.forEach(n=>{
+
+      if(n.active!=="oui") return;
+
+      const id=String(n.id);
+      let visible=false;
+
+      if(n.epingle==="oui"){
+        visible=true;
+      }
+      else if(n.date && frToIso(n.date)===today){
+        visible=true;
+      }
+
+      if(visible && !lues.includes(id)){
+        count++;
+      }
+
+    });
+
+    if(count>0){
+      badge.style.display="flex";
+      badge.textContent=count;
+    }else{
+      badge.style.display="none";
+    }
 
   }catch(e){
-    alert("❌ ERREUR FETCH API");
+    badge.style.display="none";
   }
-
 }
 
 updateBell();
+setInterval(updateBell,60000);
 
 </script>
 
