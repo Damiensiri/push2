@@ -1,4 +1,3 @@
-alert("VERSION DEBUG 123");
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -177,13 +176,12 @@ function marquerLu(id){
   }
 }
 
-/* ===== DATE + HEURE ===== */
+/* ===== DATE ===== */
 
-function parseDateHeure(dateStr,heureStr){
+function parseDate(dateStr){
   if(!dateStr) return null;
   const p=dateStr.split("/");
-  const h=heureStr ? heureStr.split(":") : ["00","00"];
-  return new Date(p[2],p[1]-1,p[0],h[0],h[1],0);
+  return new Date(p[2],p[1]-1,p[0],0,0,0);
 }
 
 /* ===== LOAD ===== */
@@ -208,19 +206,23 @@ async function loadNotifications(){
 
     const visibles=data.filter(n=>{
 
+      // ACTIVE obligatoire
       if(n.active!=="oui") return false;
 
+      // EPINGLE toujours visible
       if(n.epingle==="oui") return true;
 
-      const d=parseDateHeure(n.date,n.heure);
+      // DATE obligatoire
+      const d=parseDate(n.date);
       if(!d) return false;
 
-      if(d < today) return false;
-      if(d > now) return false;
+      // passé ou futur → masqué
+      if(d.getTime()!==today.getTime()) return false;
 
+      // EXPIRE
       if(n.expire){
-        const exp=parseDateHeure(n.expire,"23:59");
-        if(exp && exp < now) return false;
+        const exp=parseDate(n.expire);
+        if(exp && exp<today) return false;
       }
 
       return true;
