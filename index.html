@@ -248,22 +248,25 @@ function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
 </script>
 
-<!-- ===== CLOCHE ULTRA SAFE (INCHANGÉE) ===== -->
+<!-- ===== CLOCHE DEFINITIVE ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
+
 const STORAGE_KEY="alerts_lues";
 
 function getLues(){
-  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch(e){ return []; }
+  try{
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  }catch(e){
+    return [];
+  }
 }
 
-function parseDateHeure(dateStr,heureStr){
+function parseDateOnly(dateStr){
   if(!dateStr) return null;
   const p=dateStr.split("/");
-  const h=heureStr?heureStr.split(":"):["00","00"];
-  return new Date(p[2],p[1]-1,p[0],h[0],h[1],0);
+  return new Date(p[2],p[1]-1,p[0],0,0,0);
 }
 
 async function updateBell(){
@@ -271,26 +274,36 @@ async function updateBell(){
   const badge=document.getElementById("bellBadge");
 
   try{
+
     const res=await fetch(API_URL,{cache:"no-store"});
     const data=await res.json();
-    const now=new Date();
+
+    const today=new Date();
+    today.setHours(0,0,0,0);
+
     const lues=getLues().map(String);
     let count=0;
 
     data.forEach(n=>{
+
       if(n.active!=="oui") return;
 
       const id=String(n.id);
       let visible=false;
 
-      if(n.epingle==="oui"){ visible=true; }
-      else{
-        const d=parseDateHeure(n.date,n.heure);
-        if(!d || d>now) return;
+      if(n.epingle==="oui"){
+        visible=true;
+      }else{
+
+        const d=parseDateOnly(n.date);
+        if(!d) return;
+        if(d>today) return;
+
         if(n.expire){
-          const exp=parseDateHeure(n.expire,"23:59");
-          if(exp && exp<now) return;
+          const exp=parseDateOnly(n.expire);
+          if(exp && exp<today) return;
         }
+
         visible=true;
       }
 
