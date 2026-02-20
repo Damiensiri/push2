@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Alertes</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
@@ -14,8 +13,6 @@ body{
   font-family:'Montserrat',sans-serif;
   background:#f4f4f4;
 }
-
-/* ================= HEADER ================= */
 
 .sub-header{
   position:relative;
@@ -49,16 +46,12 @@ body{
   color:#181E3B;
 }
 
-/* ================= DATE ================= */
-
 #lastUpdate{
   text-align:center;
   font-size:14px;
   color:#666;
   margin-bottom:10px;
 }
-
-/* ================= BOUTON LU ================= */
 
 #markAll{
   margin:0 15px 15px;
@@ -71,8 +64,6 @@ body{
   font-weight:700;
   cursor:pointer;
 }
-
-/* ================= LOADER ================= */
 
 #loader{
   position:fixed;
@@ -96,8 +87,6 @@ body{
 @keyframes spin{
   to{transform:rotate(360deg);}
 }
-
-/* ================= CARDS ================= */
 
 .card{
   background:white;
@@ -158,8 +147,6 @@ const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key
 
 const STORAGE_KEY="alerts_lues";
 
-/* ===== STORAGE ===== */
-
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
 }
@@ -176,15 +163,31 @@ function marquerLu(id){
   }
 }
 
-/* ===== DATE ===== */
+/* -------- DATE PARSER ROBUSTE -------- */
 
-function parseDateFR(str){
+function parseDate(str){
   if(!str) return null;
-  const p=str.split("/");
-  return new Date(p[2],p[1]-1,p[0]);
-}
 
-/* ===== LOAD ===== */
+  // ISO format
+  if(str.includes("T")){
+    const d=new Date(str);
+    return new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  }
+
+  // yyyy-mm-dd
+  if(str.includes("-")){
+    const p=str.split("-");
+    return new Date(p[0],p[1]-1,p[2]);
+  }
+
+  // dd/mm/yyyy
+  if(str.includes("/")){
+    const p=str.split("/");
+    return new Date(p[2],p[1]-1,p[0]);
+  }
+
+  return null;
+}
 
 async function loadNotifications(){
 
@@ -201,6 +204,7 @@ async function loadNotifications(){
 
     const now=new Date();
     const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+
     const lues=getLues();
 
     const visibles=data.filter(n=>{
@@ -208,13 +212,13 @@ async function loadNotifications(){
       // ACTIVE obligatoire
       if(n.active!=="oui") return false;
 
-      // EPINGLE toujours visible
+      // EPINGLE visible même si date différente
       if(n.epingle==="oui") return true;
 
-      const d=parseDateFR(n.date);
+      const d=parseDate(n.date);
       if(!d) return false;
 
-      // pas aujourd'hui → masqué
+      // si pas aujourd'hui → masqué
       if(d.getTime()!==today.getTime()) return false;
 
       // heure future → masqué
@@ -224,14 +228,15 @@ async function loadNotifications(){
           today.getFullYear(),
           today.getMonth(),
           today.getDate(),
-          h[0],h[1]
+          h[0],
+          h[1]
         );
         if(notifTime>now) return false;
       }
 
-      // expire dépassé → masqué
+      // expire dépassé
       if(n.expire){
-        const exp=parseDateFR(n.expire);
+        const exp=parseDate(n.expire);
         if(exp && exp<today) return false;
       }
 
@@ -278,8 +283,6 @@ async function loadNotifications(){
 
   document.getElementById("loader").style.display="none";
 }
-
-/* ===== ACTIONS ===== */
 
 document.getElementById("markAll").onclick=()=>{
   fetch(API_URL)
