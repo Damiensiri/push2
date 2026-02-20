@@ -24,22 +24,19 @@ OneSignalDeferred.push(async function(OneSignal) {
 
   await OneSignal.init({
     appId: "85a477ff-3d8d-4975-960d-c7e69100a0ff",
-
-    notifyButton: { enable:false },
+    notifyButton:{ enable:false },
 
     promptOptions:{
       slidedown:{
-        prompts:[
-          {
-            type:"push",
-            autoPrompt:true,
-            text:{
-              actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
-              acceptButton:"Autoriser",
-              cancelButton:"Plus tard"
-            }
+        prompts:[{
+          type:"push",
+          autoPrompt:true,
+          text:{
+            actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
+            acceptButton:"Autoriser",
+            cancelButton:"Plus tard"
           }
-        ]
+        }]
       }
     }
   });
@@ -248,7 +245,7 @@ function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
 </script>
 
-<!-- ===== CLOCHE DEFINITIVE ===== -->
+<!-- ===== CLOCHE CORRIGÉE FINALE ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
@@ -256,17 +253,18 @@ const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key
 const STORAGE_KEY="alerts_lues";
 
 function getLues(){
-  try{
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  }catch(e){
-    return [];
-  }
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch(e){ return []; }
 }
 
-function parseDateOnly(dateStr){
-  if(!dateStr) return null;
-  const p=dateStr.split("/");
-  return new Date(p[2],p[1]-1,p[0],0,0,0);
+function todayFR(){
+  const d=new Date();
+  return d.toISOString().slice(0,10);
+}
+
+function dateFRtoISO(fr){
+  const p=fr.split("/");
+  return `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
 }
 
 async function updateBell(){
@@ -278,9 +276,7 @@ async function updateBell(){
     const res=await fetch(API_URL,{cache:"no-store"});
     const data=await res.json();
 
-    const today=new Date();
-    today.setHours(0,0,0,0);
-
+    const today=todayFR();
     const lues=getLues().map(String);
     let count=0;
 
@@ -293,29 +289,18 @@ async function updateBell(){
 
       if(n.epingle==="oui"){
         visible=true;
-      }else{
-
-        const d=parseDateOnly(n.date);
-        if(!d) return;
-        if(d>today) return;
-
-        if(n.expire){
-          const exp=parseDateOnly(n.expire);
-          if(exp && exp<today) return;
+      }else if(n.date){
+        if(dateFRtoISO(n.date) === today){
+          visible=true;
         }
-
-        visible=true;
       }
 
       if(visible && !lues.includes(id)) count++;
+
     });
 
-    if(count>0){
-      badge.style.display="flex";
-      badge.textContent=count;
-    }else{
-      badge.style.display="none";
-    }
+    badge.style.display = count>0 ? "flex" : "none";
+    badge.textContent = count;
 
   }catch(e){
     badge.style.display="none";
