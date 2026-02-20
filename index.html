@@ -21,9 +21,29 @@
 <script>
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 OneSignalDeferred.push(async function(OneSignal) {
+
   await OneSignal.init({
     appId: "85a477ff-3d8d-4975-960d-c7e69100a0ff",
+
+    notifyButton: { enable:false },
+
+    promptOptions:{
+      slidedown:{
+        prompts:[
+          {
+            type:"push",
+            autoPrompt:true,
+            text:{
+              actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
+              acceptButton:"Autoriser",
+              cancelButton:"Plus tard"
+            }
+          }
+        ]
+      }
+    }
   });
+
 });
 </script>
 
@@ -228,19 +248,15 @@ function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
 </script>
 
-<!-- ===== CLOCHE ULTRA SAFE ===== -->
+<!-- ===== CLOCHE ULTRA SAFE (INCHANGÉE) ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
-
 const STORAGE_KEY="alerts_lues";
 
 function getLues(){
-  try{
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  }catch(e){
-    return [];
-  }
+  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+  catch(e){ return []; }
 }
 
 function parseDateHeure(dateStr,heureStr){
@@ -255,42 +271,30 @@ async function updateBell(){
   const badge=document.getElementById("bellBadge");
 
   try{
-
     const res=await fetch(API_URL,{cache:"no-store"});
     const data=await res.json();
-
     const now=new Date();
     const lues=getLues().map(String);
-
     let count=0;
 
     data.forEach(n=>{
-
       if(n.active!=="oui") return;
 
       const id=String(n.id);
       let visible=false;
 
-      if(n.epingle==="oui"){
-        visible=true;
-      }else{
-
+      if(n.epingle==="oui"){ visible=true; }
+      else{
         const d=parseDateHeure(n.date,n.heure);
-        if(!d) return;
-        if(d>now) return;
-
+        if(!d || d>now) return;
         if(n.expire){
           const exp=parseDateHeure(n.expire,"23:59");
           if(exp && exp<now) return;
         }
-
         visible=true;
       }
 
-      if(visible && !lues.includes(id)){
-        count++;
-      }
-
+      if(visible && !lues.includes(id)) count++;
     });
 
     if(count>0){
@@ -301,7 +305,6 @@ async function updateBell(){
     }
 
   }catch(e){
-    console.log("ERREUR CLOCHE",e);
     badge.style.display="none";
   }
 }
