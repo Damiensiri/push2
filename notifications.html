@@ -178,10 +178,10 @@ function marquerLu(id){
 
 /* ===== DATE ===== */
 
-function parseDate(dateStr){
-  if(!dateStr) return null;
-  const p=dateStr.split("/");
-  return new Date(p[2],p[1]-1,p[0],0,0,0);
+function parseDateFR(str){
+  if(!str) return null;
+  const p=str.split("/");
+  return new Date(p[2],p[1]-1,p[0]);
 }
 
 /* ===== LOAD ===== */
@@ -201,7 +201,6 @@ async function loadNotifications(){
 
     const now=new Date();
     const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-
     const lues=getLues();
 
     const visibles=data.filter(n=>{
@@ -212,16 +211,27 @@ async function loadNotifications(){
       // EPINGLE toujours visible
       if(n.epingle==="oui") return true;
 
-      // DATE obligatoire
-      const d=parseDate(n.date);
+      const d=parseDateFR(n.date);
       if(!d) return false;
 
-      // passé ou futur → masqué
+      // pas aujourd'hui → masqué
       if(d.getTime()!==today.getTime()) return false;
 
-      // EXPIRE
+      // heure future → masqué
+      if(n.heure){
+        const h=n.heure.split(":");
+        const notifTime=new Date(
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          h[0],h[1]
+        );
+        if(notifTime>now) return false;
+      }
+
+      // expire dépassé → masqué
       if(n.expire){
-        const exp=parseDate(n.expire);
+        const exp=parseDateFR(n.expire);
         if(exp && exp<today) return false;
       }
 
