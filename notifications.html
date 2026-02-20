@@ -176,7 +176,7 @@ function marquerLu(id){
   }
 }
 
-/* ===== DATE / HEURE ===== */
+/* ===== DATE + HEURE ===== */
 
 function parseDateHeure(dateStr,heureStr){
   if(!dateStr) return null;
@@ -212,7 +212,8 @@ async function loadNotifications(){
       const d=parseDateHeure(n.date,n.heure);
       if(!d) return false;
 
-      if(d>now) return false;
+      if(d.getTime() !== new Date(now.getFullYear(),now.getMonth(),now.getDate(),d.getHours(),d.getMinutes()).getTime())
+        if(d>now || d<new Date(now.getFullYear(),now.getMonth(),now.getDate())) return false;
 
       if(n.expire){
         const exp=parseDateHeure(n.expire,"23:59");
