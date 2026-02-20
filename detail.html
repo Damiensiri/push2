@@ -55,6 +55,7 @@ header h1{
   font-size:20px;
   font-weight:700;
   color:#181E3B;
+  white-space:nowrap;
 }
 
 /* ================= LOADER ================= */
@@ -122,13 +123,16 @@ header h1{
 
 <body>
 
+<!-- HEADER -->
 <header>
   <div id="backBtn" onclick="goBack()">←</div>
   <h1>ALERTE</h1>
 </header>
 
+<!-- LOADER -->
 <div id="loader"><div class="spinner"></div></div>
 
+<!-- CONTENT -->
 <div id="content" style="display:none;">
   <div class="card">
     <div class="titre" id="titre"></div>
@@ -147,23 +151,38 @@ const STORAGE_KEY="alerts_lues";
 const params=new URLSearchParams(window.location.search);
 const id=params.get("id");
 
+/* ===== DATE PARSER ===== */
+
+function parseDateFR(str){
+  if(!str) return null;
+
+  if(str.includes("T")){
+    const d=new Date(str);
+    d.setHours(0,0,0,0);
+    return d;
+  }
+
+  if(str.includes("-")){
+    const p=str.split("-");
+    return new Date(p[0],p[1]-1,p[2],0,0,0);
+  }
+
+  if(str.includes("/")){
+    const p=str.split("/");
+    return new Date(p[2],p[1]-1,p[0],0,0,0);
+  }
+
+  return null;
+}
+
 /* ===== STORAGE ===== */
 
 function marquerLu(id){
   const lues=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
-  if(!lues.includes(String(id))){
-    lues.push(String(id));
+  if(!lues.includes(id)){
+    lues.push(id);
     localStorage.setItem(STORAGE_KEY,JSON.stringify(lues));
   }
-}
-
-/* ===== DATE + HEURE ===== */
-
-function parseDateHeure(dateStr,heureStr){
-  if(!dateStr) return null;
-  const p=dateStr.split("/");
-  const h=heureStr?heureStr.split(":"):["00","00"];
-  return new Date(p[2],p[1]-1,p[0],h[0],h[1],0);
 }
 
 /* ===== LOAD ===== */
@@ -172,7 +191,7 @@ async function loadDetail(){
 
   try{
 
-    const res=await fetch(API_URL,{cache:"no-store"});
+    const res=await fetch(API_URL);
     const data=await res.json();
 
     const notif=data.find(n=>String(n.id)===String(id));
@@ -182,33 +201,28 @@ async function loadDetail(){
     }
     else{
 
-      const now=new Date();
+      const today=new Date();
+      today.setHours(0,0,0,0);
 
-      if(notif.active!=="oui"){
-        document.getElementById("titre").innerText="Cette notification n’est plus disponible.";
+      const expireDate=parseDateFR(notif.expire);
+
+      const autorisee =
+        notif.active==="oui" &&
+        (
+          notif.epingle==="oui" ||
+          !expireDate ||
+          expireDate>=today
+        );
+
+      if(!autorisee){
+        document.getElementById("titre").innerText=
+          "Cette notification n’est plus disponible.";
       }
       else{
 
-        if(notif.epingle!=="oui"){
-
-          const d=parseDateHeure(notif.date,notif.heure);
-          if(!d || d>now){
-            document.getElementById("titre").innerText="Cette notification n’est pas encore disponible.";
-            finish(); return;
-          }
-
-          if(notif.expire){
-            const exp=parseDateHeure(notif.expire,"23:59");
-            if(exp && exp<now){
-              document.getElementById("titre").innerText="Cette notification n’est plus disponible.";
-              finish(); return;
-            }
-          }
-        }
-
         marquerLu(notif.id);
 
-        document.getElementById("titre").innerText=notif.titre||"";
+        document.getElementById("titre").innerText=notif.titre;
         document.getElementById("categorie").innerText=notif.categorie||"";
         document.getElementById("heure").innerText=notif.heure||"";
         document.getElementById("message").innerText=notif.message||"";
@@ -219,10 +233,6 @@ async function loadDetail(){
     console.log("Erreur :",e);
   }
 
-  finish();
-}
-
-function finish(){
   document.getElementById("loader").style.display="none";
   document.getElementById("content").style.display="block";
 }
