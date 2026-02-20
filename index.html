@@ -165,7 +165,6 @@ header h1{
 
 <body>
 
-<!-- ===== HEADER ===== -->
 <header>
   <div class="header-left">
     <img src="image/logo.png">
@@ -179,7 +178,6 @@ header h1{
   </div>
 </header>
 
-<!-- ===== CONTENU ===== -->
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
@@ -218,17 +216,15 @@ header h1{
 
 </div>
 
-<!-- ===== NAV ===== -->
 <script>
 function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
 </script>
 
-<!-- ===== CLOCHE FINALE STABLE ===== -->
+<!-- ===== CLOCHE DEFINITIVE ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
-
 const STORAGE_KEY="alerts_lues";
 
 function getLues(){
@@ -244,48 +240,49 @@ function parseDateHeure(dateStr,heureStr){
 
 async function updateBell(){
 
-  try{
+  const res = await fetch(API_URL,{cache:"no-store"});
+  const data = await res.json();
 
-    const res=await fetch(API_URL,{cache:"no-store"});
-    const data=await res.json();
+  const now = new Date();
+  const lues = getLues();
+  let count = 0;
 
-    const now=new Date();
-    const lues=getLues();
-    let count=0;
+  data.forEach(n=>{
 
-    data.forEach(n=>{
+    if(n.active!=="oui") return;
 
-      if(n.active!=="oui") return;
+    const id = String(n.id);
 
-      const id=String(n.id);
+    let visible=false;
 
-      if(n.epingle!=="oui"){
+    if(n.epingle==="oui"){
+      visible=true;
+    }else{
+      const d=parseDateHeure(n.date,n.heure);
+      if(!d) return;
 
-        const d=parseDateHeure(n.date,n.heure);
-        if(!d) return;
-        if(d>now) return;
-
+      if(d<=now){
         if(n.expire){
           const exp=parseDateHeure(n.expire,"23:59");
           if(exp && exp<now) return;
         }
+        visible=true;
       }
-
-      if(!lues.includes(id)) count++;
-
-    });
-
-    const badge=document.getElementById("bellBadge");
-
-    if(count>0){
-      badge.style.display="flex";
-      badge.textContent=count;
-    }else{
-      badge.style.display="none";
     }
 
-  }catch(e){
-    console.log("Erreur cloche :",e);
+    if(visible && !lues.includes(id)){
+      count++;
+    }
+
+  });
+
+  const badge=document.getElementById("bellBadge");
+
+  if(count>0){
+    badge.style.display="flex";
+    badge.textContent=count;
+  }else{
+    badge.style.display="none";
   }
 }
 
