@@ -242,7 +242,7 @@ function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
 </script>
 
-<!-- ===== CLOCHE SIMPLE & STABLE ===== -->
+<!-- ===== CLOCHE ALIGNÉE NOTIFICATIONS ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
@@ -250,20 +250,20 @@ const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key
 const STORAGE_KEY="alerts_lues";
 
 function getLues(){
-  try{
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  }catch(e){
-    return [];
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+}
+
+function parseDateFR(str){
+  if(!str) return null;
+  if(str.includes("-")){
+    const p=str.split("-");
+    return new Date(p[0],p[1]-1,p[2],0,0,0);
   }
-}
-
-function todayISO(){
-  return new Date().toISOString().slice(0,10);
-}
-
-function frToIso(fr){
-  const p=fr.split("/");
-  return `${p[2]}-${p[1].padStart(2,"0")}-${p[0].padStart(2,"0")}`;
+  if(str.includes("/")){
+    const p=str.split("/");
+    return new Date(p[2],p[1]-1,p[0],0,0,0);
+  }
+  return null;
 }
 
 async function updateBell(){
@@ -275,9 +275,10 @@ async function updateBell(){
     const res=await fetch(API_URL,{cache:"no-store"});
     const data=await res.json();
 
-    const today=todayISO();
-    const lues=getLues().map(String);
+    const today=new Date();
+    today.setHours(0,0,0,0);
 
+    const lues=getLues().map(String);
     let count=0;
 
     data.forEach(n=>{
@@ -290,8 +291,11 @@ async function updateBell(){
       if(n.epingle==="oui"){
         visible=true;
       }
-      else if(n.date && frToIso(n.date)===today){
-        visible=true;
+      else{
+        const exp=parseDateFR(n.expire);
+        if(!exp || exp>=today){
+          visible=true;
+        }
       }
 
       if(visible && !lues.includes(id)){
@@ -308,6 +312,7 @@ async function updateBell(){
     }
 
   }catch(e){
+    console.log("Erreur cloche",e);
     badge.style.display="none";
   }
 }
