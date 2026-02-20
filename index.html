@@ -33,8 +33,6 @@ body{
   overflow:hidden;
 }
 
-/* zone scrollable */
-
 .page-content{
   position:absolute;
   top:70px;
@@ -44,8 +42,6 @@ body{
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
-
-/* ================= HEADER ================= */
 
 header{
   position:fixed;
@@ -60,8 +56,6 @@ header{
   justify-content:center;
 }
 
-/* LOGO */
-
 .header-left{
   position:absolute;
   left:12px;
@@ -71,8 +65,6 @@ header{
   height:40px;
 }
 
-/* TITRE */
-
 header h1{
   margin:0;
   font-size:20px;
@@ -80,8 +72,6 @@ header h1{
   color:#181E3B;
   white-space:nowrap;
 }
-
-/* CLOCHE */
 
 #bellBox{
   position:absolute;
@@ -105,8 +95,6 @@ header h1{
   justify-content:center;
 }
 
-/* ================= BIENVENUE ================= */
-
 #welcome{
   text-align:center;
   font-size:36px;
@@ -114,8 +102,6 @@ header h1{
   color:#181E3B;
   margin:4px 0 15px;
 }
-
-/* ================= BANDEAU ================= */
 
 #alert-wrapper{
   width:100%;
@@ -137,8 +123,6 @@ header h1{
   font-weight:500;
 }
 
-/* ================= SECTIONS ================= */
-
 .section-title{
   background:#181E3B;
   color:white;
@@ -148,8 +132,6 @@ header h1{
   border-radius:4px;
   font-size:14px;
 }
-
-/* ================= GRID ================= */
 
 .grid{
   display:grid;
@@ -177,8 +159,6 @@ header h1{
   font-weight:700;
 }
 
-/* ================= LIST ================= */
-
 .list-btn{
   background:white;
   margin:10px 15px;
@@ -201,7 +181,6 @@ header h1{
 
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="header-left">
     <img src="image/logo.png">
@@ -215,7 +194,6 @@ header h1{
   </div>
 </header>
 
-<!-- CONTENU -->
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
@@ -258,48 +236,12 @@ header h1{
 
 </div>
 
-<!-- NAV -->
 <script>
 function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
 </script>
 
-<!-- ===== BANDEAU ===== -->
-<script>
-const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
-const ESPACE="accueil";
-
-function loadAlert(){
-  fetch(SHEET_URL,{cache:"no-store"})
-  .then(r=>r.json())
-  .then(data=>{
-    const row=data.find(e=>e.espace===ESPACE);
-    const box=document.getElementById("alert-box");
-
-    box.innerHTML="";
-    box.style.display="none";
-
-    if(!row || !row.alerte || row.alerte.trim()==="") return;
-
-    box.style.display="flex";
-
-    const icon=document.createElement("img");
-    icon.src="https://static.wixstatic.com/shapes/ff7f34_8db0b910e97b4e37af20514452d5c4f4.svg";
-    icon.style.width="16px";
-
-    const text=document.createElement("div");
-    text.textContent=row.alerte;
-
-    box.appendChild(icon);
-    box.appendChild(text);
-  });
-}
-
-loadAlert();
-setInterval(loadAlert,60000);
-</script>
-
-<!-- ===== BADGE CLOCHE ALIGNÉ AVEC notifications.html ===== -->
+<!-- ===== CLOCHE CORRIGÉE ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
@@ -307,7 +249,7 @@ const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key
 const STORAGE_KEY="alerts_lues";
 
 function getLues(){
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]").map(String);
 }
 
 function parseDateFR(str){
@@ -337,30 +279,30 @@ async function updateBell(){
     const today=new Date();
     today.setHours(0,0,0,0);
 
-    const lues=getLues().map(String);
+    const lues=getLues();
     let count=0;
 
-    data
-      .filter(n=>{
-        if(n.epingle==="oui") return true;
-        if(n.active!=="oui") return false;
+    data.forEach(n=>{
 
-        if(!n.expire){
-          const d=parseDateFR(n.date);
-          if(!d) return true;
-          return d>=today;
-        }
+      if(n.active!=="oui") return;
 
+      const id=String(n.id);
+
+      /* bloque futur */
+      const d=parseDateFR(n.date);
+      if(d && d>today) return;
+
+      /* bloque expiré */
+      if(n.expire){
         const exp=parseDateFR(n.expire);
-        if(!exp) return true;
-        return exp>=today;
-      })
-      .forEach(n=>{
-        const id=String(n.id);
-        if(!lues.includes(id)){
-          count++;
-        }
-      });
+        if(exp && exp<today) return;
+      }
+
+      if(!lues.includes(id)){
+        count++;
+      }
+
+    });
 
     const badge=document.getElementById("bellBadge");
 
