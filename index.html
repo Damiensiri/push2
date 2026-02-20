@@ -7,6 +7,13 @@
 <title>Ecurie Damien Siri</title>
 
 <link rel="manifest" href="manifest.json">
+
+<!-- ✅ APPLE FIX -->
+<link rel="apple-touch-icon" href="image/icon-192x192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ecurie DS">
+
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
 <!-- OneSignal -->
@@ -165,6 +172,7 @@ header h1{
 
 <body>
 
+<!-- ===== HEADER ===== -->
 <header>
   <div class="header-left">
     <img src="image/logo.png">
@@ -178,6 +186,7 @@ header h1{
   </div>
 </header>
 
+<!-- ===== CONTENU ===== -->
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
@@ -221,7 +230,7 @@ function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
 </script>
 
-<!-- ===== CLOCHE DEFINITIVE ===== -->
+<!-- ===== CLOCHE DEFINITIVE (INCHANGÉE) ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
@@ -252,7 +261,6 @@ async function updateBell(){
     if(n.active!=="oui") return;
 
     const id = String(n.id);
-
     let visible=false;
 
     if(n.epingle==="oui"){
