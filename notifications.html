@@ -201,6 +201,8 @@ async function loadNotifications(){
       "Dernière mise à jour : "+new Date().toLocaleString();
 
     const now=new Date();
+    const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+
     const lues=getLues();
 
     const visibles=data.filter(n=>{
@@ -212,12 +214,12 @@ async function loadNotifications(){
       const d=parseDateHeure(n.date,n.heure);
       if(!d) return false;
 
-      if(d.getTime() !== new Date(now.getFullYear(),now.getMonth(),now.getDate(),d.getHours(),d.getMinutes()).getTime())
-        if(d>now || d<new Date(now.getFullYear(),now.getMonth(),now.getDate())) return false;
+      if(d < today) return false;
+      if(d > now) return false;
 
       if(n.expire){
         const exp=parseDateHeure(n.expire,"23:59");
-        if(exp && exp<now) return false;
+        if(exp && exp < now) return false;
       }
 
       return true;
