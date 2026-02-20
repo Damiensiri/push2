@@ -165,11 +165,14 @@ async function loadNotifications(){
         card.className = "card";
 
         card.innerHTML = `
-          <div class="card-time">${n.heure || ""}</div>
-          <div class="card-category">${n.categorie || ""}</div>
-          <div class="card-title">${n.titre || ""}</div>
-          ${n.epingle==="oui" ? `<div class="pin">📌 ÉPINGLÉ</div>` : ``}
-        `;
+  <div class="card-time">${n.heure || ""}</div>
+  <div class="card-category">${n.categorie || ""}</div>
+  <div class="card-title">${n.titre || ""}</div>
+  <div style="margin-top:6px;color:#444;">
+    ${n.message || ""}
+  </div>
+  ${n.epingle==="oui" ? `<div class="pin">📌 ÉPINGLÉ</div>` : ``}
+`;
 
         container.appendChild(card);
 
