@@ -147,6 +147,8 @@ const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key
 
 const STORAGE_KEY="alerts_lues";
 
+/* ===== STORAGE ===== */
+
 function getLues(){
   return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
 }
@@ -163,24 +165,21 @@ function marquerLu(id){
   }
 }
 
-/* -------- DATE PARSER ROBUSTE -------- */
+/* ===== DATE PARSER ===== */
 
 function parseDate(str){
   if(!str) return null;
 
-  // ISO format
   if(str.includes("T")){
     const d=new Date(str);
     return new Date(d.getFullYear(),d.getMonth(),d.getDate());
   }
 
-  // yyyy-mm-dd
   if(str.includes("-")){
     const p=str.split("-");
     return new Date(p[0],p[1]-1,p[2]);
   }
 
-  // dd/mm/yyyy
   if(str.includes("/")){
     const p=str.split("/");
     return new Date(p[2],p[1]-1,p[0]);
@@ -188,6 +187,8 @@ function parseDate(str){
 
   return null;
 }
+
+/* ===== LOAD ===== */
 
 async function loadNotifications(){
 
@@ -204,37 +205,37 @@ async function loadNotifications(){
 
     const now=new Date();
     const today=new Date(now.getFullYear(),now.getMonth(),now.getDate());
-
     const lues=getLues();
 
     const visibles=data.filter(n=>{
 
-      // ACTIVE obligatoire
       if(n.active!=="oui") return false;
 
-      // EPINGLE visible même si date différente
       if(n.epingle==="oui") return true;
 
       const d=parseDate(n.date);
       if(!d) return false;
 
-      // si pas aujourd'hui → masqué
-      if(d.getTime()!==today.getTime()) return false;
+      const diffDays = Math.floor((today - d)/(1000*60*60*24));
 
-      // heure future → masqué
+      // futur
+      if(diffDays < 0) return false;
+
+      // plus vieux que hier
+      if(diffDays > 1) return false;
+
       if(n.heure){
         const h=n.heure.split(":");
         const notifTime=new Date(
-          today.getFullYear(),
-          today.getMonth(),
-          today.getDate(),
+          d.getFullYear(),
+          d.getMonth(),
+          d.getDate(),
           h[0],
           h[1]
         );
         if(notifTime>now) return false;
       }
 
-      // expire dépassé
       if(n.expire){
         const exp=parseDate(n.expire);
         if(exp && exp<today) return false;
@@ -283,6 +284,8 @@ async function loadNotifications(){
 
   document.getElementById("loader").style.display="none";
 }
+
+/* ===== ACTIONS ===== */
 
 document.getElementById("markAll").onclick=()=>{
   fetch(API_URL)
