@@ -54,13 +54,30 @@ body{
   white-space:nowrap;
 }
 
+/* ================= ACTION BAR ================= */
+
+#actions{
+  text-align:center;
+  margin:10px 0;
+}
+
+#markAllBtn{
+  background:#181E3B;
+  color:white;
+  border:none;
+  padding:8px 14px;
+  border-radius:20px;
+  font-size:13px;
+  cursor:pointer;
+}
+
 /* ================= DATE ================= */
 
 #lastUpdate{
   text-align:center;
   font-size:14px;
   color:#666;
-  margin-bottom:20px;
+  margin-bottom:10px;
 }
 
 /* ================= LOADER ================= */
@@ -138,6 +155,13 @@ body{
   <h1 class="sub-title">ALERTES</h1>
 </header>
 
+<!-- ACTIONS -->
+<div id="actions">
+  <button id="markAllBtn" onclick="marquerToutLu()">
+    Tout marquer comme lu
+  </button>
+</div>
+
 <!-- LOADER -->
 <div id="loader"><div class="spinner"></div></div>
 
@@ -168,16 +192,23 @@ function marquerLu(id){
   }
 }
 
+function marquerToutLu(){
+  const cards=document.querySelectorAll(".card");
+  const ids=[];
+
+  cards.forEach(c=>{
+    const id=c.dataset.id;
+    if(id) ids.push(id);
+  });
+
+  setLues(ids);
+  loadNotifications();
+}
+
 /* ===== DATE PARSER ===== */
 
 function parseDateFR(str){
   if(!str) return null;
-
-  if(str.includes("T")){
-    const d=new Date(str);
-    d.setHours(0,0,0,0);
-    return d;
-  }
 
   if(str.includes("-")){
     const p=str.split("-");
@@ -227,11 +258,16 @@ async function loadNotifications(){
         if(!exp) return true;
         return exp>=today;
       })
-      .sort((a,b)=>b.id-a.id)
+      .sort((a,b)=>{
+        if(a.epingle==="oui" && b.epingle!=="oui") return -1;
+        if(a.epingle!=="oui" && b.epingle==="oui") return 1;
+        return b.id-a.id;
+      })
       .forEach(n=>{
 
         const card=document.createElement("div");
         card.className="card";
+        card.dataset.id=n.id;
 
         if(lues.includes(n.id)){
           card.classList.add("lu");
