@@ -23,8 +23,6 @@ body{
   height:70px;
 }
 
-/* Bouton retour rond */
-
 .back-btn{
   position:absolute;
   left:12px;
@@ -40,8 +38,6 @@ body{
   cursor:pointer;
 }
 
-/* Titre centré */
-
 .sub-title{
   position:absolute;
   left:50%;
@@ -51,24 +47,6 @@ body{
   font-size:20px;
   font-weight:700;
   color:#181E3B;
-  white-space:nowrap;
-}
-
-/* ================= ACTION BAR ================= */
-
-#actions{
-  text-align:center;
-  margin:10px 0;
-}
-
-#markAllBtn{
-  background:#181E3B;
-  color:white;
-  border:none;
-  padding:8px 14px;
-  border-radius:20px;
-  font-size:13px;
-  cursor:pointer;
 }
 
 /* ================= DATE ================= */
@@ -77,7 +55,24 @@ body{
   text-align:center;
   font-size:14px;
   color:#666;
-  margin-bottom:10px;
+  margin-bottom:6px;
+}
+
+/* ================= ACTIONS ================= */
+
+#actions{
+  text-align:center;
+  margin:6px 0 14px;
+}
+
+#markAllBtn{
+  background:#f0f0f0;
+  color:#181E3B;
+  border:1px solid #ccc;
+  padding:6px 40px;
+  border-radius:30px;
+  font-size:13px;
+  cursor:pointer;
 }
 
 /* ================= LOADER ================= */
@@ -155,17 +150,17 @@ body{
   <h1 class="sub-title">ALERTES</h1>
 </header>
 
-<!-- ACTIONS -->
+<!-- LOADER -->
+<div id="loader"><div class="spinner"></div></div>
+
+<div id="lastUpdate"></div>
+
 <div id="actions">
   <button id="markAllBtn" onclick="marquerToutLu()">
     Tout marquer comme lu
   </button>
 </div>
 
-<!-- LOADER -->
-<div id="loader"><div class="spinner"></div></div>
-
-<div id="lastUpdate"></div>
 <div id="notifications"></div>
 
 <script>
@@ -193,14 +188,10 @@ function marquerLu(id){
 }
 
 function marquerToutLu(){
-  const cards=document.querySelectorAll(".card");
   const ids=[];
-
-  cards.forEach(c=>{
-    const id=c.dataset.id;
-    if(id) ids.push(id);
+  document.querySelectorAll(".card").forEach(c=>{
+    ids.push(c.dataset.id);
   });
-
   setLues(ids);
   loadNotifications();
 }
@@ -289,10 +280,7 @@ async function loadNotifications(){
       });
 
     if(container.children.length===0){
-      container.innerHTML=
-        `<div style="text-align:center;color:#777;margin-top:40px;">
-          Aucune notification
-        </div>`;
+      container.innerHTML="<div style='text-align:center;color:#777;margin-top:40px;'>Aucune notification</div>";
     }
 
   }catch(e){
