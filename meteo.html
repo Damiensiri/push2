@@ -11,16 +11,16 @@
 
 body{
   margin:0;
-  font-family:'Montserrat',sans-serif;
   background:#f4f4f4;
+  font-family:'Montserrat',sans-serif;
 }
 
-/* ===== ANIMATION ===== */
+/* ===== PAGE ANIM ===== */
 
 .page{
   min-height:100vh;
   transform:translateX(100%);
-  transition:0.35s ease;
+  transition:0.35s;
 }
 
 .page.active{ transform:translateX(0); }
@@ -41,16 +41,12 @@ header{
   width:42px;
   height:42px;
   border-radius:50%;
-  background:#fff;
+  background:white;
   display:flex;
   align-items:center;
   justify-content:center;
   box-shadow:0 3px 8px rgba(0,0,0,0.15);
   cursor:pointer;
-}
-
-#backBtn img{
-  width:18px;
 }
 
 header h1{
@@ -66,9 +62,9 @@ header h1{
 /* ===== CARD ===== */
 
 .card{
-  background:#fff;
+  background:white;
   margin:20px;
-  padding:25px;
+  padding:22px;
   border-radius:22px;
   box-shadow:0 5px 12px rgba(0,0,0,0.12);
   text-align:center;
@@ -76,50 +72,62 @@ header h1{
 
 .city{
   font-size:20px;
-  font-weight:600;
   color:#777;
-}
-
-.big-icon{
-  font-size:60px;
-  margin:10px 0;
+  margin-bottom:12px;
 }
 
 .temp{
-  font-size:54px;
+  font-size:48px;
   font-weight:700;
 }
 
 .desc{
-  font-size:18px;
-  color:#666;
+  font-size:16px;
+  color:#777;
+  margin-top:4px;
+}
+
+/* ===== EXTRA INFOS JOUR ===== */
+
+.extras{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  font-size:14px;
+}
+
+.extra-item{
+  background:#f4f4f4;
+  padding:10px;
+  border-radius:10px;
 }
 
 /* ===== FORECAST ===== */
 
 .forecast{
   display:flex;
-  justify-content:center;
-  gap:12px;
-  margin-top:25px;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:22px;
 }
 
 .day{
+  flex:1;
   background:#f4f4f4;
-  padding:12px 8px;
+  padding:14px 6px;
   border-radius:14px;
-  width:90px;
+  text-align:center;
+}
+
+.day-name{
+  font-weight:600;
+  margin-bottom:6px;
+}
+
+.day-temp{
+  margin-top:6px;
   font-size:14px;
-}
-
-.day-icon{
-  font-size:22px;
-  margin:6px 0;
-}
-
-.minmax{
-  font-size:13px;
-  color:#555;
 }
 
 </style>
@@ -130,9 +138,7 @@ header h1{
 <div class="page" id="page">
 
 <header>
-  <div id="backBtn" onclick="goBack()">
-    <img src="image/back.svg">
-  </div>
+  <div id="backBtn" onclick="goBack()">←</div>
   <h1>MÉTÉO</h1>
 </header>
 
@@ -140,12 +146,20 @@ header h1{
 
   <div class="city">Brienne-le-Château</div>
 
-  <div class="big-icon" id="iconNow">⛅</div>
+  <div id="icon"></div>
 
-  <div class="temp" id="tempNow">--°C</div>
+  <div class="temp" id="temp">--°C</div>
+  <div class="desc" id="desc">---</div>
 
-  <div class="desc" id="descNow">Chargement...</div>
+  <!-- INFOS JOUR -->
+  <div class="extras">
+    <div class="extra-item" id="wind">💨 Vent : -- km/h</div>
+    <div class="extra-item" id="gust">🌬 Rafales : -- km/h</div>
+    <div class="extra-item" id="rainChance">☔ Pluie : -- %</div>
+    <div class="extra-item" id="rainAmount">🌧 Cumul : -- mm</div>
+  </div>
 
+  <!-- 3 JOURS -->
   <div class="forecast" id="forecast"></div>
 
 </div>
@@ -154,7 +168,7 @@ header h1{
 
 <script>
 
-/* ===== ANIMATION ===== */
+/* ===== ANIM ===== */
 
 window.addEventListener("DOMContentLoaded",()=>{
   requestAnimationFrame(()=>{
@@ -162,57 +176,65 @@ window.addEventListener("DOMContentLoaded",()=>{
   });
 });
 
-/* ===== WEATHER API (Open-Meteo - gratuit) ===== */
+/* ===== API Open-Meteo ===== */
 
-const LAT = 48.392;
-const LON = 4.527;
+const URL =
+"https://api.open-meteo.com/v1/forecast?latitude=48.391&longitude=4.527&current=temperature_2m,weathercode,wind_speed_10m,wind_gusts_10m,precipitation_probability,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum&timezone=Europe/Paris";
 
-const API =
-`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current_weather=true&daily=weathercode,temperature_2m_min,temperature_2m_max&timezone=Europe%2FParis`;
+/* ===== ICONS ===== */
 
 function icon(code){
-  if(code==0) return "☀️";
-  if(code<=3) return "⛅";
-  if(code<=48) return "🌫️";
-  if(code<=67) return "🌧️";
-  if(code<=77) return "❄️";
-  if(code<=99) return "⛈️";
-  return "⛅";
+  if(code<=3) return "☁️";
+  if(code<=48) return "🌫";
+  if(code<=67) return "🌧";
+  if(code<=77) return "🌨";
+  if(code<=99) return "⛈";
+  return "☀️";
 }
 
 function dayName(i){
-  const d=new Date();
-  d.setDate(d.getDate()+i);
-  return ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."][d.getDay()];
+  return ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."][i];
 }
 
-fetch(API)
+/* ===== LOAD ===== */
+
+fetch(URL)
 .then(r=>r.json())
-.then(data=>{
+.then(d=>{
 
-  document.getElementById("tempNow").innerText =
-    Math.round(data.current_weather.temperature)+"°C";
+  document.getElementById("icon").innerHTML =
+    `<div style="font-size:48px">${icon(d.current.weathercode)}</div>`;
 
-  document.getElementById("iconNow").innerText =
-    icon(data.current_weather.weathercode);
+  document.getElementById("temp").innerText =
+    Math.round(d.current.temperature_2m)+"°C";
 
-  document.getElementById("descNow").innerText = "Conditions actuelles";
+  document.getElementById("desc").innerText="Conditions actuelles";
+
+  document.getElementById("wind").innerText =
+    "💨 Vent : "+Math.round(d.current.wind_speed_10m)+" km/h";
+
+  document.getElementById("gust").innerText =
+    "🌬 Rafales : "+Math.round(d.current.wind_gusts_10m)+" km/h";
+
+  document.getElementById("rainChance").innerText =
+    "☔ Pluie : "+d.daily.precipitation_probability_max[0]+" %";
+
+  document.getElementById("rainAmount").innerText =
+    "🌧 Cumul : "+d.daily.precipitation_sum[0]+" mm";
 
   const f=document.getElementById("forecast");
 
   for(let i=0;i<3;i++){
-    const div=document.createElement("div");
-    div.className="day";
-
-    div.innerHTML=`
-      <div><strong>${dayName(i+1)}</strong></div>
-      <div class="day-icon">${icon(data.daily.weathercode[i+1])}</div>
-      <div class="minmax">
-        ${Math.round(data.daily.temperature_2m_min[i+1])}° /
-        ${Math.round(data.daily.temperature_2m_max[i+1])}°
+    f.innerHTML+=`
+      <div class="day">
+        <div class="day-name">${dayName(new Date().getDay()+i)}</div>
+        <div>${icon(d.daily.weathercode[i])}</div>
+        <div class="day-temp">
+          ${Math.round(d.daily.temperature_2m_min[i])}° /
+          ${Math.round(d.daily.temperature_2m_max[i])}°
+        </div>
       </div>
     `;
-    f.appendChild(div);
   }
 
 });
@@ -220,12 +242,10 @@ fetch(API)
 /* ===== NAV ===== */
 
 function goBack(){
-  const page=document.getElementById("page");
-  page.classList.remove("active");
-  page.classList.add("exit");
-  setTimeout(()=>{
-    location.href="index.html";
-  },300);
+  const p=document.getElementById("page");
+  p.classList.remove("active");
+  p.classList.add("exit");
+  setTimeout(()=>{ location.href="index.html"; },300);
 }
 
 </script>
