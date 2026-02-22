@@ -16,15 +16,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-91ED2S9SKS"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-91ED2S9SKS');
-</script>
-
 <!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <script>
@@ -245,12 +236,17 @@ function openExternal(url){ window.open(url,"_blank"); }
 
 <!-- ===== CLOCHE 100% SYNCHRO NOTIFICATIONS ===== -->
 <script>
+
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
+
 const STORAGE_KEY="alerts_lues";
 
 function getLues(){
-  try{ return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch(e){ return []; }
+  try{
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  }catch(e){
+    return [];
+  }
 }
 
 function parseDateFR(str){
@@ -267,8 +263,11 @@ function parseDateFR(str){
 }
 
 async function updateBell(){
+
   const badge=document.getElementById("bellBadge");
+
   try{
+
     const res=await fetch(API_URL,{cache:"no-store"});
     const data=await res.json();
 
@@ -278,20 +277,26 @@ async function updateBell(){
     const lues=getLues().map(String);
     let count=0;
 
-    data.filter(n=>{
-      if(n.epingle==="oui") return true;
-      if(n.active!=="oui") return false;
-      if(!n.expire){
-        const d=parseDateFR(n.date);
-        if(!d) return true;
-        return d>=today;
-      }
-      const exp=parseDateFR(n.expire);
-      if(!exp) return true;
-      return exp>=today;
-    }).forEach(n=>{
-      if(!lues.includes(String(n.id))) count++;
-    });
+    data
+      .filter(n=>{
+        if(n.epingle==="oui") return true;
+        if(n.active!=="oui") return false;
+
+        if(!n.expire){
+          const d=parseDateFR(n.date);
+          if(!d) return true;
+          return d>=today;
+        }
+
+        const exp=parseDateFR(n.expire);
+        if(!exp) return true;
+        return exp>=today;
+      })
+      .forEach(n=>{
+        if(!lues.includes(String(n.id))){
+          count++;
+        }
+      });
 
     badge.style.display = count>0 ? "flex" : "none";
     badge.textContent = count;
@@ -303,6 +308,7 @@ async function updateBell(){
 
 updateBell();
 setInterval(updateBell,60000);
+
 </script>
 
 </body>
