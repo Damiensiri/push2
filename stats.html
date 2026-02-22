@@ -9,145 +9,161 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
   background:#f4f4f4;
 }
 
-/* ===== PAGE ANIMATION ===== */
+/* ===== LOGIN ===== */
 
-.page{
-  min-height:100vh;
-  transform:translateX(100%);
-  transition:.35s ease;
-}
-
-.page.active{transform:translateX(0);}
-.page.exit{transform:translateX(100%);}
-
-/* ===== HEADER ===== */
-
-header{
-  position:relative;
-  height:70px;
-}
-
-#backBtn{
-  position:absolute;
-  left:15px;
-  top:50%;
-  transform:translateY(-50%);
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:white;
+#loginBox{
+  position:fixed;
+  inset:0;
+  background:#f4f4f4;
   display:flex;
-  align-items:center;
+  flex-direction:column;
   justify-content:center;
-  box-shadow:0 3px 8px rgba(0,0,0,.15);
+  align-items:center;
+}
+
+#loginBox h2{
+  margin-bottom:20px;
+}
+
+#codeInput{
+  width:180px;
+  padding:12px;
+  font-size:20px;
+  text-align:center;
+  border-radius:10px;
+  border:1px solid #ccc;
+}
+
+#loginBtn{
+  margin-top:15px;
+  padding:10px 30px;
+  border:none;
+  background:#181E3B;
+  color:white;
+  border-radius:20px;
+  font-size:14px;
   cursor:pointer;
 }
 
-#backBtn img{
-  width:22px;
+/* ===== PAGE ===== */
+
+#content{
+  display:none;
+  padding:20px;
+}
+
+header{
+  text-align:center;
+  margin-bottom:20px;
 }
 
 header h1{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
   margin:0;
-  font-size:18px;
-  font-weight:700;
+  font-size:22px;
 }
 
 /* ===== CARDS ===== */
 
 .card{
   background:white;
-  margin:15px;
+  margin-bottom:15px;
   padding:18px;
-  border-radius:18px;
-  box-shadow:0 5px 12px rgba(0,0,0,.12);
+  border-radius:16px;
+  box-shadow:0 4px 10px rgba(0,0,0,0.12);
 }
 
-.title{
+.card-title{
   font-weight:700;
-  font-size:16px;
-  margin-bottom:10px;
+  margin-bottom:6px;
 }
 
-.value{
+.card-value{
   font-size:28px;
   font-weight:700;
   color:#1e2c88;
 }
 
 .small{
-  font-size:14px;
   color:#777;
+  font-size:13px;
 }
+
 </style>
 </head>
 
 <body>
 
-<div class="page" id="page">
+<!-- ===== LOGIN ===== -->
+<div id="loginBox">
+  <h2>Accès réservé</h2>
+  <input 
+    id="codeInput"
+    type="tel"
+    inputmode="numeric"
+    pattern="[0-9]*"
+    placeholder="Code"
+  >
+  <button id="loginBtn">Valider</button>
+</div>
+
+<!-- ===== CONTENT ===== -->
+<div id="content">
 
 <header>
-  <div id="backBtn" onclick="goBack()">
-    <img src="image/back.svg">
-  </div>
   <h1>STATISTIQUES</h1>
 </header>
 
 <div class="card">
-  <div class="title">👥 Visites aujourd’hui</div>
-  <div class="value" id="today">--</div>
+  <div class="card-title">Installations de l’application</div>
+  <div class="card-value" id="installs">--</div>
+  <div class="small">Depuis le lancement</div>
 </div>
 
 <div class="card">
-  <div class="title">📅 Visites ce mois</div>
-  <div class="value" id="month">--</div>
+  <div class="card-title">Utilisateurs aujourd’hui</div>
+  <div class="card-value" id="today">--</div>
 </div>
 
 <div class="card">
-  <div class="title">📄 Page la plus consultée</div>
-  <div class="value" id="topPage">---</div>
-</div>
-
-<div class="card">
-  <div class="title">📱 Appareil principal</div>
-  <div class="value" id="device">---</div>
+  <div class="card-title">Pages vues</div>
+  <div class="card-value" id="views">--</div>
 </div>
 
 </div>
 
 <script>
 
-/* ===== ANIM ===== */
-window.addEventListener("DOMContentLoaded",()=>{
-  requestAnimationFrame(()=>{
-    document.getElementById("page").classList.add("active");
-  });
-});
+/* ===== PASSWORD ===== */
 
-/* ===== FAKE DATA TEMPORAIRE ===== */
-/* En attendant Google Analytics */
+const PASSWORD = "035914";
 
-document.getElementById("today").innerText = "42";
-document.getElementById("month").innerText = "1284";
-document.getElementById("topPage").innerText = "Notifications";
-document.getElementById("device").innerText = "Mobile";
+document.getElementById("loginBtn").onclick = ()=>{
+  const val = document.getElementById("codeInput").value;
+  if(val === PASSWORD){
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("content").style.display="block";
+    loadStats();
+  }else{
+    alert("Code incorrect");
+  }
+};
 
-/* ===== NAV ===== */
-function goBack(){
-  const p=document.getElementById("page");
-  p.classList.remove("active");
-  p.classList.add("exit");
-  setTimeout(()=>{location.href="index.html"},300);
+/* ===== FAKE STATS (TEMPORAIRE) ===== */
+
+function loadStats(){
+
+  // Ces valeurs pourront être remplacées plus tard par Google Analytics
+  document.getElementById("installs").innerText = 124;
+  document.getElementById("today").innerText = 18;
+  document.getElementById("views").innerText = 642;
+
 }
 
 </script>
