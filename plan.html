@@ -167,10 +167,12 @@ header h1{
   color:#888;
 }
 
+/* ====== ICI CHANGEMENT ====== */
 .value{
-  font-size:16px;
-  font-weight:600;
+  font-size:14px;
+  font-weight:500;
 }
+/* ============================ */
 
 #horaire{
   font-size:14px;
@@ -182,10 +184,14 @@ header h1{
   margin-right:15px;
 }
 
+/* ====== INFOS ====== */
 #info{
   margin-top:8px;
   line-height:1.6;
+  font-size:14px;
+  font-weight:500;
 }
+/* ================= */
 
 .scrollable{
   max-height:160px;
@@ -335,21 +341,10 @@ if(e.statut_auto==="prevision"){statut.innerText="Ouverture prévue";statut.styl
 if(e.statut_auto==="ferme"){statut.innerText="Fermé";statut.style.color="red";}
 if(e.statut_auto==="hors-service"){statut.innerText="Hors service";statut.style.color="gray";}
 
-/* HORAIRE SPECIAL */
 const special = e.horaire_special && String(e.horaire_special).trim() !== "";
 const texteHoraire = special ? e.horaire_special : e.horaire_affiche;
 
 horaire.innerText = texteHoraire || "---";
-
-if(special){
-  horaire.style.color="#E88B00";
-  horaire.style.fontWeight="700";
-  horaire.style.fontSize="15px";
-}else{
-  horaire.style.color="#000";
-  horaire.style.fontWeight="500";
-  horaire.style.fontSize="14px";
-}
 
 info.innerText=e.info||"Aucune info";
 
