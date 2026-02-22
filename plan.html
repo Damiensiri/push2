@@ -176,16 +176,6 @@ header h1{
   font-weight:500;
 }
 
-#horaire{
-  font-size:14px;
-  font-weight:500;
-}
-
-.optionText{
-  font-size:13px;
-  margin-right:15px;
-}
-
 #info{
   margin-top:8px;
   line-height:1.6;
@@ -241,9 +231,7 @@ header h1{
   <div class="legend-item"><img src="image/horsservice.png"> Hors service</div>
 </div>
 
-<!-- PANEL -->
 <div id="panel">
-
 <div id="panelHeader">
   <div id="panelTitle">---</div>
   <div id="closePanel">✕</div>
@@ -262,8 +250,8 @@ header h1{
 <div class="row" id="optionsRow">
   <div class="label">Activités possibles</div>
   <div>
-    <span class="optionText" id="liberte"></span>
-    <span class="optionText" id="longe"></span>
+    <span id="liberte"></span>
+    <span id="longe"></span>
   </div>
 </div>
 
@@ -280,15 +268,11 @@ header h1{
 
 <script>
 
-/* ===== ANIMATION ===== */
-
 window.addEventListener("DOMContentLoaded",()=>{
   requestAnimationFrame(()=>{
     document.getElementById("page").classList.add("active");
   });
 });
-
-/* ===== CONFIG ===== */
 
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const RESERVE_URL="https://www.ce-dugrandrang.com/book-online?category=ebb4678d-9213-49a4-9c62-168e3bdce954";
@@ -301,79 +285,44 @@ const ICONS={
 };
 
 let DATA=[];
-let CURRENT=null;
 
-/* FORMAT TITRE */
-function formatTitle(t){
-  const map={
-    "carriere":"Carrière",
-    "manege":"Manège",
-    "maison":"Maison",
-    "grande-voie":"Grande voie",
-    "beudot":"Beudot"
-  };
-  return map[t]||t;
-}
-
-/* LOAD */
+/* LOAD SAFE */
 function loadData(){
-fetch(SHEET_URL,{cache:"no-store"})
-.then(r=>r.json())
-.then(d=>{
-  DATA=d;
-  d.forEach(e=>{
-    document.getElementById("icon-"+e.espace).src=ICONS[e.statut_auto];
+  fetch(SHEET_URL,{cache:"no-store"})
+  .then(r=>r.json())
+  .then(d=>{
+    DATA=d;
+
+    d.forEach(e=>{
+      const icon=document.getElementById("icon-"+e.espace);
+      if(icon){
+        icon.src=ICONS[e.statut_auto] || "";
+      }
+    });
+  })
+  .catch(err=>{
+    console.log("Erreur chargement plan :",err);
   });
-});
 }
+
 loadData();
 setInterval(loadData,60000);
 
 /* OPEN */
 function openSpace(espace){
+  const e=DATA.find(x=>x.espace===espace);
+  if(!e) return;
 
-CURRENT=espace;
-const e=DATA.find(x=>x.espace===espace);
-if(!e) return;
+  panelTitle.innerText=e.espace;
 
-panelTitle.innerText=formatTitle(e.espace);
+  statut.innerText=e.statut_auto;
+  horaire.innerText=e.horaire_special || e.horaire_affiche || "---";
+  info.innerText=e.info || "Aucune info";
 
-if(e.statut_auto==="ouvert"){statut.innerText="Ouvert";statut.style.color="green";}
-if(e.statut_auto==="prevision"){statut.innerText="Ouverture prévue";statut.style.color="#E88B00";}
-if(e.statut_auto==="ferme"){statut.innerText="Fermé";statut.style.color="red";}
-if(e.statut_auto==="hors-service"){statut.innerText="Hors service";statut.style.color="gray";}
-
-const special = e.horaire_special && String(e.horaire_special).trim() !== "";
-const texteHoraire = special ? e.horaire_special : e.horaire_affiche;
-
-horaire.innerText = texteHoraire || "---";
-
-info.innerText=e.info||"Aucune info";
-
-let show=false;
-if(e.liberte){
-  liberte.innerHTML=`Liberté : <span style="color:${e.liberte==="oui"?"green":"red"};font-weight:700">${e.liberte.toUpperCase()}</span>`;
-  show=true;
-}
-if(e.longe){
-  longe.innerHTML=`Longe : <span style="color:${e.longe==="oui"?"green":"red"};font-weight:700">${e.longe.toUpperCase()}</span>`;
-  show=true;
-}
-optionsRow.style.display=show?"block":"none";
-
-if((espace==="maison"||espace==="grande-voie"||espace==="beudot") &&
- (e.statut_auto==="ouvert"||e.statut_auto==="prevision")){
-  reserveBox.style.display="block";
-}else{
-  reserveBox.style.display="none";
-}
-
-panel.classList.add("active");
+  panel.classList.add("active");
 }
 
 closePanel.onclick=()=>panel.classList.remove("active");
-
-/* NAV */
 
 function goBack(){
   const page=document.getElementById("page");
@@ -384,7 +333,9 @@ function goBack(){
   },300);
 }
 
-function goReserve(){window.open(RESERVE_URL,"_blank");}
+function goReserve(){
+  window.open(RESERVE_URL,"_blank");
+}
 
 </script>
 
