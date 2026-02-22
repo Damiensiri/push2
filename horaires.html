@@ -54,8 +54,12 @@ header{
   align-items:center;
   justify-content:center;
   box-shadow:0 3px 8px rgba(0,0,0,0.15);
-  font-size:20px;
   cursor:pointer;
+}
+
+#backBtn img{
+  width:22px;
+  height:22px;
 }
 
 header h1{
@@ -113,7 +117,9 @@ header h1{
 <body>
 
 <header>
-  <div id="backBtn" onclick="goBack()">←</div>
+  <div id="backBtn" onclick="goBack()">
+    <img src="image/back.svg">
+  </div>
   <h1>HORAIRES</h1>
 </header>
 
