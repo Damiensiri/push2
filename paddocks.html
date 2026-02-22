@@ -53,7 +53,11 @@ header{
   justify-content:center;
   box-shadow:0 3px 8px rgba(0,0,0,0.08);
   cursor:pointer;
-  font-size:20px;
+}
+
+#backBtn img{
+  width:22px;
+  height:22px;
 }
 
 header h1{
@@ -170,7 +174,9 @@ header h1{
 <div class="page" id="page">
 
 <header>
-  <div id="backBtn" onclick="goBack()">←</div>
+  <div id="backBtn" onclick="goBack()">
+    <img src="image/back.svg">
+  </div>
   <h1>PADDOCKS</h1>
 </header>
 
