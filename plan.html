@@ -51,8 +51,12 @@ header{
   align-items:center;
   justify-content:center;
   box-shadow:0 3px 8px rgba(0,0,0,0.15);
-  font-size:20px;
   cursor:pointer;
+}
+
+#backBtn img{
+  width:22px;
+  height:22px;
 }
 
 header h1{
@@ -167,12 +171,10 @@ header h1{
   color:#888;
 }
 
-/* ====== ICI CHANGEMENT ====== */
 .value{
   font-size:14px;
   font-weight:500;
 }
-/* ============================ */
 
 #horaire{
   font-size:14px;
@@ -184,14 +186,12 @@ header h1{
   margin-right:15px;
 }
 
-/* ====== INFOS ====== */
 #info{
   margin-top:8px;
   line-height:1.6;
   font-size:14px;
   font-weight:500;
 }
-/* ================= */
 
 .scrollable{
   max-height:160px;
@@ -218,7 +218,9 @@ header h1{
 <div class="page" id="page">
 
 <header>
-  <div id="backBtn" onclick="goBack()">←</div>
+  <div id="backBtn" onclick="goBack()">
+    <img src="image/back.svg">
+  </div>
   <h1>PLAN INTERACTIF</h1>
 </header>
 
