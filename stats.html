@@ -35,7 +35,7 @@ body{
 #codeInput{
   width:180px;
   padding:12px;
-  font-size:22px;
+  font-size:20px;
   text-align:center;
   border-radius:10px;
   border:1px solid #ccc;
@@ -95,19 +95,6 @@ header h1{
   font-size:13px;
 }
 
-/* ===== LIST ===== */
-
-.list{
-  margin-top:8px;
-}
-
-.list-item{
-  display:flex;
-  justify-content:space-between;
-  font-size:14px;
-  margin-bottom:6px;
-}
-
 </style>
 </head>
 
@@ -116,7 +103,6 @@ header h1{
 <!-- ===== LOGIN ===== -->
 <div id="loginBox">
   <h2>Accès réservé</h2>
-
   <input 
     id="codeInput"
     type="tel"
@@ -124,7 +110,6 @@ header h1{
     pattern="[0-9]*"
     placeholder="Code"
   >
-
   <button id="loginBtn">Valider</button>
 </div>
 
@@ -135,57 +120,28 @@ header h1{
   <h1>STATISTIQUES</h1>
 </header>
 
-<!-- VISITEURS -->
 <div class="card">
-  <div class="card-title">Visiteurs aujourd’hui</div>
-  <div class="card-value" id="today">--</div>
+  <div class="card-title">Utilisateurs actifs (30 jours)</div>
+  <div class="card-value" id="users">--</div>
 </div>
 
-<div class="card">
-  <div class="card-title">Visiteurs sur 7 jours</div>
-  <div class="card-value" id="week">--</div>
-</div>
-
-<div class="card">
-  <div class="card-title">Visiteurs sur 30 jours</div>
-  <div class="card-value" id="month">--</div>
-</div>
-
-<!-- PAGES VUES -->
 <div class="card">
   <div class="card-title">Pages vues</div>
   <div class="card-value" id="views">--</div>
-</div>
-
-<!-- TOP PAGES -->
-<div class="card">
-  <div class="card-title">Top pages</div>
-  <div class="list" id="topPages"></div>
-</div>
-
-<!-- APPAREILS -->
-<div class="card">
-  <div class="card-title">Appareils</div>
-  <div class="list" id="devices"></div>
-</div>
-
-<!-- SOURCES -->
-<div class="card">
-  <div class="card-title">Source du trafic</div>
-  <div class="list" id="sources"></div>
 </div>
 
 </div>
 
 <script>
 
-/* ===== PASSWORD ===== */
-
 const PASSWORD = "035914";
+const API_URL = "https://script.google.com/macros/s/AKfycbyqYGn1axz5u6J8hbw-rd2CKq7w3Ln2pWfBLHnhjhCKUTQ7EGTykuD4z8vUe9alJHIl9w/exec";
+
+/* ===== LOGIN ===== */
 
 document.getElementById("loginBtn").onclick = ()=>{
-  const val = document.getElementById("codeInput").value;
-  if(val === PASSWORD){
+  const val=document.getElementById("codeInput").value;
+  if(val===PASSWORD){
     document.getElementById("loginBox").style.display="none";
     document.getElementById("content").style.display="block";
     loadStats();
@@ -194,74 +150,29 @@ document.getElementById("loginBtn").onclick = ()=>{
   }
 };
 
-/* =====================================================
-   DONNÉES TEMPORAIRES (SIMULATION)
-   -> remplacées plus tard par Google Analytics API
-===================================================== */
+/* ===== LOAD STATS ===== */
 
 function loadStats(){
 
-  // visiteurs
-  document.getElementById("today").innerText = 18;
-  document.getElementById("week").innerText = 132;
-  document.getElementById("month").innerText = 514;
+fetch(API_URL)
+.then(r=>r.json())
+.then(data=>{
 
-  // pages vues
-  document.getElementById("views").innerText = 642;
+  let users = 0;
+  let views = 0;
 
-  // top pages
-  const pages = [
-    ["Accueil",120],
-    ["Météo",98],
-    ["Paddocks",75],
-    ["Notifications",63],
-    ["Plan",51]
-  ];
-
-  const top=document.getElementById("topPages");
-  pages.forEach(p=>{
-    top.innerHTML += `
-      <div class="list-item">
-        <span>${p[0]}</span>
-        <span>${p[1]}</span>
-      </div>
-    `;
+  data.rows.forEach(row=>{
+    users += parseInt(row.metricValues[0].value);
+    views += parseInt(row.metricValues[1].value);
   });
 
-  // appareils
-  const devices=[
-    ["Mobile",92],
-    ["Desktop",6],
-    ["Tablette",2]
-  ];
+  document.getElementById("users").innerText = users;
+  document.getElementById("views").innerText = views;
 
-  const d=document.getElementById("devices");
-  devices.forEach(x=>{
-    d.innerHTML+=`
-      <div class="list-item">
-        <span>${x[0]}</span>
-        <span>${x[1]}%</span>
-      </div>
-    `;
-  });
-
-  // sources
-  const sources=[
-    ["Accès direct",60],
-    ["QR Code",22],
-    ["Site web",12],
-    ["Réseaux sociaux",6]
-  ];
-
-  const s=document.getElementById("sources");
-  sources.forEach(x=>{
-    s.innerHTML+=`
-      <div class="list-item">
-        <span>${x[0]}</span>
-        <span>${x[1]}%</span>
-      </div>
-    `;
-  });
+})
+.catch(()=>{
+  alert("Erreur chargement stats");
+});
 
 }
 
