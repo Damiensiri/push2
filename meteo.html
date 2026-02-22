@@ -9,11 +9,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+
 body{
   margin:0;
-  font-family:'Montserrat',sans-serif;
   background:#f4f4f4;
+  font-family:'Montserrat',sans-serif;
 }
+
+/* ===== ANIMATION PAGE ===== */
 
 .page{
   min-height:100vh;
@@ -34,7 +37,6 @@ body{
 header{
   position:relative;
   height:70px;
-  background:#f4f4f4;
 }
 
 #backBtn{
@@ -49,13 +51,9 @@ header{
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  box-shadow:0 3px 8px rgba(0,0,0,0.15);
   cursor:pointer;
-}
-
-#backBtn img{
-  width:22px;
-  height:22px;
+  font-size:20px;
 }
 
 header h1{
@@ -66,58 +64,61 @@ header h1{
   margin:0;
   font-size:18px;
   font-weight:700;
-  color:#181E3B;
 }
 
-/* ===== METEO ===== */
+/* ===== CARD METEO ===== */
 
-.weather-card{
+.card{
   background:white;
   margin:20px 15px;
-  padding:20px;
-  border-radius:18px;
+  padding:25px;
+  border-radius:20px;
   box-shadow:0 5px 12px rgba(0,0,0,0.12);
   text-align:center;
 }
 
 .city{
   font-size:18px;
-  font-weight:700;
-  color:#181E3B;
+  font-weight:600;
+  color:#666;
+}
+
+#icon{
+  font-size:52px;
+  margin-top:12px;
 }
 
 .temp{
-  font-size:42px;
+  font-size:48px;
   font-weight:700;
-  margin:10px 0;
-  color:#1e2c88;
+  margin-top:8px;
 }
 
 .desc{
-  font-size:14px;
+  margin-top:6px;
+  font-size:16px;
   color:#666;
 }
+
+/* ===== PREVISION ===== */
 
 .forecast{
   display:flex;
   justify-content:space-between;
-  margin-top:20px;
-  gap:10px;
+  margin-top:25px;
 }
 
 .day{
-  flex:1;
-  background:#f9f9f9;
-  padding:12px;
+  background:#f4f4f4;
+  padding:12px 8px;
   border-radius:12px;
-  font-size:13px;
+  width:30%;
+  font-size:14px;
 }
 
 .day strong{
   display:block;
-  margin-bottom:5px;
-  font-weight:600;
-  color:#181E3B;
+  margin-bottom:6px;
 }
 
 </style>
@@ -128,42 +129,68 @@ header h1{
 <div class="page" id="page">
 
 <header>
-  <div id="backBtn" onclick="goBack()">
-    <img src="image/back.svg">
-  </div>
+  <div id="backBtn" onclick="goBack()">←</div>
   <h1>MÉTÉO</h1>
 </header>
 
-<div class="weather-card">
+<div class="card">
+
   <div class="city">Brienne-le-Château</div>
-  <div class="temp" id="temp">--°</div>
+
+  <div id="icon">⛅</div>
+
+  <div class="temp" id="temp">--°C</div>
+
   <div class="desc" id="desc">Chargement...</div>
 
   <div class="forecast" id="forecast"></div>
+
 </div>
 
 </div>
 
 <script>
 
-/* Animation */
+/* ===== ANIMATION ===== */
+
 window.addEventListener("DOMContentLoaded",()=>{
   requestAnimationFrame(()=>{
     document.getElementById("page").classList.add("active");
   });
 });
 
-/* API Open-Meteo */
-const API_URL="https://api.open-meteo.com/v1/forecast?latitude=48.39&longitude=4.52&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Europe%2FParis";
+/* ===== METEO API ===== */
+
+const API_URL =
+"https://api.open-meteo.com/v1/forecast?latitude=48.39&longitude=4.52&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Europe%2FParis";
+
+/* ===== ICONES ===== */
+
+function getIcon(code){
+  if(code===0) return "☀️";
+  if(code===1 || code===2) return "🌤️";
+  if(code===3) return "☁️";
+  if(code===61 || code===63) return "🌧️";
+  if(code===80) return "🌦️";
+  if(code>=71 && code<=77) return "❄️";
+  return "⛅";
+}
+
+/* ===== LOAD ===== */
 
 fetch(API_URL)
 .then(r=>r.json())
 .then(data=>{
 
   const current=data.current_weather;
-  document.getElementById("temp").innerText=Math.round(current.temperature)+"°C";
 
-  const codes={
+  document.getElementById("temp").innerText =
+    Math.round(current.temperature)+"°C";
+
+  document.getElementById("icon").innerText =
+    getIcon(current.weathercode);
+
+  const descMap={
     0:"Ciel dégagé",
     1:"Peu nuageux",
     2:"Partiellement nuageux",
@@ -173,15 +200,17 @@ fetch(API_URL)
     80:"Averses"
   };
 
-  document.getElementById("desc").innerText=
-    codes[current.weathercode] || "Conditions variables";
+  document.getElementById("desc").innerText =
+    descMap[current.weathercode] || "Conditions variables";
 
   const forecast=document.getElementById("forecast");
   forecast.innerHTML="";
 
   for(let i=1;i<=3;i++){
+
     const max=data.daily.temperature_2m_max[i];
     const min=data.daily.temperature_2m_min[i];
+    const code=data.daily.weathercode[i];
 
     const date=new Date(data.daily.time[i]);
     const jour=date.toLocaleDateString("fr-FR",{weekday:"short"});
@@ -189,6 +218,7 @@ fetch(API_URL)
     forecast.innerHTML+=`
       <div class="day">
         <strong>${jour}</strong>
+        <div style="font-size:22px">${getIcon(code)}</div>
         ${Math.round(min)}° / ${Math.round(max)}°
       </div>
     `;
@@ -196,7 +226,8 @@ fetch(API_URL)
 
 });
 
-/* Retour */
+/* ===== NAV ===== */
+
 function goBack(){
   const page=document.getElementById("page");
   page.classList.remove("active");
