@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Météo</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -12,25 +11,20 @@
 
 body{
   margin:0;
-  background:#f4f4f4;
   font-family:'Montserrat',sans-serif;
+  background:#f4f4f4;
 }
 
-/* ===== ANIMATION PAGE ===== */
+/* ===== ANIMATION ===== */
 
 .page{
   min-height:100vh;
   transform:translateX(100%);
-  transition:transform .35s ease;
+  transition:0.35s ease;
 }
 
-.page.active{
-  transform:translateX(0);
-}
-
-.page.exit{
-  transform:translateX(100%);
-}
+.page.active{ transform:translateX(0); }
+.page.exit{ transform:translateX(100%); }
 
 /* ===== HEADER ===== */
 
@@ -47,13 +41,16 @@ header{
   width:42px;
   height:42px;
   border-radius:50%;
-  background:white;
+  background:#fff;
   display:flex;
   align-items:center;
   justify-content:center;
   box-shadow:0 3px 8px rgba(0,0,0,0.15);
   cursor:pointer;
-  font-size:20px;
+}
+
+#backBtn img{
+  width:18px;
 }
 
 header h1{
@@ -66,59 +63,63 @@ header h1{
   font-weight:700;
 }
 
-/* ===== CARD METEO ===== */
+/* ===== CARD ===== */
 
 .card{
-  background:white;
-  margin:20px 15px;
+  background:#fff;
+  margin:20px;
   padding:25px;
-  border-radius:20px;
+  border-radius:22px;
   box-shadow:0 5px 12px rgba(0,0,0,0.12);
   text-align:center;
 }
 
 .city{
-  font-size:18px;
+  font-size:20px;
   font-weight:600;
-  color:#666;
+  color:#777;
 }
 
-#icon{
-  font-size:52px;
-  margin-top:12px;
+.big-icon{
+  font-size:60px;
+  margin:10px 0;
 }
 
 .temp{
-  font-size:48px;
+  font-size:54px;
   font-weight:700;
-  margin-top:8px;
 }
 
 .desc{
-  margin-top:6px;
-  font-size:16px;
+  font-size:18px;
   color:#666;
 }
 
-/* ===== PREVISION ===== */
+/* ===== FORECAST ===== */
 
 .forecast{
   display:flex;
-  justify-content:space-between;
+  justify-content:center;
+  gap:12px;
   margin-top:25px;
 }
 
 .day{
   background:#f4f4f4;
   padding:12px 8px;
-  border-radius:12px;
-  width:30%;
+  border-radius:14px;
+  width:90px;
   font-size:14px;
 }
 
-.day strong{
-  display:block;
-  margin-bottom:6px;
+.day-icon{
+  font-size:22px;
+  margin:6px 0;
+}
+
+.minmax{
+  font-size:13px;
+  color:#555;
 }
 
 </style>
@@ -129,7 +130,9 @@ header h1{
 <div class="page" id="page">
 
 <header>
-  <div id="backBtn" onclick="goBack()">←</div>
+  <div id="backBtn" onclick="goBack()">
+    <img src="image/back.svg">
+  </div>
   <h1>MÉTÉO</h1>
 </header>
 
@@ -137,11 +140,11 @@ header h1{
 
   <div class="city">Brienne-le-Château</div>
 
-  <div id="icon">⛅</div>
+  <div class="big-icon" id="iconNow">⛅</div>
 
-  <div class="temp" id="temp">--°C</div>
+  <div class="temp" id="tempNow">--°C</div>
 
-  <div class="desc" id="desc">Chargement...</div>
+  <div class="desc" id="descNow">Chargement...</div>
 
   <div class="forecast" id="forecast"></div>
 
@@ -159,69 +162,57 @@ window.addEventListener("DOMContentLoaded",()=>{
   });
 });
 
-/* ===== METEO API ===== */
+/* ===== WEATHER API (Open-Meteo - gratuit) ===== */
 
-const API_URL =
-"https://api.open-meteo.com/v1/forecast?latitude=48.39&longitude=4.52&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=Europe%2FParis";
+const LAT = 48.392;
+const LON = 4.527;
 
-/* ===== ICONES ===== */
+const API =
+`https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current_weather=true&daily=weathercode,temperature_2m_min,temperature_2m_max&timezone=Europe%2FParis`;
 
-function getIcon(code){
-  if(code===0) return "☀️";
-  if(code===1 || code===2) return "🌤️";
-  if(code===3) return "☁️";
-  if(code===61 || code===63) return "🌧️";
-  if(code===80) return "🌦️";
-  if(code>=71 && code<=77) return "❄️";
+function icon(code){
+  if(code==0) return "☀️";
+  if(code<=3) return "⛅";
+  if(code<=48) return "🌫️";
+  if(code<=67) return "🌧️";
+  if(code<=77) return "❄️";
+  if(code<=99) return "⛈️";
   return "⛅";
 }
 
-/* ===== LOAD ===== */
+function dayName(i){
+  const d=new Date();
+  d.setDate(d.getDate()+i);
+  return ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."][d.getDay()];
+}
 
-fetch(API_URL)
+fetch(API)
 .then(r=>r.json())
 .then(data=>{
 
-  const current=data.current_weather;
+  document.getElementById("tempNow").innerText =
+    Math.round(data.current_weather.temperature)+"°C";
 
-  document.getElementById("temp").innerText =
-    Math.round(current.temperature)+"°C";
+  document.getElementById("iconNow").innerText =
+    icon(data.current_weather.weathercode);
 
-  document.getElementById("icon").innerText =
-    getIcon(current.weathercode);
+  document.getElementById("descNow").innerText = "Conditions actuelles";
 
-  const descMap={
-    0:"Ciel dégagé",
-    1:"Peu nuageux",
-    2:"Partiellement nuageux",
-    3:"Couvert",
-    61:"Pluie légère",
-    63:"Pluie modérée",
-    80:"Averses"
-  };
+  const f=document.getElementById("forecast");
 
-  document.getElementById("desc").innerText =
-    descMap[current.weathercode] || "Conditions variables";
+  for(let i=0;i<3;i++){
+    const div=document.createElement("div");
+    div.className="day";
 
-  const forecast=document.getElementById("forecast");
-  forecast.innerHTML="";
-
-  for(let i=1;i<=3;i++){
-
-    const max=data.daily.temperature_2m_max[i];
-    const min=data.daily.temperature_2m_min[i];
-    const code=data.daily.weathercode[i];
-
-    const date=new Date(data.daily.time[i]);
-    const jour=date.toLocaleDateString("fr-FR",{weekday:"short"});
-
-    forecast.innerHTML+=`
-      <div class="day">
-        <strong>${jour}</strong>
-        <div style="font-size:22px">${getIcon(code)}</div>
-        ${Math.round(min)}° / ${Math.round(max)}°
+    div.innerHTML=`
+      <div><strong>${dayName(i+1)}</strong></div>
+      <div class="day-icon">${icon(data.daily.weathercode[i+1])}</div>
+      <div class="minmax">
+        ${Math.round(data.daily.temperature_2m_min[i+1])}° /
+        ${Math.round(data.daily.temperature_2m_max[i+1])}°
       </div>
     `;
+    f.appendChild(div);
   }
 
 });
@@ -233,7 +224,7 @@ function goBack(){
   page.classList.remove("active");
   page.classList.add("exit");
   setTimeout(()=>{
-    window.location.href="index.html";
+    location.href="index.html";
   },300);
 }
 
