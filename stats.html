@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Statistiques</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:'Montserrat',sans-serif;
+  background:#f4f4f4;
+}
+
+/* ===== PAGE ANIMATION ===== */
+
+.page{
+  min-height:100vh;
+  transform:translateX(100%);
+  transition:.35s ease;
+}
+
+.page.active{transform:translateX(0);}
+.page.exit{transform:translateX(100%);}
+
+/* ===== HEADER ===== */
+
+header{
+  position:relative;
+  height:70px;
+}
+
+#backBtn{
+  position:absolute;
+  left:15px;
+  top:50%;
+  transform:translateY(-50%);
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 3px 8px rgba(0,0,0,.15);
+  cursor:pointer;
+}
+
+#backBtn img{
+  width:22px;
+}
+
+header h1{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  margin:0;
+  font-size:18px;
+  font-weight:700;
+}
+
+/* ===== CARDS ===== */
+
+.card{
+  background:white;
+  margin:15px;
+  padding:18px;
+  border-radius:18px;
+  box-shadow:0 5px 12px rgba(0,0,0,.12);
+}
+
+.title{
+  font-weight:700;
+  font-size:16px;
+  margin-bottom:10px;
+}
+
+.value{
+  font-size:28px;
+  font-weight:700;
+  color:#1e2c88;
+}
+
+.small{
+  font-size:14px;
+  color:#777;
+}
+</style>
+</head>
+
+<body>
+
+<div class="page" id="page">
+
+<header>
+  <div id="backBtn" onclick="goBack()">
+    <img src="image/back.svg">
+  </div>
+  <h1>STATISTIQUES</h1>
+</header>
+
+<div class="card">
+  <div class="title">👥 Visites aujourd’hui</div>
+  <div class="value" id="today">--</div>
+</div>
+
+<div class="card">
+  <div class="title">📅 Visites ce mois</div>
+  <div class="value" id="month">--</div>
+</div>
+
+<div class="card">
+  <div class="title">📄 Page la plus consultée</div>
+  <div class="value" id="topPage">---</div>
+</div>
+
+<div class="card">
+  <div class="title">📱 Appareil principal</div>
+  <div class="value" id="device">---</div>
+</div>
+
+</div>
+
+<script>
+
+/* ===== ANIM ===== */
+window.addEventListener("DOMContentLoaded",()=>{
+  requestAnimationFrame(()=>{
+    document.getElementById("page").classList.add("active");
+  });
+});
+
+/* ===== FAKE DATA TEMPORAIRE ===== */
+/* En attendant Google Analytics */
+
+document.getElementById("today").innerText = "42";
+document.getElementById("month").innerText = "1284";
+document.getElementById("topPage").innerText = "Notifications";
+document.getElementById("device").innerText = "Mobile";
+
+/* ===== NAV ===== */
+function goBack(){
+  const p=document.getElementById("page");
+  p.classList.remove("active");
+  p.classList.add("exit");
+  setTimeout(()=>{location.href="index.html"},300);
+}
+
+</script>
+
+</body>
+</html>
