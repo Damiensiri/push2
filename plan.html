@@ -176,7 +176,6 @@ header h1{
   font-weight:500;
 }
 
-/* ===== STATUT PLUS GROS ===== */
 #statut{
   font-size:18px;
   font-weight:700;
@@ -247,7 +246,6 @@ header h1{
   <div class="legend-item"><img src="image/horsservice.png"> Hors service</div>
 </div>
 
-<!-- PANEL -->
 <div id="panel">
 
 <div id="panelHeader">
@@ -285,15 +283,12 @@ header h1{
 </div>
 
 <script>
-/* ===== ANIMATION ===== */
 
 window.addEventListener("DOMContentLoaded",()=>{
   requestAnimationFrame(()=>{
     document.getElementById("page").classList.add("active");
   });
 });
-
-/* ===== CONFIG ===== */
 
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const RESERVE_URL="https://www.ce-dugrandrang.com/book-online?category=ebb4678d-9213-49a4-9c62-168e3bdce954";
@@ -308,7 +303,6 @@ const ICONS={
 let DATA=[];
 let CURRENT=null;
 
-/* FORMAT TITRE */
 function formatTitle(t){
   const map={
     "carriere":"Carrière",
@@ -320,7 +314,6 @@ function formatTitle(t){
   return map[t]||t;
 }
 
-/* LOAD */
 function loadData(){
 fetch(SHEET_URL,{cache:"no-store"})
 .then(r=>r.json())
@@ -334,7 +327,6 @@ fetch(SHEET_URL,{cache:"no-store"})
 loadData();
 setInterval(loadData,60000);
 
-/* OPEN */
 function openSpace(espace){
 
 CURRENT=espace;
@@ -352,6 +344,14 @@ const special = e.horaire_special && String(e.horaire_special).trim() !== "";
 const texteHoraire = special ? e.horaire_special : e.horaire_affiche;
 
 horaire.innerText = texteHoraire || "---";
+
+if(special){
+  horaire.style.color = "#E88B00";
+  horaire.style.fontWeight = "700";
+}else{
+  horaire.style.color = "#000";
+  horaire.style.fontWeight = "500";
+}
 
 info.innerText=e.info||"Aucune info";
 
@@ -377,8 +377,6 @@ panel.classList.add("active");
 }
 
 closePanel.onclick=()=>panel.classList.remove("active");
-
-/* NAV */
 
 function goBack(){
   const page=document.getElementById("page");
