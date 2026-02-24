@@ -123,10 +123,6 @@ header h1{
   flex-wrap:nowrap;
 }
 
-.card-middle img{
-  height:22px;
-}
-
 .horaire{
   margin-left:auto;
   font-size:13px;
@@ -139,6 +135,26 @@ header h1{
   color:#E88B00;
   white-space:pre-line;
 }
+
+/* ===== BADGES ===== */
+
+.badge{
+  padding:4px 10px;
+  border-radius:12px;
+  font-size:12px;
+  font-weight:700;
+  color:white;
+}
+
+.badge.oui{
+  background:#1DB954;
+}
+
+.badge.non{
+  background:#E53935;
+}
+
+/* ===== LEGENDE ===== */
 
 .legend{
   margin:25px 20px;
@@ -184,9 +200,9 @@ header h1{
 
   <div class="card-middle">
     <div>Liberté</div>
-    <img id="carriere-liberte">
+    <div id="carriere-liberte"></div>
     <div>Longe</div>
-    <img id="carriere-longe">
+    <div id="carriere-longe"></div>
     <div id="carriere-horaire" class="horaire"></div>
   </div>
 
@@ -205,9 +221,9 @@ header h1{
 
   <div class="card-middle">
     <div>Liberté</div>
-    <img id="manege-liberte">
+    <div id="manege-liberte"></div>
     <div>Longe</div>
-    <img id="manege-longe">
+    <div id="manege-longe"></div>
     <div id="manege-horaire" class="horaire"></div>
   </div>
 
@@ -227,11 +243,6 @@ header h1{
 
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const REFRESH=60000;
-
-const ICONS_YN={
-  "oui":"image/oui.png",
-  "non":"image/non.png"
-};
 
 const ICONS_STATUT={
   "ouvert":"image/ouvert.png",
@@ -268,9 +279,17 @@ function loadData(){
       const row=data.find(e=>e.espace===espace);
       if(!row) return;
 
-      document.getElementById(espace+"-liberte").src=ICONS_YN[row.liberte];
-      document.getElementById(espace+"-longe").src=ICONS_YN[row.longe];
       document.getElementById(espace+"-statut").src=ICONS_STATUT[row.statut_auto];
+
+      document.getElementById(espace+"-liberte").innerHTML =
+        row.liberte==="oui"
+        ? '<span class="badge oui">OUI</span>'
+        : '<span class="badge non">NON</span>';
+
+      document.getElementById(espace+"-longe").innerHTML =
+        row.longe==="oui"
+        ? '<span class="badge oui">OUI</span>'
+        : '<span class="badge non">NON</span>';
 
       const horaire=row.horaire_special || row.horaire_affiche || "";
       const el=document.getElementById(espace+"-horaire");
@@ -282,7 +301,7 @@ function loadData(){
   });
 }
 
-/* ===== RETOUR AVEC ANIMATION ===== */
+/* ===== RETOUR ===== */
 
 function goBack(){
   const page=document.getElementById("page");
