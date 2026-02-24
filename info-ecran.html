@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Écran Informations - Écurie</title>
+<title>Informations Centre</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -12,51 +12,50 @@
 
 body{
   margin:0;
+  background:#111;
   font-family:'Montserrat',sans-serif;
-  background:#2b2b2b;
+  color:white;
 }
 
 /* ===== HEADER ===== */
 
 header{
   height:70px;
-  background:#1f1f1f;
   display:flex;
   align-items:center;
   justify-content:center;
+  background:#000;
   position:relative;
 }
 
 header img{
   position:absolute;
-  left:15px;
+  left:20px;
   height:40px;
+  filter: brightness(0) invert(1) drop-shadow(0 0 4px rgba(255,255,255,0.6));
 }
 
 header h1{
-  color:white;
-  margin:0;
   font-size:22px;
-  font-weight:700;
+  margin:0;
 }
 
-/* ===== SECTIONS ===== */
+/* ===== CONTAINER ===== */
 
-.section-title{
-  color:white;
-  margin:20px 15px 10px;
-  font-size:16px;
-  font-weight:700;
+.container{
+  padding:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+  gap:20px;
 }
 
-/* ===== CARDS ===== */
+/* ===== CARD ===== */
 
 .card{
-  background:white;
-  margin:0 15px 18px;
-  padding:16px;
+  background:#1a1a1a;
   border-radius:18px;
-  box-shadow:0 4px 10px rgba(0,0,0,0.5);
+  padding:18px;
+  box-shadow:0 0 15px rgba(255,255,255,0.05);
 }
 
 .card-top{
@@ -65,56 +64,41 @@ header h1{
   align-items:center;
 }
 
-.title-wrap{
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-
-.title-wrap img{
-  width:26px;
-}
-
 .card-title{
   font-size:22px;
   font-weight:700;
 }
 
-.card-top img.statut{
-  width:26px;
+.card-top img{
+  width:32px;
 }
 
-/* ===== LIGNE ===== */
-
-.card-middle{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-top:8px;
-  flex-wrap:nowrap;
+.row{
+  margin-top:12px;
 }
 
-.badge{
-  font-weight:700;
-  font-size:14px;
+.label{
+  color:#aaa;
+  font-size:13px;
 }
 
-.badge.oui{ color:#4caf50; }
-.badge.non{ color:#f44336; }
-
-.horaire{
-  margin-left:auto;
-  font-size:14px;
+.value{
+  font-size:18px;
   font-weight:600;
 }
 
 .info{
   margin-top:10px;
   font-size:14px;
-  font-weight:500;
   color:#E88B00;
-  white-space:pre-line;
 }
+
+/* ===== COLORS ===== */
+
+.green{color:#5cb85c;}
+.red{color:#d9534f;}
+.orange{color:#E88B00;}
+.gray{color:#aaa;}
 
 </style>
 </head>
@@ -123,104 +107,83 @@ header h1{
 
 <header>
   <img src="image/logo.png">
-  <h1>INFORMATIONS ÉCURIE</h1>
+  <h1>INFORMATIONS ESPACES</h1>
 </header>
 
-<div class="section-title">ESPACES TRAVAIL</div>
-
-<div class="card" id="carriere"></div>
-<div class="card" id="manege"></div>
-
-<div class="section-title">PADDOCKS</div>
-
-<div class="card" id="maison"></div>
-<div class="card" id="grande-voie"></div>
-<div class="card" id="beudot"></div>
+<div class="container" id="container"></div>
 
 <script>
 
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const REFRESH=60000;
 
-const ICONS_STATUT={
-  "ouvert":"image/ouvert.png",
-  "ferme":"image/ferme.png",
-  "prevision":"image/prevision.png",
-  "hors-service":"image/horsservice.png"
-};
-
-const TITRES={
-  "carriere":"Carrière",
-  "manege":"Manège",
-  "maison":"Maison",
-  "grande-voie":"Grande voie",
-  "beudot":"Beudot"
-};
-
-function badgeYN(v){
-  if(v==="oui") return `<span class="badge oui">OUI</span>`;
-  if(v==="non") return `<span class="badge non">NON</span>`;
-  return "";
+function colorStatut(s){
+  if(s==="ouvert") return "green";
+  if(s==="ferme") return "red";
+  if(s==="prevision") return "orange";
+  return "gray";
 }
 
-function buildCard(e){
-
-  const isTravail = (e.espace==="carriere" || e.espace==="manege");
-
-  return `
-    <div class="card-top">
-      <div class="title-wrap">
-        <img src="image/travail.svg">
-        <div class="card-title">${TITRES[e.espace]}</div>
-      </div>
-      <img class="statut" src="${ICONS_STATUT[e.statut_auto]}">
-    </div>
-
-    ${
-      isTravail
-      ? `
-        <div class="card-middle">
-          <div>Liberté</div>
-          ${badgeYN(e.liberte)}
-          <div>Longe</div>
-          ${badgeYN(e.longe)}
-          <div class="horaire" style="color:${e.horaire_special ? "#E88B00":"#000"}">
-            ${e.horaire_special || e.horaire_affiche || ""}
-          </div>
-        </div>
-      `
-      : `
-        <div class="card-middle">
-          <div class="horaire" style="color:${e.horaire_special ? "#E88B00":"#000"}">
-            ${e.horaire_special || e.horaire_affiche || ""}
-          </div>
-        </div>
-      `
-    }
-
-    <div class="info">${e.info || ""}</div>
-  `;
+function labelStatut(s){
+  if(s==="ouvert") return "OUVERT";
+  if(s==="ferme") return "FERMÉ";
+  if(s==="prevision") return "OUVERTURE PRÉVUE";
+  return "HORS SERVICE";
 }
 
-function loadData(){
+function titre(espace){
+  const map={
+    "carriere":"Carrière",
+    "manege":"Manège",
+    "maison":"Maison",
+    "grande-voie":"Grande voie",
+    "beudot":"Beudot"
+  };
+  return map[espace] || espace;
+}
+
+function load(){
 
 fetch(SHEET_URL,{cache:"no-store"})
 .then(r=>r.json())
 .then(data=>{
 
-  ["carriere","manege","maison","grande-voie","beudot"].forEach(espace=>{
-    const row=data.find(e=>e.espace===espace);
-    if(!row) return;
+  const c=document.getElementById("container");
+  c.innerHTML="";
 
-    document.getElementById(espace).innerHTML = buildCard(row);
+  data.forEach(e=>{
+
+    const special = e.horaire_special && String(e.horaire_special).trim()!=="";
+    const horaire = special ? e.horaire_special : e.horaire_affiche;
+
+    const card=document.createElement("div");
+    card.className="card";
+
+    card.innerHTML=`
+      <div class="card-top">
+        <div class="card-title">${titre(e.espace)}</div>
+        <div class="value ${colorStatut(e.statut_auto)}">
+          ${labelStatut(e.statut_auto)}
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="label">Horaires</div>
+        <div class="value ${special?"orange":""}">${horaire||"--"}</div>
+      </div>
+
+      <div class="info">${e.info||""}</div>
+    `;
+
+    c.appendChild(card);
+
   });
 
 });
-
 }
 
-loadData();
-setInterval(loadData,REFRESH);
+load();
+setInterval(load,REFRESH);
 
 </script>
 
