@@ -111,6 +111,7 @@ header h1{
 .info{
   margin-top:10px;
   font-size:14px;
+  font-weight:500;
   color:#E88B00;
   white-space:pre-line;
 }
@@ -164,27 +165,41 @@ function badgeYN(v){
 
 function buildCard(e){
 
-return `
-  <div class="card-top">
-    <div class="title-wrap">
-      <img src="image/travail.svg">
-      <div class="card-title">${TITRES[e.espace]}</div>
-    </div>
-    <img class="statut" src="${ICONS_STATUT[e.statut_auto]}">
-  </div>
+  const isTravail = (e.espace==="carriere" || e.espace==="manege");
 
-  <div class="card-middle">
-    <div>Liberté</div>
-    ${badgeYN(e.liberte)}
-    <div>Longe</div>
-    ${badgeYN(e.longe)}
-    <div class="horaire" style="color:${e.horaire_special ? "#E88B00":"#000"}">
-      ${e.horaire_special || e.horaire_affiche || ""}
+  return `
+    <div class="card-top">
+      <div class="title-wrap">
+        <img src="image/travail.svg">
+        <div class="card-title">${TITRES[e.espace]}</div>
+      </div>
+      <img class="statut" src="${ICONS_STATUT[e.statut_auto]}">
     </div>
-  </div>
 
-  <div class="info">${e.info || ""}</div>
-`;
+    ${
+      isTravail
+      ? `
+        <div class="card-middle">
+          <div>Liberté</div>
+          ${badgeYN(e.liberte)}
+          <div>Longe</div>
+          ${badgeYN(e.longe)}
+          <div class="horaire" style="color:${e.horaire_special ? "#E88B00":"#000"}">
+            ${e.horaire_special || e.horaire_affiche || ""}
+          </div>
+        </div>
+      `
+      : `
+        <div class="card-middle">
+          <div class="horaire" style="color:${e.horaire_special ? "#E88B00":"#000"}">
+            ${e.horaire_special || e.horaire_affiche || ""}
+          </div>
+        </div>
+      `
+    }
+
+    <div class="info">${e.info || ""}</div>
+  `;
 }
 
 function loadData(){
