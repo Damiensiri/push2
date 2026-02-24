@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
@@ -15,28 +16,21 @@ body{
   overflow-x:hidden;
 }
 
-/* ===== PAGE WRAPPER (ANIMATION) ===== */
+/* ===== PAGE WRAPPER ===== */
 
 .page{
   min-height:100vh;
   transform:translateX(100%);
   transition:transform 0.35s ease;
 }
-
-.page.active{
-  transform:translateX(0);
-}
-
-.page.exit{
-  transform:translateX(100%);
-}
+.page.active{ transform:translateX(0); }
+.page.exit{ transform:translateX(100%); }
 
 /* ===== HEADER ===== */
 
 header{
   position:relative;
   height:70px;
-  background:#f4f4f4;
 }
 
 #backBtn{
@@ -55,10 +49,7 @@ header{
   cursor:pointer;
 }
 
-#backBtn img{
-  width:22px;
-  height:22px;
-}
+#backBtn img{ width:22px; }
 
 header h1{
   position:absolute;
@@ -101,9 +92,7 @@ header h1{
   gap:8px;
 }
 
-.title-wrap img{
-  width:26px;
-}
+.title-wrap img{ width:26px; }
 
 .card-title{
   font-size:22px;
@@ -115,10 +104,12 @@ header h1{
   height:26px;
 }
 
+/* ===== MIDDLE ===== */
+
 .card-middle{
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:10px;
   margin-top:8px;
   flex-wrap:nowrap;
 }
@@ -129,29 +120,26 @@ header h1{
   white-space:nowrap;
 }
 
-.card-info{
-  margin-top:10px;
-  font-size:13px;
-  color:#E88B00;
-  white-space:pre-line;
-}
-
 /* ===== BADGES ===== */
 
 .badge{
   padding:4px 10px;
   border-radius:12px;
-  font-size:12px;
+  font-size:16px;
   font-weight:700;
   color:white;
 }
 
-.badge.oui{
-  background:#1DB954;
-}
+.badge.oui{ background:#5cb85c; }
+.badge.non{ background:#d9534f; }
 
-.badge.non{
-  background:#E53935;
+/* ===== INFO ===== */
+
+.card-info{
+  margin-top:10px;
+  font-size:13px;
+  color:#E88B00;
+  white-space:pre-line;
 }
 
 /* ===== LEGENDE ===== */
@@ -168,9 +156,7 @@ header h1{
   margin-bottom:18px;
 }
 
-.legend-item img{
-  width:22px;
-}
+.legend-item img{ width:22px; }
 
 </style>
 </head>
@@ -200,9 +186,11 @@ header h1{
 
   <div class="card-middle">
     <div>Liberté</div>
-    <div id="carriere-liberte"></div>
+    <span id="carriere-liberte"></span>
+
     <div>Longe</div>
-    <div id="carriere-longe"></div>
+    <span id="carriere-longe"></span>
+
     <div id="carriere-horaire" class="horaire"></div>
   </div>
 
@@ -221,9 +209,11 @@ header h1{
 
   <div class="card-middle">
     <div>Liberté</div>
-    <div id="manege-liberte"></div>
+    <span id="manege-liberte"></span>
+
     <div>Longe</div>
-    <div id="manege-longe"></div>
+    <span id="manege-longe"></span>
+
     <div id="manege-horaire" class="horaire"></div>
   </div>
 
@@ -271,45 +261,41 @@ function updateDate(){
 
 /* ===== LOAD DATA ===== */
 
-function loadData(){
-  fetch(SHEET_URL,{cache:"no-store"})
-  .then(r=>r.json())
-  .then(data=>{
-    ["carriere","manege"].forEach(espace=>{
-      const row=data.find(e=>e.espace===espace);
-      if(!row) return;
-
-      document.getElementById(espace+"-statut").src=ICONS_STATUT[row.statut_auto];
-
-      document.getElementById(espace+"-liberte").innerHTML =
-        row.liberte==="oui"
-        ? '<span class="badge oui">OUI</span>'
-        : '<span class="badge non">NON</span>';
-
-      document.getElementById(espace+"-longe").innerHTML =
-        row.longe==="oui"
-        ? '<span class="badge oui">OUI</span>'
-        : '<span class="badge non">NON</span>';
-
-      const horaire=row.horaire_special || row.horaire_affiche || "";
-      const el=document.getElementById(espace+"-horaire");
-      el.innerText=horaire;
-      el.style.color=row.horaire_special ? "#E88B00" : "#000";
-
-      document.getElementById(espace+"-info").innerText=row.info || "";
-    });
-  });
+function makeBadge(val){
+  if(val==="oui") return `<span class="badge oui">OUI</span>`;
+  if(val==="non") return `<span class="badge non">NON</span>`;
+  return "";
 }
 
-/* ===== RETOUR ===== */
+function loadData(){
+fetch(SHEET_URL,{cache:"no-store"})
+.then(r=>r.json())
+.then(data=>{
+  ["carriere","manege"].forEach(espace=>{
+    const row=data.find(e=>e.espace===espace);
+    if(!row) return;
+
+    document.getElementById(espace+"-liberte").innerHTML = makeBadge(row.liberte);
+    document.getElementById(espace+"-longe").innerHTML = makeBadge(row.longe);
+    document.getElementById(espace+"-statut").src = ICONS_STATUT[row.statut_auto];
+
+    const horaire=row.horaire_special || row.horaire_affiche || "";
+    const el=document.getElementById(espace+"-horaire");
+    el.innerText=horaire;
+    el.style.color=row.horaire_special ? "#E88B00" : "#000";
+
+    document.getElementById(espace+"-info").innerText=row.info || "";
+  });
+});
+}
+
+/* ===== NAV ===== */
 
 function goBack(){
   const page=document.getElementById("page");
   page.classList.remove("active");
   page.classList.add("exit");
-  setTimeout(()=>{
-    window.location.href="index.html";
-  },300);
+  setTimeout(()=>{ location.href="index.html"; },300);
 }
 
 updateDate();
