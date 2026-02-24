@@ -13,14 +13,14 @@
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
-  background:#2b2b2b;
+  background:#000;
 }
 
 /* ===== HEADER ===== */
 
 header{
   height:70px;
-  background:#1f1f1f;
+  background:#000;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -31,13 +31,22 @@ header img{
   position:absolute;
   left:15px;
   height:40px;
-  filter:brightness(0) invert(1) drop-shadow(0 0 6px rgba(255,255,255,0.6));
+  filter:brightness(0) invert(1)
+         drop-shadow(0 0 6px rgba(255,255,255,0.6));
 }
 
 header h1{
   color:white;
   margin:0;
   font-size:22px;
+  font-weight:700;
+}
+
+#clock{
+  position:absolute;
+  right:18px;
+  color:white;
+  font-size:20px;
   font-weight:700;
 }
 
@@ -50,14 +59,17 @@ header h1{
   font-weight:700;
 }
 
-/* ===== CARDS ===== */
+/* ===== GLASS CARDS ===== */
 
 .card{
   background:rgba(0,0,0,0.55);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,0.08);
   margin:0 15px 18px;
   padding:16px;
   border-radius:18px;
-  box-shadow:0 4px 14px rgba(0,0,0,0.8);
+  box-shadow:0 6px 20px rgba(0,0,0,0.6);
   color:white;
 }
 
@@ -80,6 +92,7 @@ header h1{
 .card-title{
   font-size:22px;
   font-weight:700;
+  color:white;
 }
 
 .card-top img.statut{
@@ -108,13 +121,14 @@ header h1{
   margin-left:auto;
   font-size:14px;
   font-weight:600;
+  color:#f5f5f5;
 }
 
 .info{
   margin-top:10px;
   font-size:14px;
   font-weight:500;
-  color:#E88B00;
+  color:#ffb347;
   white-space:pre-line;
 }
 
@@ -126,6 +140,7 @@ header h1{
 <header>
   <img src="image/logo.png">
   <h1>INFORMATIONS ÉCURIE</h1>
+  <div id="clock">--:--</div>
 </header>
 
 <div class="section-title">ESPACES TRAVAIL</div>
@@ -186,14 +201,14 @@ function buildCard(e){
           ${badgeYN(e.liberte)}
           <div>Longe</div>
           ${badgeYN(e.longe)}
-          <div class="horaire" style="color:${e.horaire_special ? "#E88B00":"#fff"}">
+          <div class="horaire" style="color:${e.horaire_special ? "#ffb347":"#f5f5f5"}">
             ${e.horaire_special || e.horaire_affiche || ""}
           </div>
         </div>
       `
       : `
         <div class="card-middle">
-          <div class="horaire" style="color:${e.horaire_special ? "#E88B00":"#fff"}">
+          <div class="horaire" style="color:${e.horaire_special ? "#ffb347":"#f5f5f5"}">
             ${e.horaire_special || e.horaire_affiche || ""}
           </div>
         </div>
@@ -203,6 +218,8 @@ function buildCard(e){
     <div class="info">${e.info || ""}</div>
   `;
 }
+
+/* ===== LOAD DATA ===== */
 
 function loadData(){
 
@@ -223,6 +240,18 @@ fetch(SHEET_URL,{cache:"no-store"})
 
 loadData();
 setInterval(loadData,REFRESH);
+
+/* ===== CLOCK ===== */
+
+function updateClock(){
+  const d=new Date();
+  const h=String(d.getHours()).padStart(2,"0");
+  const m=String(d.getMinutes()).padStart(2,"0");
+  document.getElementById("clock").innerText=h+":"+m;
+}
+
+updateClock();
+setInterval(updateClock,1000);
 
 </script>
 
