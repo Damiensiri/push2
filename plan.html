@@ -23,13 +23,8 @@ body{
   transition:transform .35s ease;
 }
 
-.page.active{
-  transform:translateX(0);
-}
-
-.page.exit{
-  transform:translateX(100%);
-}
+.page.active{ transform:translateX(0); }
+.page.exit{ transform:translateX(100%); }
 
 /* ===== HEADER ===== */
 
@@ -54,10 +49,7 @@ header{
   cursor:pointer;
 }
 
-#backBtn img{
-  width:22px;
-  height:22px;
-}
+#backBtn img{ width:22px; }
 
 header h1{
   position:absolute;
@@ -122,9 +114,7 @@ header h1{
   margin-bottom:15px;
 }
 
-.legend-item img{
-  width:22px;
-}
+.legend-item img{ width:22px; }
 
 /* ===== PANEL ===== */
 
@@ -142,9 +132,7 @@ header h1{
   box-sizing:border-box;
 }
 
-#panel.active{
-  transform:translateY(0);
-}
+#panel.active{ transform:translateY(0); }
 
 #panelHeader{
   display:flex;
@@ -162,9 +150,7 @@ header h1{
   cursor:pointer;
 }
 
-.row{
-  margin-top:14px;
-}
+.row{ margin-top:14px; }
 
 .label{
   font-size:12px;
@@ -191,11 +177,12 @@ header h1{
   margin-right:15px;
 }
 
+/* >>> INFOS PLUS MARQUÉES <<< */
 #info{
   margin-top:8px;
-  line-height:1.6;
-  font-size:14px;
-  font-weight:500;
+  line-height:1.7;
+  font-size:15px;
+  font-weight:600;
 }
 
 .scrollable{
@@ -214,7 +201,6 @@ header h1{
   font-weight:600;
   cursor:pointer;
 }
-
 </style>
 </head>
 
@@ -301,7 +287,6 @@ const ICONS={
 };
 
 let DATA=[];
-let CURRENT=null;
 
 function formatTitle(t){
   const map={
@@ -329,7 +314,6 @@ setInterval(loadData,60000);
 
 function openSpace(espace){
 
-CURRENT=espace;
 const e=DATA.find(x=>x.espace===espace);
 if(!e) return;
 
@@ -341,16 +325,14 @@ if(e.statut_auto==="ferme"){statut.innerText="Fermé";statut.style.color="red";}
 if(e.statut_auto==="hors-service"){statut.innerText="Hors service";statut.style.color="gray";}
 
 const special = e.horaire_special && String(e.horaire_special).trim() !== "";
-const texteHoraire = special ? e.horaire_special : e.horaire_affiche;
-
-horaire.innerText = texteHoraire || "---";
+horaire.innerText = special ? e.horaire_special : e.horaire_affiche || "---";
 
 if(special){
-  horaire.style.color = "#E88B00";
-  horaire.style.fontWeight = "600";
+  horaire.style.color="#E88B00";
+  horaire.style.fontWeight="600";
 }else{
-  horaire.style.color = "#000";
-  horaire.style.fontWeight = "500";
+  horaire.style.color="#000";
+  horaire.style.fontWeight="500";
 }
 
 info.innerText=e.info||"Aucune info";
@@ -382,12 +364,10 @@ function goBack(){
   const page=document.getElementById("page");
   page.classList.remove("active");
   page.classList.add("exit");
-  setTimeout(()=>{
-    location.href="index.html";
-  },300);
+  setTimeout(()=>{ location.href="index.html"; },300);
 }
 
-function goReserve(){window.open(RESERVE_URL,"_blank");}
+function goReserve(){ window.open(RESERVE_URL,"_blank"); }
 
 </script>
 
