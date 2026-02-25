@@ -300,7 +300,7 @@ function formatTitle(t){
 }
 
 function loadData(){
-fetch(SHEET_URL + "?t=" + Date.now())
+fetch(SHEET_URL,{cache:"no-store"})
 .then(r=>r.json())
 .then(d=>{
   DATA=d;
