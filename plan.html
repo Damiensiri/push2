@@ -16,19 +16,23 @@ body{
 }
 
 /* ===== ANIMATION PAGE ===== */
+
 .page{
   min-height:100vh;
   transform:translateX(100%);
   transition:transform .35s ease;
 }
+
 .page.active{ transform:translateX(0); }
 .page.exit{ transform:translateX(100%); }
 
 /* ===== HEADER ===== */
+
 header{
   position:relative;
   height:70px;
 }
+
 #backBtn{
   position:absolute;
   left:15px;
@@ -44,6 +48,7 @@ header{
   box-shadow:0 3px 8px rgba(0,0,0,0.15);
   cursor:pointer;
 }
+
 #backBtn img{ width:22px; }
 
 header h1{
@@ -57,16 +62,19 @@ header h1{
 }
 
 /* ===== PLAN ===== */
+
 #mapWrapper{
   position:relative;
   padding:10px;
 }
+
 #map{
   width:100%;
   border-radius:18px;
 }
 
 /* ===== BOUTONS ===== */
+
 .plan-btn{
   position:absolute;
   width:48px;
@@ -78,9 +86,11 @@ header h1{
   justify-content:center;
   cursor:pointer;
 }
+
 .plan-btn img{
   width:26px;
   height:26px;
+  object-fit:contain;
 }
 
 /* positions */
@@ -91,19 +101,23 @@ header h1{
 #btn-maison{top:55%;left:60%;}
 
 /* ===== LEGENDE ===== */
+
 .legend{
   padding:20px;
   font-size:15px;
 }
+
 .legend-item{
   display:flex;
   align-items:center;
   gap:10px;
   margin-bottom:15px;
 }
+
 .legend-item img{ width:22px; }
 
 /* ===== PANEL ===== */
+
 #panel{
   position:fixed;
   left:0;
@@ -117,6 +131,7 @@ header h1{
   padding:20px;
   box-sizing:border-box;
 }
+
 #panel.active{ transform:translateY(0); }
 
 #panelHeader{
@@ -124,35 +139,57 @@ header h1{
   justify-content:space-between;
   align-items:center;
 }
+
 #panelTitle{
   font-size:20px;
   font-weight:700;
 }
+
 #closePanel{
   font-size:22px;
   cursor:pointer;
 }
 
 .row{ margin-top:14px; }
-.label{ font-size:12px;color:#888; }
-.value{ font-size:14px;font-weight:500; }
-#statut{ font-size:18px;font-weight:700; }
-#horaire{ font-size:14px;font-weight:500; }
+
+.label{
+  font-size:12px;
+  color:#888;
+}
+
+.value{
+  font-size:14px;
+  font-weight:500;
+}
+
+#statut{
+  font-size:18px;
+  font-weight:700;
+}
+
+#horaire{
+  font-size:14px;
+  font-weight:500;
+}
 
 .optionText{
   font-size:13px;
   margin-right:15px;
 }
+
+/* >>> INFOS PLUS MARQUÉES <<< */
 #info{
   margin-top:8px;
   line-height:1.7;
   font-size:14px;
   font-weight:550;
 }
+
 .scrollable{
   max-height:160px;
   overflow-y:auto;
 }
+
 #reserveBox{
   display:none;
   margin-top:20px;
@@ -196,35 +233,37 @@ header h1{
 </div>
 
 <div id="panel">
-  <div id="panelHeader">
-    <div id="panelTitle">---</div>
-    <div id="closePanel">✕</div>
-  </div>
 
-  <div class="row">
-    <div class="label">Statut</div>
-    <div class="value" id="statut">---</div>
-  </div>
+<div id="panelHeader">
+  <div id="panelTitle">---</div>
+  <div id="closePanel">✕</div>
+</div>
 
-  <div class="row">
-    <div class="label">Horaires</div>
-    <div class="value" id="horaire">---</div>
-  </div>
+<div class="row">
+  <div class="label">Statut</div>
+  <div class="value" id="statut">---</div>
+</div>
 
-  <div class="row" id="optionsRow">
-    <div class="label">Activités possibles</div>
-    <div>
-      <span class="optionText" id="liberte"></span>
-      <span class="optionText" id="longe"></span>
-    </div>
-  </div>
+<div class="row">
+  <div class="label">Horaires</div>
+  <div class="value" id="horaire">---</div>
+</div>
 
-  <div class="row">
-    <div class="label">Infos</div>
-    <div class="value scrollable" id="info"></div>
+<div class="row" id="optionsRow">
+  <div class="label">Activités possibles</div>
+  <div>
+    <span class="optionText" id="liberte"></span>
+    <span class="optionText" id="longe"></span>
   </div>
+</div>
 
-  <div id="reserveBox" onclick="goReserve()">Réserver</div>
+<div class="row">
+  <div class="label">Infos</div>
+  <div class="value scrollable" id="info"></div>
+</div>
+
+<div id="reserveBox" onclick="goReserve()">Réserver</div>
+
 </div>
 
 </div>
@@ -251,45 +290,28 @@ let DATA=[];
 
 function formatTitle(t){
   const map={
-    carriere:"Carrière",
-    manege:"Manège",
-    maison:"Maison",
+    "carriere":"Carrière",
+    "manege":"Manège",
+    "maison":"Maison",
     "grande-voie":"Grande voie",
-    beudot:"Beudot"
+    "beudot":"Beudot"
   };
   return map[t]||t;
 }
 
-/* ===== LOAD DATA ===== */
 function loadData(){
-
-  fetch(SHEET_URL+"?t="+Date.now(),{cache:"no-store"})
-
-  .then(r=>r.json())
-
-  .then(d=>{
-
-    if(!Array.isArray(d) || d.length===0) return;
-
-    DATA=d;
-
-    d.forEach(e=>{
-      const icon=document.getElementById("icon-"+e.espace);
-      if(icon && ICONS[e.statut_auto]){
-        icon.src=ICONS[e.statut_auto];
-      }
-    });
-
-  })
-
-  .catch(()=>console.warn("Erreur chargement planning"));
-
+fetch(SHEET_URL,{cache:"no-store"})
+.then(r=>r.json())
+.then(d=>{
+  DATA=d;
+  d.forEach(e=>{
+    document.getElementById("icon-"+e.espace).src=ICONS[e.statut_auto];
+  });
+});
 }
-
 loadData();
 setInterval(loadData,60000);
 
-/* ===== OPEN SPACE ===== */
 function openSpace(espace){
 
 const e=DATA.find(x=>x.espace===espace);
@@ -345,9 +367,7 @@ function goBack(){
   setTimeout(()=>{ location.href="index.html"; },300);
 }
 
-function goReserve(){
-  window.open(RESERVE_URL,"_blank");
-}
+function goReserve(){ window.open(RESERVE_URL,"_blank"); }
 
 </script>
 
