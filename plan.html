@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Plan interactif</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
@@ -14,70 +15,191 @@ body{
   font-family:'Montserrat',sans-serif;
 }
 
+/* ===== ANIMATION PAGE ===== */
+
 .page{
   min-height:100vh;
   transform:translateX(100%);
-  transition:.35s;
+  transition:transform .35s ease;
 }
-.page.active{transform:translateX(0);}
-.page.exit{transform:translateX(100%);}
 
-header{position:relative;height:70px;}
+.page.active{ transform:translateX(0); }
+.page.exit{ transform:translateX(100%); }
+
+/* ===== HEADER ===== */
+
+header{
+  position:relative;
+  height:70px;
+}
 
 #backBtn{
-  position:absolute;left:15px;top:50%;
+  position:absolute;
+  left:15px;
+  top:50%;
   transform:translateY(-50%);
-  width:42px;height:42px;border-radius:50%;
-  background:#fff;display:flex;align-items:center;justify-content:center;
-  box-shadow:0 3px 8px rgba(0,0,0,.15);
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 3px 8px rgba(0,0,0,0.15);
+  cursor:pointer;
 }
 
-#backBtn img{width:22px;}
+#backBtn img{ width:22px; }
 
 header h1{
-  position:absolute;left:50%;top:50%;
+  position:absolute;
+  left:50%;
+  top:50%;
   transform:translate(-50%,-50%);
-  margin:0;font-size:18px;font-weight:700;
+  margin:0;
+  font-size:18px;
+  font-weight:700;
 }
 
-#mapWrapper{position:relative;padding:10px;}
-#map{width:100%;border-radius:18px;}
+/* ===== PLAN ===== */
+
+#mapWrapper{
+  position:relative;
+  padding:10px;
+}
+
+#map{
+  width:100%;
+  border-radius:18px;
+}
+
+/* ===== BOUTONS ===== */
 
 .plan-btn{
-  position:absolute;width:48px;height:48px;
-  background:#1e2c88;border-radius:12px;
-  display:flex;align-items:center;justify-content:center;
+  position:absolute;
+  width:48px;
+  height:48px;
+  background:#1e2c88;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
 }
-.plan-btn img{width:26px;}
 
+.plan-btn img{
+  width:26px;
+  height:26px;
+  object-fit:contain;
+}
+
+/* positions */
 #btn-carriere{top:20%;left:25%;}
 #btn-beudot{top:20%;left:55%;}
 #btn-manege{top:35%;left:38%;}
 #btn-grande{top:38%;left:69%;}
 #btn-maison{top:55%;left:60%;}
 
-.legend{padding:20px;}
-.legend-item{display:flex;gap:10px;margin-bottom:12px;}
-.legend-item img{width:22px;}
+/* ===== LEGENDE ===== */
+
+.legend{
+  padding:20px;
+  font-size:15px;
+}
+
+.legend-item{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:15px;
+}
+
+.legend-item img{ width:22px; }
+
+/* ===== PANEL ===== */
 
 #panel{
-  position:fixed;left:0;bottom:0;width:100%;height:50%;
-  background:#fff;border-radius:20px 20px 0 0;
+  position:fixed;
+  left:0;
+  bottom:0;
+  width:100%;
+  height:50%;
+  background:#fff;
+  border-radius:20px 20px 0 0;
   transform:translateY(100%);
-  transition:.3s;padding:20px;
+  transition:0.3s;
+  padding:20px;
+  box-sizing:border-box;
 }
-#panel.active{transform:translateY(0);}
 
-.row{margin-top:12px;}
-.label{font-size:12px;color:#777;}
-.value{font-size:14px;}
-#statut{font-size:18px;font-weight:700;}
+#panel.active{ transform:translateY(0); }
+
+#panelHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+#panelTitle{
+  font-size:20px;
+  font-weight:700;
+}
+
+#closePanel{
+  font-size:22px;
+  cursor:pointer;
+}
+
+.row{ margin-top:14px; }
+
+.label{
+  font-size:12px;
+  color:#888;
+}
+
+.value{
+  font-size:14px;
+  font-weight:500;
+}
+
+#statut{
+  font-size:18px;
+  font-weight:700;
+}
+
+#horaire{
+  font-size:14px;
+  font-weight:500;
+}
+
+.optionText{
+  font-size:13px;
+  margin-right:15px;
+}
+
+/* >>> INFOS PLUS MARQUÉES <<< */
+#info{
+  margin-top:8px;
+  line-height:1.7;
+  font-size:14px;
+  font-weight:550;
+}
+
+.scrollable{
+  max-height:160px;
+  overflow-y:auto;
+}
 
 #reserveBox{
-  display:none;margin-top:20px;
-  background:#E88B00;color:#fff;
-  padding:12px;border-radius:10px;
-  text-align:center;font-weight:600;
+  display:none;
+  margin-top:20px;
+  background:#E88B00;
+  color:white;
+  padding:12px;
+  border-radius:10px;
+  text-align:center;
+  font-weight:600;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -87,44 +209,57 @@ header h1{
 <div class="page" id="page">
 
 <header>
-<div id="backBtn" onclick="goBack()">
-<img src="image/back.svg">
-</div>
-<h1>PLAN INTERACTIF</h1>
+  <div id="backBtn" onclick="goBack()">
+    <img src="image/back.svg">
+  </div>
+  <h1>PLAN INTERACTIF</h1>
 </header>
 
 <div id="mapWrapper">
-<img id="map" src="image/plan.png">
+  <img id="map" src="image/plan.png">
 
-<div class="plan-btn" onclick="openSpace('carriere')"><img id="icon-carriere"></div>
-<div class="plan-btn" onclick="openSpace('beudot')"><img id="icon-beudot"></div>
-<div class="plan-btn" onclick="openSpace('manege')"><img id="icon-manege"></div>
-<div class="plan-btn" onclick="openSpace('grande-voie')"><img id="icon-grande-voie"></div>
-<div class="plan-btn" onclick="openSpace('maison')"><img id="icon-maison"></div>
+  <div class="plan-btn" id="btn-carriere" onclick="openSpace('carriere')"><img id="icon-carriere"></div>
+  <div class="plan-btn" id="btn-beudot" onclick="openSpace('beudot')"><img id="icon-beudot"></div>
+  <div class="plan-btn" id="btn-manege" onclick="openSpace('manege')"><img id="icon-manege"></div>
+  <div class="plan-btn" id="btn-grande" onclick="openSpace('grande-voie')"><img id="icon-grande-voie"></div>
+  <div class="plan-btn" id="btn-maison" onclick="openSpace('maison')"><img id="icon-maison"></div>
 </div>
 
 <div class="legend">
-<div class="legend-item"><img src="image/ouvert.png"> Ouvert</div>
-<div class="legend-item"><img src="image/prevision.png"> Prévision</div>
-<div class="legend-item"><img src="image/ferme.png"> Fermé</div>
-<div class="legend-item"><img src="image/horsservice.png"> Hors service</div>
+  <div class="legend-item"><img src="image/ouvert.png"> Ouvert</div>
+  <div class="legend-item"><img src="image/prevision.png"> Prévision d'ouverture</div>
+  <div class="legend-item"><img src="image/ferme.png"> Fermé</div>
+  <div class="legend-item"><img src="image/horsservice.png"> Hors service</div>
 </div>
 
 <div id="panel">
 
-<div class="row">
-<div class="label">Statut</div>
-<div class="value" id="statut">---</div>
+<div id="panelHeader">
+  <div id="panelTitle">---</div>
+  <div id="closePanel">✕</div>
 </div>
 
 <div class="row">
-<div class="label">Horaires</div>
-<div class="value" id="horaire">---</div>
+  <div class="label">Statut</div>
+  <div class="value" id="statut">---</div>
 </div>
 
 <div class="row">
-<div class="label">Infos</div>
-<div class="value" id="info">---</div>
+  <div class="label">Horaires</div>
+  <div class="value" id="horaire">---</div>
+</div>
+
+<div class="row" id="optionsRow">
+  <div class="label">Activités possibles</div>
+  <div>
+    <span class="optionText" id="liberte"></span>
+    <span class="optionText" id="longe"></span>
+  </div>
+</div>
+
+<div class="row">
+  <div class="label">Infos</div>
+  <div class="value scrollable" id="info"></div>
 </div>
 
 <div id="reserveBox" onclick="goReserve()">Réserver</div>
@@ -135,51 +270,104 @@ header h1{
 
 <script>
 
+window.addEventListener("DOMContentLoaded",()=>{
+  requestAnimationFrame(()=>{
+    document.getElementById("page").classList.add("active");
+  });
+});
+
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
+const RESERVE_URL="https://www.ce-dugrandrang.com/book-online?category=ebb4678d-9213-49a4-9c62-168e3bdce954";
+
+const ICONS={
+  ouvert:"image/ouvert.png",
+  ferme:"image/ferme.png",
+  prevision:"image/prevision.png",
+  "hors-service":"image/horsservice.png"
+};
+
 let DATA=[];
 
-function loadData(){
-fetch(SHEET_URL+"?t="+Date.now())
-.then(r=>r.json())
-.then(d=>{
- DATA=d;
- d.forEach(e=>{
-   document.getElementById("icon-"+e.espace).src="image/"+e.statut_auto+".png";
- });
-});
+function formatTitle(t){
+  const map={
+    "carriere":"Carrière",
+    "manege":"Manège",
+    "maison":"Maison",
+    "grande-voie":"Grande voie",
+    "beudot":"Beudot"
+  };
+  return map[t]||t;
 }
 
+function loadData(){
+fetch(SHEET_URL,{cache:"no-store"})
+.then(r=>r.json())
+.then(d=>{
+  DATA=d;
+  d.forEach(e=>{
+    document.getElementById("icon-"+e.espace).src=ICONS[e.statut_auto];
+  });
+});
+}
 loadData();
 setInterval(loadData,60000);
 
 function openSpace(espace){
+
 const e=DATA.find(x=>x.espace===espace);
-if(!e)return;
+if(!e) return;
 
-statut.innerText=e.statut_auto;
-horaire.innerText=e.horaire_affiche||"---";
-info.innerText=e.info||"---";
+panelTitle.innerText=formatTitle(e.espace);
 
-if(e.statut_auto==="ouvert")statut.style.color="green";
-if(e.statut_auto==="ferme")statut.style.color="red";
-if(e.statut_auto==="prevision")statut.style.color="#E88B00";
+if(e.statut_auto==="ouvert"){statut.innerText="Ouvert";statut.style.color="green";}
+if(e.statut_auto==="prevision"){statut.innerText="Ouverture prévue";statut.style.color="#E88B00";}
+if(e.statut_auto==="ferme"){statut.innerText="Fermé";statut.style.color="red";}
+if(e.statut_auto==="hors-service"){statut.innerText="Hors service";statut.style.color="gray";}
 
-if((espace==="maison"||espace==="grande-voie") && e.statut_auto==="ouvert"){
- reserveBox.style.display="block";
+const special = e.horaire_special && String(e.horaire_special).trim() !== "";
+horaire.innerText = special ? e.horaire_special : e.horaire_affiche || "---";
+
+if(special){
+  horaire.style.color="#E88B00";
+  horaire.style.fontWeight="600";
 }else{
- reserveBox.style.display="none";
+  horaire.style.color="#000";
+  horaire.style.fontWeight="500";
+}
+
+info.innerText=e.info||"Aucune info";
+
+let show=false;
+if(e.liberte){
+  liberte.innerHTML=`Liberté : <span style="color:${e.liberte==="oui"?"green":"red"};font-weight:700">${e.liberte.toUpperCase()}</span>`;
+  show=true;
+}
+if(e.longe){
+  longe.innerHTML=`Longe : <span style="color:${e.longe==="oui"?"green":"red"};font-weight:700">${e.longe.toUpperCase()}</span>`;
+  show=true;
+}
+optionsRow.style.display=show?"block":"none";
+
+if((espace==="maison"||espace==="grande-voie"||espace==="beudot") &&
+ (e.statut_auto==="ouvert"||e.statut_auto==="prevision")){
+  reserveBox.style.display="block";
+}else{
+  reserveBox.style.display="none";
 }
 
 panel.classList.add("active");
 }
 
+closePanel.onclick=()=>panel.classList.remove("active");
+
 function goBack(){
- location.href="index.html";
+  const page=document.getElementById("page");
+  page.classList.remove("active");
+  page.classList.add("exit");
+  setTimeout(()=>{ location.href="index.html"; },300);
 }
 
-function goReserve(){
- window.open("https://www.ce-dugrandrang.com/book-online","_blank");
-}
+function goReserve(){ window.open(RESERVE_URL,"_blank"); }
 
 </script>
 
