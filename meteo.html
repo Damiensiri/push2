@@ -186,21 +186,28 @@ window.addEventListener("DOMContentLoaded",()=>{
 /* ===== API Open-Meteo ===== */
 
 const URL =
-"https://api.open-meteo.com/v1/forecast?latitude=48.391&longitude=4.527&current=temperature_2m,weathercode,wind_speed_10m,wind_gusts_10m,precipitation_probability,precipitation&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum&timezone=Europe/Paris";
+"https://api.open-meteo.com/v1/forecast?latitude=48.391&longitude=4.527&current=temperature_2m,weathercode,wind_speed_10m,wind_gusts_10m,precipitation_probability,precipitation,is_day&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum&timezone=Europe/Paris";
 
-/* ===== ICONS ===== */
+/* ===== ICONS CORRIGÉES + JOUR / NUIT ===== */
 
-function icon(code){
-  if(code<=3) return "☁️";
-  if(code<=48) return "🌫";
-  if(code<=67) return "🌧";
-  if(code<=77) return "🌨";
-  if(code<=99) return "⛈";
-  return "☀️";
+function icon(code, isDay){
+
+  if(code === 0) return isDay ? "☀️" : "🌙";
+  if(code === 1) return isDay ? "🌤" : "🌙☁️";
+  if(code === 2) return isDay ? "⛅" : "☁️🌙";
+  if(code === 3) return "☁️";
+
+  if(code >= 45 && code <= 48) return "🌫";
+  if(code >= 51 && code <= 67) return "🌧";
+  if(code >= 71 && code <= 77) return "🌨";
+  if(code >= 80 && code <= 82) return "🌦";
+  if(code >= 95 && code <= 99) return "⛈";
+
+  return "☁️";
 }
 
 function dayName(i){
-  return ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."][i];
+  return ["dim.","lun.","mar.","mer.","jeu.","ven.","sam."][i%7];
 }
 
 /* ===== LOAD ===== */
@@ -210,7 +217,7 @@ fetch(URL)
 .then(d=>{
 
   document.getElementById("icon").innerHTML =
-    `<div style="font-size:48px">${icon(d.current.weathercode)}</div>`;
+    `<div style="font-size:48px">${icon(d.current.weathercode, d.current.is_day)}</div>`;
 
   document.getElementById("temp").innerText =
     Math.round(d.current.temperature_2m)+"°C";
@@ -230,12 +237,13 @@ fetch(URL)
     "🌧 Cumul : "+d.daily.precipitation_sum[0]+" mm";
 
   const f=document.getElementById("forecast");
+  f.innerHTML="";
 
   for(let i=0;i<3;i++){
     f.innerHTML+=`
       <div class="day">
         <div class="day-name">${dayName(new Date().getDay()+i)}</div>
-        <div>${icon(d.daily.weathercode[i])}</div>
+        <div>${icon(d.daily.weathercode[i], true)}</div>
         <div class="day-temp">
           ${Math.round(d.daily.temperature_2m_min[i])}° /
           ${Math.round(d.daily.temperature_2m_max[i])}°
