@@ -9,13 +9,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+
+/* ================= BASE ================= */
+
 body{
   margin:0;
   background:#f4f4f4;
   font-family:'Montserrat',sans-serif;
+  color:#000;
+  transition:background .3s ease,color .3s ease;
 }
 
-/* ===== ANIMATION PAGE ===== */
+/* ================= ANIMATION ================= */
 
 .page{
   min-height:100vh;
@@ -23,15 +28,10 @@ body{
   transition:transform .35s ease;
 }
 
-.page.active{
-  transform:translateX(0);
-}
+.page.active{ transform:translateX(0); }
+.page.exit{ transform:translateX(100%); }
 
-.page.exit{
-  transform:translateX(100%);
-}
-
-/* ===== HEADER ===== */
+/* ================= HEADER ================= */
 
 header{
   position:relative;
@@ -69,7 +69,7 @@ header h1{
   font-weight:700;
 }
 
-/* ===== CARDS ===== */
+/* ================= CARDS ================= */
 
 .card{
   background:white;
@@ -77,9 +77,10 @@ header h1{
   padding:15px;
   border-radius:18px;
   box-shadow:0 5px 12px rgba(0,0,0,0.12);
+  transition:background .3s ease, box-shadow .3s ease;
 }
 
-/* ===== CALENDAR ===== */
+/* ================= CALENDAR ================= */
 
 .calendar-wrapper{
   width:100%;
@@ -94,7 +95,7 @@ header h1{
   border:0;
 }
 
-/* ===== TEXT ===== */
+/* ================= TEXT ================= */
 
 .note{
   text-align:center;
@@ -102,8 +103,6 @@ header h1{
   color:#666;
   margin-top:10px;
 }
-
-/* ===== TARIFS ===== */
 
 .tarifs-title{
   font-weight:700;
@@ -114,6 +113,43 @@ header h1{
 .tarifs{
   font-size:14px;
   line-height:1.6;
+}
+
+/* ================= DARK MODE ================= */
+
+@media (prefers-color-scheme: dark){
+
+  body{
+    background:#0f1115;
+    color:#ffffff;
+  }
+
+  header h1{
+    color:#ffffff;
+  }
+
+  #backBtn{
+    background:#1c1f26;
+    box-shadow:0 12px 30px rgba(0,0,0,0.6);
+  }
+
+  #backBtn img{
+    filter:brightness(0) invert(1);
+  }
+
+  .card{
+    background:#1c1f26;
+    box-shadow:0 20px 50px rgba(0,0,0,0.7);
+  }
+
+  .note{
+    color:#aaaaaa;
+  }
+
+  .tarifs{
+    color:#e5e5e5;
+  }
+
 }
 
 </style>
