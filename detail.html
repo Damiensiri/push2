@@ -9,10 +9,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
+
+/* ================= BASE ================= */
+
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
   background:#f4f4f4;
+  color:#000;
+  transition:background .3s ease,color .3s ease;
 }
 
 /* ================= HEADER ================= */
@@ -22,9 +27,8 @@ header{
   background:#f4f4f4;
   padding:15px 12px;
   height:70px;
+  transition:background .3s ease;
 }
-
-/* BOUTON RETOUR ROND */
 
 #backBtn{
   position:absolute;
@@ -46,8 +50,6 @@ header{
   width:18px;
   height:18px;
 }
-
-/* TITRE CENTRÉ */
 
 header h1{
   position:absolute;
@@ -94,6 +96,7 @@ header h1{
   padding:20px;
   border-radius:12px;
   box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  transition:background .3s ease, box-shadow .3s ease;
 }
 
 .titre{
@@ -121,12 +124,57 @@ header h1{
   line-height:1.6;
   white-space:pre-line;
 }
+
+/* ================= DARK MODE ================= */
+
+@media (prefers-color-scheme: dark){
+
+  body{
+    background:#0f1115;
+    color:#ffffff;
+  }
+
+  header{
+    background:#0f1115;
+  }
+
+  header h1{
+    color:#ffffff;
+  }
+
+  #backBtn{
+    background:#1c1f26;
+    box-shadow:0 10px 25px rgba(0,0,0,0.6);
+  }
+
+  #backBtn img{
+    filter:brightness(0) invert(1);
+  }
+
+  #loader{
+    background:#0f1115;
+  }
+
+  .card{
+    background:#1c1f26;
+    box-shadow:0 20px 50px rgba(0,0,0,0.75);
+  }
+
+  .titre{
+    color:#5da9ff;
+  }
+
+  .categorie{
+    color:#aaaaaa;
+  }
+
+}
+
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <header>
   <div id="backBtn" onclick="goBack()">
     <img src="image/back.svg">
@@ -134,10 +182,8 @@ header h1{
   <h1>ALERTE</h1>
 </header>
 
-<!-- LOADER -->
 <div id="loader"><div class="spinner"></div></div>
 
-<!-- CONTENT -->
 <div id="content" style="display:none;">
   <div class="card">
     <div class="titre" id="titre"></div>
@@ -149,14 +195,14 @@ header h1{
 
 <script>
 
+/* ===== JS STRICTEMENT INCHANGÉ ===== */
+
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
 const STORAGE_KEY="alerts_lues";
 
 const params=new URLSearchParams(window.location.search);
 const id=params.get("id");
-
-/* ===== DATE PARSER ===== */
 
 function parseDateFR(str){
   if(!str) return null;
@@ -180,8 +226,6 @@ function parseDateFR(str){
   return null;
 }
 
-/* ===== STORAGE ===== */
-
 function marquerLu(id){
   const lues=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
   if(!lues.includes(id)){
@@ -189,8 +233,6 @@ function marquerLu(id){
     localStorage.setItem(STORAGE_KEY,JSON.stringify(lues));
   }
 }
-
-/* ===== LOAD ===== */
 
 async function loadDetail(){
 
