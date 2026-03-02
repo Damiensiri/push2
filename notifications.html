@@ -9,17 +9,54 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
 <style>
+
+/* ================= VARIABLES ================= */
+
+:root{
+  --bg:#f4f4f4;
+  --text:#000;
+  --header-bg:#f4f4f4;
+  --card-bg:#ffffff;
+  --card-border:rgba(0,0,0,0.05);
+  --btn-bg:#ffffff;
+  --btn-border:#ddd;
+  --shadow:0 4px 12px rgba(0,0,0,0.15);
+  --title:#1f5c8f;
+  --accent:#4ea3ff;
+  --muted:#666;
+}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1115;
+    --text:#ffffff;
+    --header-bg:#0f1115;
+    --card-bg:#1c1f26;
+    --card-border:rgba(255,255,255,0.05);
+    --btn-bg:#1c1f26;
+    --btn-border:rgba(255,255,255,0.1);
+    --shadow:0 8px 25px rgba(0,0,0,0.6);
+    --title:#4ea3ff;
+    --accent:#4ea3ff;
+    --muted:#aaa;
+  }
+}
+
+/* ================= BASE ================= */
+
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
-  background:#f4f4f4;
+  background:var(--bg);
+  color:var(--text);
+  transition:background .3s ease,color .3s ease;
 }
 
 /* ================= HEADER ================= */
 
 .sub-header{
   position:relative;
-  background:#f4f4f4;
+  background:var(--header-bg);
   height:70px;
 }
 
@@ -32,8 +69,8 @@ body{
   height:42px;
   border-radius:50%;
   border:none;
-  background:white;
-  box-shadow:0 3px 8px rgba(0,0,0,0.15);
+  background:var(--btn-bg);
+  box-shadow:var(--shadow);
   cursor:pointer;
   display:flex;
   align-items:center;
@@ -45,6 +82,12 @@ body{
   height:22px;
 }
 
+@media (prefers-color-scheme: dark){
+  .back-btn img{
+    filter:brightness(0) invert(1);
+  }
+}
+
 .sub-title{
   position:absolute;
   left:50%;
@@ -53,7 +96,6 @@ body{
   margin:0;
   font-size:20px;
   font-weight:700;
-  color:#181E3B;
 }
 
 /* ================= DATE ================= */
@@ -61,7 +103,7 @@ body{
 #lastUpdate{
   text-align:center;
   font-size:14px;
-  color:#666;
+  color:var(--muted);
   margin-bottom:6px;
 }
 
@@ -73,9 +115,9 @@ body{
 }
 
 #markAllBtn{
-  background:#f0f0f0;
-  color:#181E3B;
-  border:1px solid #ccc;
+  background:var(--btn-bg);
+  color:var(--text);
+  border:1px solid var(--btn-border);
   padding:6px 40px;
   border-radius:30px;
   font-size:13px;
@@ -87,7 +129,7 @@ body{
 #loader{
   position:fixed;
   inset:0;
-  background:white;
+  background:var(--bg);
   display:flex;
   align-items:center;
   justify-content:center;
@@ -97,8 +139,8 @@ body{
 .spinner{
   width:40px;
   height:40px;
-  border:4px solid #ddd;
-  border-top:4px solid #1f5c8f;
+  border:4px solid var(--card-border);
+  border-top:4px solid var(--accent);
   border-radius:50%;
   animation:spin 1s linear infinite;
 }
@@ -110,27 +152,32 @@ body{
 /* ================= CARDS ================= */
 
 .card{
-  background:white;
+  background:var(--card-bg);
   margin:15px;
   padding:15px;
-  border-radius:12px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  border:1px solid var(--card-border);
   cursor:pointer;
+  transition:transform .15s ease;
+}
+
+.card:hover{
+  transform:translateY(-2px);
 }
 
 .card.lu{
-  opacity:0.55;
-  background:#f0f0f0;
+  opacity:0.5;
 }
 
 .card-time{
-  color:red;
+  color:#ff6b6b;
   font-weight:bold;
 }
 
 .card-category{
   font-size:13px;
-  color:#888;
+  color:var(--muted);
   margin-top:4px;
 }
 
@@ -138,20 +185,20 @@ body{
   font-weight:bold;
   margin-top:6px;
   font-size:18px;
-  color:#1f5c8f;
+  color:var(--title);
 }
 
 .pin{
   margin-top:6px;
   font-size:12px;
-  color:#d35400;
+  color:#ff9800;
 }
+
 </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
 <header class="sub-header">
   <button class="back-btn" onclick="goHome()">
     <img src="image/back.svg">
@@ -159,7 +206,6 @@ body{
   <h1 class="sub-title">ALERTES</h1>
 </header>
 
-<!-- LOADER -->
 <div id="loader"><div class="spinner"></div></div>
 
 <div id="lastUpdate"></div>
@@ -174,86 +220,61 @@ body{
 
 <script>
 
+/* ⚠️ JS STRICTEMENT IDENTIQUE – aucune modification */
+
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
 const STORAGE_KEY="alerts_lues";
 
-/* ===== STORAGE ===== */
-
-function getLues(){
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
-}
-
-function setLues(arr){
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(arr));
-}
+function getLues(){ return JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]"); }
+function setLues(arr){ localStorage.setItem(STORAGE_KEY,JSON.stringify(arr)); }
 
 function marquerLu(id){
   const lues=getLues();
-  if(!lues.includes(id)){
-    lues.push(id);
-    setLues(lues);
-  }
+  if(!lues.includes(id)){ lues.push(id); setLues(lues); }
 }
 
 function marquerToutLu(){
   const ids=[];
-  document.querySelectorAll(".card").forEach(c=>{
-    ids.push(c.dataset.id);
-  });
+  document.querySelectorAll(".card").forEach(c=>{ ids.push(c.dataset.id); });
   setLues(ids);
   loadNotifications();
 }
 
-/* ===== DATE PARSER ===== */
-
 function parseDateFR(str){
   if(!str) return null;
-
   if(str.includes("-")){
     const p=str.split("-");
     return new Date(p[0],p[1]-1,p[2],0,0,0);
   }
-
   if(str.includes("/")){
     const p=str.split("/");
     return new Date(p[2],p[1]-1,p[0],0,0,0);
   }
-
   return null;
 }
 
-/* ===== LOAD ===== */
-
 async function loadNotifications(){
-
   try{
-
     const res=await fetch(API_URL);
     const data=await res.json();
-
     const container=document.getElementById("notifications");
     container.innerHTML="";
-
     document.getElementById("lastUpdate").innerText =
       "Dernière mise à jour : "+new Date().toLocaleString();
-
     const today=new Date();
     today.setHours(0,0,0,0);
-
     const lues=getLues();
 
     data
       .filter(n=>{
         if(n.epingle==="oui") return true;
         if(n.active!=="oui") return false;
-
         if(!n.expire){
           const d=parseDateFR(n.date);
           if(!d) return true;
           return d>=today;
         }
-
         const exp=parseDateFR(n.expire);
         if(!exp) return true;
         return exp>=today;
@@ -264,27 +285,20 @@ async function loadNotifications(){
         return b.id-a.id;
       })
       .forEach(n=>{
-
         const card=document.createElement("div");
         card.className="card";
         card.dataset.id=n.id;
-
-        if(lues.includes(n.id)){
-          card.classList.add("lu");
-        }
-
+        if(lues.includes(n.id)){ card.classList.add("lu"); }
         card.innerHTML=`
           <div class="card-time">${n.heure||""}</div>
           <div class="card-category">${n.categorie||""}</div>
           <div class="card-title">${n.titre}</div>
           ${n.epingle==="oui" ? `<div class="pin">📌 ÉPINGLÉ</div>` : ``}
         `;
-
         card.onclick=()=>{
           marquerLu(n.id);
           window.location.href="detail.html?id="+n.id;
         };
-
         container.appendChild(card);
       });
 
@@ -295,27 +309,17 @@ async function loadNotifications(){
   }catch(e){
     console.log("Erreur :",e);
   }
-
   document.getElementById("loader").style.display="none";
 }
 
-/* ===== NAV ===== */
-
-function goHome(){
-  window.location.href="index.html";
-}
-
-/* ===== AUTO ===== */
+function goHome(){ window.location.href="index.html"; }
 
 loadNotifications();
 setInterval(loadNotifications,60000);
 
 document.addEventListener("visibilitychange",()=>{
-  if(!document.hidden){
-    loadNotifications();
-  }
+  if(!document.hidden){ loadNotifications(); }
 });
-
 </script>
 
 </body>
