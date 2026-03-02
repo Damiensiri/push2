@@ -5,18 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Espaces Travail</title>
 
+<meta name="theme-color" content="#f4f4f4">
+
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
 
+/* ================= VARIABLES ================= */
+
+:root{
+  --bg:#f4f4f4;
+  --header-bg:#f4f4f4;
+  --text:#181E3B;
+  --card-bg:#ffffff;
+  --shadow:0 6px 18px rgba(0,0,0,0.08);
+  --info:#E88B00;
+}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1115;
+    --header-bg:#0f1115;
+    --text:#ffffff;
+    --card-bg:#1c1f26;
+    --shadow:0 10px 30px rgba(0,0,0,0.6);
+    --info:#ffb347;
+  }
+
+  #backBtn img{
+    filter:
+      brightness(0) invert(1)
+      drop-shadow(0 0 6px rgba(255,255,255,0.5));
+  }
+}
+
+/* ================= BASE ================= */
+
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
-  background:#f4f4f4;
+  background:var(--bg);
+  color:var(--text);
   overflow-x:hidden;
+  transition:background .3s ease,color .3s ease;
 }
 
-/* ===== PAGE WRAPPER ===== */
+/* ================= PAGE WRAPPER ================= */
 
 .page{
   min-height:100vh;
@@ -26,11 +60,12 @@ body{
 .page.active{ transform:translateX(0); }
 .page.exit{ transform:translateX(100%); }
 
-/* ===== HEADER ===== */
+/* ================= HEADER ================= */
 
 header{
   position:relative;
   height:70px;
+  background:var(--header-bg);
 }
 
 #backBtn{
@@ -41,15 +76,18 @@ header{
   width:42px;
   height:42px;
   border-radius:50%;
-  background:white;
+  background:var(--card-bg);
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  box-shadow:var(--shadow);
   cursor:pointer;
 }
 
-#backBtn img{ width:22px; }
+#backBtn img{
+  width:22px;
+  transition:filter .3s ease;
+}
 
 header h1{
   position:absolute;
@@ -59,25 +97,26 @@ header h1{
   margin:0;
   font-size:18px;
   font-weight:700;
-  color:#181E3B;
+  color:var(--text);
 }
 
-/* ===== DATE ===== */
+/* ================= DATE ================= */
 
 #date{
   text-align:center;
   margin:10px 0 20px;
   font-size:16px;
+  color:var(--text);
 }
 
-/* ===== CARDS ===== */
+/* ================= CARDS ================= */
 
 .card{
-  background:white;
+  background:var(--card-bg);
   margin:0 15px 20px;
-  padding:15px;
-  border-radius:18px;
-  box-shadow:0 5px 12px rgba(0,0,0,0.12);
+  padding:18px;
+  border-radius:22px;
+  box-shadow:var(--shadow);
 }
 
 .card-top{
@@ -92,7 +131,9 @@ header h1{
   gap:8px;
 }
 
-.title-wrap img{ width:26px; }
+.title-wrap img{
+  width:26px;
+}
 
 .card-title{
   font-size:22px;
@@ -104,7 +145,7 @@ header h1{
   height:26px;
 }
 
-/* ===== MIDDLE ===== */
+/* ================= MIDDLE ================= */
 
 .card-middle{
   display:flex;
@@ -120,33 +161,36 @@ header h1{
   white-space:nowrap;
 }
 
-/* ===== TEXTE OUI / NON (14px) ===== */
+/* ================= OUI / NON ================= */
 
 .badge{
-  padding:0;
-  border-radius:0;
   font-size:14px;
   font-weight:600;
-  background:none;
 }
 
 .badge.oui{ color:#2e7d32; }
 .badge.non{ color:#c62828; }
 
-/* ===== INFO ===== */
+@media (prefers-color-scheme: dark){
+  .badge.oui{ color:#4caf50; }
+  .badge.non{ color:#f44336; }
+}
+
+/* ================= INFO ================= */
 
 .card-info{
   margin-top:10px;
   font-size:13px;
-  color:#E88B00;
+  color:var(--info);
   white-space:pre-line;
 }
 
-/* ===== LEGENDE ===== */
+/* ================= LEGENDE ================= */
 
 .legend{
   margin:25px 20px;
   font-size:15px;
+  color:var(--text);
 }
 
 .legend-item{
@@ -156,7 +200,9 @@ header h1{
   margin-bottom:18px;
 }
 
-.legend-item img{ width:22px; }
+.legend-item img{
+  width:22px;
+}
 
 </style>
 </head>
@@ -174,7 +220,6 @@ header h1{
 
 <div id="date"></div>
 
-<!-- ===== CARRIERE ===== -->
 <div class="card">
   <div class="card-top">
     <div class="title-wrap">
@@ -183,21 +228,16 @@ header h1{
     </div>
     <img id="carriere-statut">
   </div>
-
   <div class="card-middle">
     <div>Liberté</div>
     <span id="carriere-liberte"></span>
-
     <div>Longe</div>
     <span id="carriere-longe"></span>
-
     <div id="carriere-horaire" class="horaire"></div>
   </div>
-
   <div class="card-info" id="carriere-info"></div>
 </div>
 
-<!-- ===== MANEGE ===== -->
 <div class="card">
   <div class="card-top">
     <div class="title-wrap">
@@ -206,17 +246,13 @@ header h1{
     </div>
     <img id="manege-statut">
   </div>
-
   <div class="card-middle">
     <div>Liberté</div>
     <span id="manege-liberte"></span>
-
     <div>Longe</div>
     <span id="manege-longe"></span>
-
     <div id="manege-horaire" class="horaire"></div>
   </div>
-
   <div class="card-info" id="manege-info"></div>
 </div>
 
@@ -231,6 +267,10 @@ header h1{
 
 <script>
 
+if(window.matchMedia('(prefers-color-scheme: dark)').matches){
+  document.querySelector('meta[name="theme-color"]').setAttribute("content","#0f1115");
+}
+
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
 const REFRESH=60000;
 
@@ -241,15 +281,11 @@ const ICONS_STATUT={
   "hors-service":"image/horsservice.png"
 };
 
-/* ===== ANIMATION ===== */
-
 window.addEventListener("DOMContentLoaded",()=>{
   requestAnimationFrame(()=>{
     document.getElementById("page").classList.add("active");
   });
 });
-
-/* ===== DATE ===== */
 
 function updateDate(){
   const j=["Dimanche","Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi"];
@@ -258,8 +294,6 @@ function updateDate(){
   document.getElementById("date").innerText=
     j[d.getDay()]+" "+d.getDate()+" "+m[d.getMonth()]+" "+d.getFullYear();
 }
-
-/* ===== LOAD DATA ===== */
 
 function makeBadge(val){
   if(val==="oui") return `<span class="badge oui">OUI</span>`;
@@ -282,14 +316,12 @@ fetch(SHEET_URL,{cache:"no-store"})
     const horaire=row.horaire_special || row.horaire_affiche || "";
     const el=document.getElementById(espace+"-horaire");
     el.innerText=horaire;
-    el.style.color=row.horaire_special ? "#E88B00" : "#000";
+    el.style.color=row.horaire_special ? "var(--info)" : "var(--text)";
 
     document.getElementById(espace+"-info").innerText=row.info || "";
   });
 });
 }
-
-/* ===== NAV ===== */
 
 function goBack(){
   const page=document.getElementById("page");
