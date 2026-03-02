@@ -3,30 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Plan interactif</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+
+/* ================= BASE ================= */
+
 body{
   margin:0;
   background:#f4f4f4;
   font-family:'Montserrat',sans-serif;
+  color:#000;
+  transition:background .3s ease,color .3s ease;
 }
 
-/* ===== ANIMATION PAGE ===== */
+/* ================= ANIMATION ================= */
 
 .page{
   min-height:100vh;
   transform:translateX(100%);
   transition:transform .35s ease;
 }
-
 .page.active{ transform:translateX(0); }
 .page.exit{ transform:translateX(100%); }
 
-/* ===== HEADER ===== */
+/* ================= HEADER ================= */
 
 header{
   position:relative;
@@ -61,7 +64,7 @@ header h1{
   font-weight:700;
 }
 
-/* ===== PLAN ===== */
+/* ================= PLAN ================= */
 
 #mapWrapper{
   position:relative;
@@ -70,17 +73,18 @@ header h1{
 
 #map{
   width:100%;
-  border-radius:18px;
+  border-radius:20px;
+  transition:filter .3s ease, box-shadow .3s ease;
 }
 
-/* ===== BOUTONS ===== */
+/* ================= BOUTONS ================= */
 
 .plan-btn{
   position:absolute;
   width:48px;
   height:48px;
   background:#1e2c88;
-  border-radius:12px;
+  border-radius:14px;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -100,7 +104,7 @@ header h1{
 #btn-grande{top:38%;left:69%;}
 #btn-maison{top:55%;left:60%;}
 
-/* ===== LEGENDE ===== */
+/* ================= LEGENDE ================= */
 
 .legend{
   padding:20px;
@@ -116,7 +120,7 @@ header h1{
 
 .legend-item img{ width:22px; }
 
-/* ===== PANEL ===== */
+/* ================= PANEL ================= */
 
 #panel{
   position:fixed;
@@ -124,7 +128,7 @@ header h1{
   bottom:0;
   width:100%;
   height:50%;
-  background:#fff;
+  background:#ffffff;
   border-radius:20px 20px 0 0;
   transform:translateY(100%);
   transition:0.3s;
@@ -177,7 +181,6 @@ header h1{
   margin-right:15px;
 }
 
-/* >>> INFOS PLUS MARQUÉES <<< */
 #info{
   margin-top:8px;
   line-height:1.7;
@@ -196,11 +199,65 @@ header h1{
   background:#E88B00;
   color:white;
   padding:12px;
-  border-radius:10px;
+  border-radius:12px;
   text-align:center;
   font-weight:600;
   cursor:pointer;
 }
+
+/* ================= DARK MODE ================= */
+
+@media (prefers-color-scheme: dark){
+
+  body{
+    background:#0f1115;
+    color:#ffffff;
+  }
+
+  header h1{
+    color:#ffffff;
+  }
+
+  #backBtn{
+    background:#1c1f26;
+    box-shadow:0 12px 30px rgba(0,0,0,0.6);
+  }
+
+  #backBtn img{
+    filter:brightness(0) invert(1);
+  }
+
+  #panel{
+    background:#1c1f26;
+    box-shadow:0 25px 60px rgba(0,0,0,0.75);
+  }
+
+  .label{
+    color:#9aa0a6;
+  }
+
+  .value{
+    color:#e5e5e5;
+  }
+
+  .legend{
+    color:#ddd;
+  }
+
+  #map{
+    filter:brightness(0.92) contrast(0.95);
+    box-shadow:
+      0 30px 70px rgba(0,0,0,0.8),
+      0 0 0 1px rgba(255,255,255,0.04);
+  }
+
+  #reserveBox{
+    background:#c87400; /* moins agressif */
+    box-shadow:0 12px 30px rgba(0,0,0,0.6);
+  }
+
+}
+
 </style>
 </head>
 
@@ -280,9 +337,9 @@ const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTd
 const RESERVE_URL="https://www.ce-dugrandrang.com/book-online?category=ebb4678d-9213-49a4-9c62-168e3bdce954";
 
 const ICONS={
-  ouvert:"image/ouvert.png",
-  ferme:"image/ferme.png",
-  prevision:"image/prevision.png",
+  "ouvert":"image/ouvert.png",
+  "ferme":"image/ferme.png",
+  "prevision":"image/prevision.png",
   "hors-service":"image/horsservice.png"
 };
 
@@ -305,10 +362,13 @@ fetch(SHEET_URL,{cache:"no-store"})
 .then(d=>{
   DATA=d;
   d.forEach(e=>{
-    document.getElementById("icon-"+e.espace).src=ICONS[e.statut_auto];
+    const icon=ICONS[e.statut_auto?.toLowerCase()];
+    const el=document.getElementById("icon-"+e.espace);
+    if(el && icon) el.src=icon;
   });
 });
 }
+
 loadData();
 setInterval(loadData,60000);
 
@@ -324,14 +384,14 @@ if(e.statut_auto==="prevision"){statut.innerText="Ouverture prévue";statut.styl
 if(e.statut_auto==="ferme"){statut.innerText="Fermé";statut.style.color="red";}
 if(e.statut_auto==="hors-service"){statut.innerText="Hors service";statut.style.color="gray";}
 
-const special = e.horaire_special && String(e.horaire_special).trim() !== "";
-horaire.innerText = special ? e.horaire_special : e.horaire_affiche || "---";
+const special=e.horaire_special && String(e.horaire_special).trim()!=="";
+horaire.innerText=special?e.horaire_special:e.horaire_affiche||"---";
 
 if(special){
   horaire.style.color="#E88B00";
   horaire.style.fontWeight="600";
 }else{
-  horaire.style.color="#000";
+  horaire.style.color="";
   horaire.style.fontWeight="500";
 }
 
@@ -367,7 +427,9 @@ function goBack(){
   setTimeout(()=>{ location.href="index.html"; },300);
 }
 
-function goReserve(){ window.open(RESERVE_URL,"_blank"); }
+function goReserve(){
+  window.open(RESERVE_URL,"_blank");
+}
 
 </script>
 
