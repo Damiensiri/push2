@@ -8,61 +8,71 @@
 
 <link rel="manifest" href="manifest.json">
 
-<!-- APPLE FIX -->
 <link rel="apple-touch-icon" href="image/icon-192x192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Ecurie DS">
+<meta name="theme-color" content="#f4f4f4">
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
-<!-- OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-<script>
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-OneSignalDeferred.push(async function(OneSignal) {
-  await OneSignal.init({
-    appId: "85a477ff-3d8d-4975-960d-c7e69100a0ff",
-    notifyButton:{ enable:false },
-    promptOptions:{
-      slidedown:{
-        prompts:[{
-          type:"push",
-          autoPrompt:true,
-          text:{
-            actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
-            acceptButton:"Autoriser",
-            cancelButton:"Plus tard"
-          }
-        }]
-      }
-    }
-  });
-});
-</script>
-
 <style>
 
-/* ===== BASE ===== */
+/* ================= VARIABLES ================= */
+
+:root{
+  --bg:#f4f4f4;
+  --header-bg:#f4f4f4;
+  --text:#181E3B;
+  --card-bg:#ffffff;
+  --section-bg:#181E3B;
+  --section-text:#ffffff;
+  --shadow:0 6px 18px rgba(0,0,0,0.08);
+}
+
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1115;
+    --header-bg:#0f1115;
+    --text:#ffffff;
+    --card-bg:#1c1f26;
+    --section-bg:#ffffff;
+    --section-text:#000000;
+    --shadow:0 10px 30px rgba(0,0,0,0.6);
+  }
+
+  .header-left img{
+    filter:
+      brightness(0) invert(1)
+      drop-shadow(0 0 6px rgba(255,255,255,0.5));
+  }
+}
+
+/* ================= BASE ================= */
+
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
-  background:#f4f4f4;
+  background:var(--bg);
+  color:var(--text);
   overflow-y:auto;
+  transition:background .3s ease,color .3s ease;
 }
 
-/* ===== HEADER ===== */
+/* ================= HEADER ================= */
+
 header{
   position:fixed;
   top:0;
   left:0;
   width:100%;
   height:70px;
-  background:#f4f4f4;
+  background:var(--header-bg);
   z-index:1000;
   display:flex;
   align-items:center;
   justify-content:center;
+  transition:background .3s ease;
 }
 
 .header-left{
@@ -72,16 +82,18 @@ header{
 
 .header-left img{
   height:40px;
+  transition:filter .3s ease;
 }
 
 header h1{
   margin:0;
   font-size:20px;
   font-weight:700;
-  color:#181E3B;
+  color:var(--text);
 }
 
-/* ===== CLOCHE ===== */
+/* ================= BELL ================= */
+
 #bellBox{
   position:absolute;
   right:12px;
@@ -104,29 +116,33 @@ header h1{
   justify-content:center;
 }
 
-/* ===== CONTENT ===== */
+/* ================= CONTENT ================= */
+
 .page-content{
   margin-top:70px;
 }
 
-/* ===== UI ===== */
+/* ================= TITLES ================= */
+
 #welcome{
   text-align:center;
   font-size:36px;
   font-weight:700;
-  color:#181E3B;
-  margin:4px 0 15px;
+  margin:10px 0 20px;
 }
 
 .section-title{
-  background:#181E3B;
-  color:white;
+  background:var(--section-bg);
+  color:var(--section-text);
   display:inline-block;
-  padding:6px 12px;
+  padding:6px 14px;
   margin:20px 15px 10px;
-  border-radius:4px;
+  border-radius:6px;
   font-size:14px;
+  letter-spacing:0.5px;
 }
+
+/* ================= GRID ================= */
 
 .grid{
   display:grid;
@@ -135,18 +151,25 @@ header h1{
   padding:0 15px;
 }
 
+/* ================= CARDS ================= */
+
 .card{
-  background:white;
-  border-radius:20px;
-  padding:20px;
+  background:var(--card-bg);
+  border-radius:22px;
+  padding:22px;
   text-align:center;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  box-shadow:var(--shadow);
   cursor:pointer;
+  transition:transform .15s ease;
+}
+
+.card:hover{
+  transform:translateY(-3px);
 }
 
 .card img{
   width:55px;
-  margin-bottom:10px;
+  margin-bottom:12px;
 }
 
 .card div{
@@ -154,17 +177,24 @@ header h1{
   font-weight:700;
 }
 
+/* ================= LIST BUTTON ================= */
+
 .list-btn{
-  background:white;
-  margin:10px 15px;
+  background:var(--card-bg);
+  margin:12px 15px;
   padding:18px;
-  border-radius:20px;
+  border-radius:22px;
   display:flex;
   align-items:center;
   gap:12px;
-  box-shadow:0 3px 8px rgba(0,0,0,0.08);
+  box-shadow:var(--shadow);
   font-weight:700;
   cursor:pointer;
+  transition:transform .15s ease;
+}
+
+.list-btn:hover{
+  transform:translateY(-2px);
 }
 
 .list-btn img{
@@ -176,7 +206,6 @@ header h1{
 
 <body>
 
-<!-- HEADER -->
 <header>
   <div class="header-left">
     <img src="image/logo.png">
@@ -190,7 +219,6 @@ header h1{
   </div>
 </header>
 
-<!-- CONTENU -->
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
@@ -209,7 +237,6 @@ header h1{
 <div class="grid">
   <div class="card" onclick="go('horaires.html')"><img src="image/time.svg"><div>HORAIRES</div></div>
   <div class="card" onclick="go('meteo.html')"><img src="image/meteo.svg"><div>MÉTÉO</div></div>
-
   <div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')"><img src="image/cavasoft.svg"><div>COURS</div></div>
   <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')"><img src="image/service.svg"><div>SERVICES</div></div>
   <div class="card" onclick="go('concours.html')"><img src="image/concours.svg"><div>CONCOURS</div></div>
@@ -232,9 +259,13 @@ header h1{
 <script>
 function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
+
+if(window.matchMedia('(prefers-color-scheme: dark)').matches){
+  document.querySelector('meta[name="theme-color"]').setAttribute("content","#0f1115");
+}
 </script>
 
-<!-- ===== CLOCHE 100% SYNCHRO NOTIFICATIONS ===== -->
+<!-- ===== CLOCHE IDENTIQUE VERSION STABLE ===== -->
 <script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
