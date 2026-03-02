@@ -9,10 +9,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+
+/* ================= BASE ================= */
+
 body{
   margin:0;
   font-family:'Montserrat',sans-serif;
   background:#f4f4f4;
+  color:#000;
+  transition:background .3s ease,color .3s ease;
 }
 
 /* ===== SLIDE ANIMATION ===== */
@@ -34,7 +39,7 @@ body.slide-out{
   to{ transform:translateX(100%); }
 }
 
-/* ===== HEADER ===== */
+/* ================= HEADER ================= */
 
 header{
   position:relative;
@@ -72,7 +77,7 @@ header h1{
   font-weight:700;
 }
 
-/* ===== LISTE ===== */
+/* ================= LISTE ================= */
 
 #list{
   padding:10px;
@@ -87,6 +92,7 @@ header h1{
   display:flex;
   align-items:center;
   gap:14px;
+  transition:background .3s ease, box-shadow .3s ease;
 }
 
 .card img{
@@ -111,6 +117,41 @@ header h1{
     font-size:17px;
   }
 }
+
+/* ================= DARK MODE ================= */
+
+@media (prefers-color-scheme: dark){
+
+  body{
+    background:#0f1115;
+    color:#ffffff;
+  }
+
+  header h1{
+    color:#ffffff;
+  }
+
+  #backBtn{
+    background:#1c1f26;
+    box-shadow:0 12px 30px rgba(0,0,0,0.6);
+  }
+
+  #backBtn img{
+    filter:brightness(0) invert(1);
+  }
+
+  .card{
+    background:#1c1f26;
+    box-shadow:0 20px 50px rgba(0,0,0,0.75);
+  }
+
+  .day,
+  .time{
+    color:#e5e5e5;
+  }
+
+}
+
 </style>
 </head>
 
