@@ -49,14 +49,23 @@ header{
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow:0 4px 12px rgba(0,0,0,0.6);
+  box-shadow:0 6px 18px rgba(0,0,0,0.7);
   cursor:pointer;
+  transition:all .2s ease;
+}
+
+#backBtn:hover{
+  background:#252a33;
 }
 
 #backBtn img{
   width:22px;
-  /* pas de filter ici */
+  filter:
+    brightness(0) invert(1)
+    drop-shadow(0 0 6px rgba(255,255,255,0.5));
 }
+
+/* ===== TITLE ===== */
 
 header h1{
   position:absolute;
@@ -85,7 +94,7 @@ header h1{
   margin:0 15px 20px;
   padding:15px;
   border-radius:18px;
-  box-shadow:0 8px 25px rgba(0,0,0,0.6);
+  box-shadow:0 10px 30px rgba(0,0,0,0.7);
   border:1px solid rgba(255,255,255,0.05);
 }
 
@@ -103,7 +112,6 @@ header h1{
 
 .title-wrap img{
   width:26px;
-  /* filtre retiré uniquement ici */
 }
 
 .card-title{
