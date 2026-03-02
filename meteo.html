@@ -233,17 +233,49 @@ window.addEventListener("DOMContentLoaded",()=>{
 const URL =
 "https://api.open-meteo.com/v1/forecast?latitude=48.391&longitude=4.527&current=temperature_2m,weathercode,wind_speed_10m,wind_gusts_10m,precipitation_probability,precipitation,is_day&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum&timezone=Europe/Paris";
 
-function icon(code, isDay){
-  if(code === 0) return isDay ? "☀️" : "🌙";
-  if(code === 1) return isDay ? "🌤" : "🌙☁️";
-  if(code === 2) return isDay ? "⛅" : "☁️🌙";
-  if(code === 3) return "☁️";
-  if(code >= 45 && code <= 48) return "🌫";
-  if(code >= 51 && code <= 67) return "🌧";
-  if(code >= 71 && code <= 77) return "🌨";
-  if(code >= 80 && code <= 82) return "🌦";
-  if(code >= 95 && code <= 99) return "⛈";
-  return "☁️";
+/* ===== EMOJI + TEXTE PRÉCIS ===== */
+
+function weatherInfo(code, isDay){
+
+  const map = {
+
+    0:{icon:isDay?"☀️":"🌙", text:"Ciel dégagé"},
+    1:{icon:"🌤", text:"Peu nuageux"},
+    2:{icon:"⛅", text:"Partiellement nuageux"},
+    3:{icon:"☁️", text:"Couvert"},
+
+    45:{icon:"🌫", text:"Brouillard"},
+    48:{icon:"🌫", text:"Brouillard givrant"},
+
+    51:{icon:"🌦", text:"Bruine légère"},
+    53:{icon:"🌦", text:"Bruine modérée"},
+    55:{icon:"🌧", text:"Bruine dense"},
+
+    61:{icon:"🌦", text:"Pluie faible"},
+    63:{icon:"🌧", text:"Pluie modérée"},
+    65:{icon:"🌧", text:"Pluie forte"},
+
+    66:{icon:"🌧❄️", text:"Pluie verglaçante légère"},
+    67:{icon:"🌧❄️", text:"Pluie verglaçante forte"},
+
+    71:{icon:"🌨", text:"Neige faible"},
+    73:{icon:"🌨", text:"Neige modérée"},
+    75:{icon:"❄️", text:"Neige forte"},
+    77:{icon:"🌨", text:"Grains de neige"},
+
+    80:{icon:"🌦", text:"Averses faibles"},
+    81:{icon:"🌧", text:"Averses modérées"},
+    82:{icon:"🌧", text:"Averses fortes"},
+
+    85:{icon:"🌨", text:"Averses neige faibles"},
+    86:{icon:"❄️", text:"Averses neige fortes"},
+
+    95:{icon:"⛈", text:"Orage"},
+    96:{icon:"⛈❄️", text:"Orage avec grêle"},
+    99:{icon:"⛈❄️", text:"Orage violent avec grêle"}
+  };
+
+  return map[code] || {icon:"☁️", text:"Conditions variables"};
 }
 
 function dayName(i){
@@ -254,13 +286,15 @@ fetch(URL)
 .then(r=>r.json())
 .then(d=>{
 
+  const currentWeather = weatherInfo(d.current.weathercode, d.current.is_day);
+
   document.getElementById("icon").innerHTML =
-    `<div style="font-size:48px">${icon(d.current.weathercode, d.current.is_day)}</div>`;
+    `<div style="font-size:48px">${currentWeather.icon}</div>`;
 
   document.getElementById("temp").innerText =
     Math.round(d.current.temperature_2m)+"°C";
 
-  document.getElementById("desc").innerText="Conditions actuelles";
+  document.getElementById("desc").innerText = currentWeather.text;
 
   document.getElementById("wind").innerText =
     "💨 Vent : "+Math.round(d.current.wind_speed_10m)+" km/h";
@@ -278,10 +312,13 @@ fetch(URL)
   f.innerHTML="";
 
   for(let i=0;i<3;i++){
+    const dailyWeather = weatherInfo(d.daily.weathercode[i], true);
+
     f.innerHTML+=`
       <div class="day">
         <div class="day-name">${dayName(new Date().getDay()+i)}</div>
-        <div>${icon(d.daily.weathercode[i], true)}</div>
+        <div>${dailyWeather.icon}</div>
+        <div style="font-size:12px;margin-top:4px;">${dailyWeather.text}</div>
         <div class="day-temp">
           ${Math.round(d.daily.temperature_2m_min[i])}° /
           ${Math.round(d.daily.temperature_2m_max[i])}°
