@@ -55,6 +55,14 @@ body{
   background:var(--bg);
   color:var(--text);
   overflow-y:auto;
+
+  /* masque visuel de la scrollbar */
+  -ms-overflow-style:none;
+  scrollbar-width:none;
+}
+
+body::-webkit-scrollbar{
+  display:none;
 }
 
 /* ================= HEADER ================= */
