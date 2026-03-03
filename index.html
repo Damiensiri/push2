@@ -7,7 +7,6 @@
 <title>Ecurie Damien Siri</title>
 
 <link rel="manifest" href="manifest.json">
-
 <link rel="apple-touch-icon" href="image/icon-192x192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -56,7 +55,6 @@ body{
   background:var(--bg);
   color:var(--text);
   overflow-y:auto;
-  transition:background .3s ease,color .3s ease;
 }
 
 /* ================= HEADER ================= */
@@ -72,7 +70,6 @@ header{
   display:flex;
   align-items:center;
   justify-content:center;
-  transition:background .3s ease;
 }
 
 .header-left{
@@ -82,14 +79,12 @@ header{
 
 .header-left img{
   height:40px;
-  transition:filter .3s ease;
 }
 
 header h1{
   margin:0;
   font-size:20px;
   font-weight:700;
-  color:var(--text);
 }
 
 /* ================= BELL ================= */
@@ -128,7 +123,17 @@ header h1{
   text-align:center;
   font-size:36px;
   font-weight:700;
-  margin:10px 0 20px;
+  margin:10px 0 16px; /* 16px validé */
+}
+
+/* ===== STATUT HORAIRES ===== */
+
+#opening-status{
+  text-align:center;
+  margin-bottom:16px; /* 16px validé */
+  display:none;
+  font-size:15px;
+  font-weight:600;
 }
 
 /* ================= BANDEAU ================= */
@@ -172,10 +177,7 @@ header h1{
   margin:20px 15px 10px;
   border-radius:6px;
   font-size:14px;
-  letter-spacing:0.5px;
 }
-
-/* ================= GRID ================= */
 
 .grid{
   display:grid;
@@ -184,8 +186,6 @@ header h1{
   padding:0 15px;
 }
 
-/* ================= CARDS ================= */
-
 .card{
   background:var(--card-bg);
   border-radius:22px;
@@ -193,11 +193,6 @@ header h1{
   text-align:center;
   box-shadow:var(--shadow);
   cursor:pointer;
-  transition:transform .15s ease;
-}
-
-.card:hover{
-  transform:translateY(-3px);
 }
 
 .card img{
@@ -210,8 +205,6 @@ header h1{
   font-weight:700;
 }
 
-/* ================= LIST BUTTON ================= */
-
 .list-btn{
   background:var(--card-bg);
   margin:12px 15px;
@@ -223,11 +216,6 @@ header h1{
   box-shadow:var(--shadow);
   font-weight:700;
   cursor:pointer;
-  transition:transform .15s ease;
-}
-
-.list-btn:hover{
-  transform:translateY(-2px);
 }
 
 .list-btn img{
@@ -243,9 +231,7 @@ header h1{
   <div class="header-left">
     <img src="image/logo.png">
   </div>
-
   <h1>ECURIE DAMIEN SIRI</h1>
-
   <div id="bellBox" onclick="go('notifications.html')">
     🔔
     <span id="bellBadge"></span>
@@ -255,6 +241,8 @@ header h1{
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
+
+<div id="opening-status"></div>
 
 <!-- BANDEAU -->
 <div id="alert-wrapper">
@@ -297,50 +285,94 @@ header h1{
 <script>
 function go(url){ window.location.href=url; }
 function openExternal(url){ window.open(url,"_blank"); }
-
-if(window.matchMedia('(prefers-color-scheme: dark)').matches){
-  document.querySelector('meta[name="theme-color"]').setAttribute("content","#0f1115");
-}
 </script>
 
 <script>
 
-/* ===== BANDEAU ACCUEIL ===== */
+/* ===== ALERT + STATUT HORAIRES ===== */
 
 const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
+const HORAIRES_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/horaires";
 const ESPACE="accueil";
 
-function loadAlert(){
+function getTodayName(){
+  return ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][new Date().getDay()];
+}
+
+function parseTime(str){
+  const p=str.split(":");
+  return {h:parseInt(p[0]), m:parseInt(p[1])};
+}
+
+function isNowBetween(open,close){
+  const now=new Date();
+  const o=new Date(); o.setHours(open.h,open.m,0,0);
+  const c=new Date(); c.setHours(close.h,close.m,0,0);
+  return now>=o && now<=c;
+}
+
+function loadAll(){
+
+  const alertBox=document.getElementById("alert-box");
+  const status=document.getElementById("opening-status");
+
+  alertBox.innerHTML="";
+  alertBox.classList.remove("show");
+  alertBox.style.display="none";
+  status.style.display="none";
+
   fetch(SHEET_URL,{cache:"no-store"})
   .then(r=>r.json())
   .then(data=>{
+
     const row=data.find(e=>e.espace===ESPACE);
-    const box=document.getElementById("alert-box");
 
-    box.innerHTML="";
-    box.classList.remove("show");
-    box.style.display="none";
+    if(row && row.alerte && row.alerte.trim()!==""){
 
-    if(!row||!row.alerte||row.alerte.trim()==="") return;
+      alertBox.style.display="flex";
 
-    box.style.display="flex";
+      const icon=document.createElement("img");
+      icon.src="https://static.wixstatic.com/shapes/ff7f34_8db0b910e97b4e37af20514452d5c4f4.svg";
+      icon.style.width="16px";
 
-    const icon=document.createElement("img");
-    icon.src="https://static.wixstatic.com/shapes/ff7f34_8db0b910e97b4e37af20514452d5c4f4.svg";
-    icon.style.width="16px";
+      const text=document.createElement("div");
+      text.textContent=row.alerte;
 
-    const text=document.createElement("div");
-    text.textContent=row.alerte;
+      alertBox.appendChild(icon);
+      alertBox.appendChild(text);
 
-    box.appendChild(icon);
-    box.appendChild(text);
+      setTimeout(()=>{ alertBox.classList.add("show"); },50);
+      return;
+    }
 
-    setTimeout(()=>{ box.classList.add("show"); },50);
+    fetch(HORAIRES_URL,{cache:"no-store"})
+    .then(r=>r.json())
+    .then(data=>{
+
+      const today=getTodayName();
+      const row=data.find(r=>r.jour?.toLowerCase()===today);
+      if(!row||!row.ouvert||!row.ferme) return;
+
+      const open=parseTime(row.ouvert);
+      const close=parseTime(row.ferme);
+
+      status.style.display="block";
+
+      if(isNowBetween(open,close)){
+        status.style.color="#2e7d32";
+        status.textContent=`Écuries ouvertes ${row.ouvert.substring(0,5)} – ${row.ferme.substring(0,5)}`;
+      }else{
+        status.style.color="#c0392b";
+        status.textContent=`Écuries fermées ${row.ouvert.substring(0,5)} – ${row.ferme.substring(0,5)}`;
+      }
+
+    });
+
   });
 }
 
-loadAlert();
-setInterval(loadAlert,60000);
+loadAll();
+setInterval(loadAll,60000);
 
 </script>
 
