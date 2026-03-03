@@ -346,7 +346,7 @@ setInterval(loadAlert,60000);
 
 <script>
 
-/* ===== CLOCHE ===== */
+/* ===== CLOCHE (VERSION COMPLÈTE AVEC FILTRE EXPIRATION) ===== */
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
@@ -362,14 +362,17 @@ function getLues(){
 
 function parseDateFR(str){
   if(!str) return null;
+
   if(str.includes("-")){
     const p=str.split("-");
     return new Date(p[0],p[1]-1,p[2],0,0,0);
   }
+
   if(str.includes("/")){
     const p=str.split("/");
     return new Date(p[2],p[1]-1,p[0],0,0,0);
   }
+
   return null;
 }
 
@@ -390,6 +393,7 @@ async function updateBell(){
 
     data
       .filter(n=>{
+
         if(n.epingle==="oui") return true;
         if(n.active!=="oui") return false;
 
@@ -402,6 +406,7 @@ async function updateBell(){
         const exp=parseDateFR(n.expire);
         if(!exp) return true;
         return exp>=today;
+
       })
       .forEach(n=>{
         if(!lues.includes(String(n.id))){
