@@ -8,6 +8,7 @@
 
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="image/icon-192x192.png">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Ecurie DS">
@@ -42,7 +43,7 @@ OneSignalDeferred.push(async function(OneSignal) {
 
 <style>
 
-/* VARIABLES */
+/* ================= VARIABLES ================= */
 
 :root{
   --bg:#f4f4f4;
@@ -54,185 +55,197 @@ OneSignalDeferred.push(async function(OneSignal) {
   --shadow:0 6px 18px rgba(0,0,0,0.08);
 }
 
-@media (prefers-color-scheme: dark){
-:root{
-  --bg:#0f1115;
-  --header-bg:#0f1115;
-  --text:#ffffff;
-  --card-bg:#1c1f26;
-  --section-bg:#ffffff;
-  --section-text:#000000;
-  --shadow:0 10px 30px rgba(0,0,0,0.6);
-}}
+/* ===== DARK MODE ===== */
 
-html,body{
-margin:0;
-height:100%;
-font-family:'Montserrat',sans-serif;
-background:var(--bg);
-color:var(--text);
-overflow:hidden;
+@media (prefers-color-scheme: dark){
+
+  :root{
+    --bg:#0f1115;
+    --header-bg:#0f1115;
+    --text:#ffffff;
+    --card-bg:#1c1f26;
+    --section-bg:#ffffff;
+    --section-text:#000000;
+    --shadow:0 10px 30px rgba(0,0,0,0.6);
+  }
+
+  .header-left img{
+    filter:brightness(0) invert(1)
+           drop-shadow(0 0 8px rgba(255,255,255,0.7));
+  }
+
 }
 
-/* HEADER */
+/* ================= BASE ================= */
+
+html,body{
+  margin:0;
+  height:100%;
+  font-family:'Montserrat',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow:hidden;
+}
+
+/* ================= HEADER ================= */
 
 header{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:64px;
-background:var(--header-bg);
-z-index:1000;
-display:flex;
-align-items:center;
-justify-content:center;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:64px;
+  background:var(--header-bg);
+  z-index:1000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .header-left{
-position:absolute;
-left:12px;
+  position:absolute;
+  left:12px;
 }
 
 .header-left img{
-height:40px;
+  height:40px;
 }
 
 header h1{
-margin:0;
-font-size:20px;
-font-weight:700;
+  margin:0;
+  font-size:20px;
+  font-weight:700;
 }
 
-/* BELL */
+/* ================= BELL ================= */
 
 #bellBox{
-position:absolute;
-right:12px;
-font-size:22px;
-cursor:pointer;
+  position:absolute;
+  right:12px;
+  font-size:22px;
+  cursor:pointer;
 }
 
 #bellBadge{
-position:absolute;
-top:-6px;
-right:-6px;
-background:red;
-color:white;
-width:16px;
-height:16px;
-font-size:10px;
-border-radius:50%;
-display:none;
-align-items:center;
-justify-content:center;
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  background:red;
+  color:white;
+  width:16px;
+  height:16px;
+  font-size:10px;
+  border-radius:50%;
+  display:none;
+  align-items:center;
+  justify-content:center;
 }
 
-/* CONTENT */
+/* ================= CONTENT ================= */
 
 .page-content{
-position:fixed;
-top:20px;
-left:0;
-right:0;
-bottom:0;
-overflow-y:auto;
-padding-bottom:20px;
+  position:fixed;
+  top:20px;
+  left:0;
+  right:0;
+  bottom:0;
+  overflow-y:auto;
+  padding-bottom:20px;
 }
 
 #welcome{
-text-align:center;
-font-size:44px;
-font-weight:700;
-margin:35px 0 16px;
+  text-align:center;
+  font-size:44px;
+  font-weight:700;
+  margin:35px 0 16px;
 }
 
 #opening-status{
-text-align:center;
-margin-bottom:16px;
-display:none;
-font-size:15px;
-font-weight:600;
+  text-align:center;
+  margin-bottom:16px;
+  display:none;
+  font-size:15px;
+  font-weight:600;
 }
 
-/* ALERT */
+/* ================= ALERT ================= */
 
 #alert-wrapper{
-width:100%;
-display:flex;
-justify-content:center;
-overflow:hidden;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  overflow:hidden;
 }
 
 #alert-box{
-width:100%;
-height:27px;
-background:#E88B00;
-display:none;
-align-items:center;
-gap:8px;
-padding:0 12px;
-color:white;
-font-size:14px;
-transform:translateY(-100%);
-opacity:0;
-transition:transform .4s ease, opacity .4s ease;
+  width:100%;
+  height:27px;
+  background:#E88B00;
+  display:none;
+  align-items:center;
+  gap:8px;
+  padding:0 12px;
+  color:white;
+  font-size:14px;
+  transform:translateY(-100%);
+  opacity:0;
+  transition:transform .4s ease, opacity .4s ease;
 }
 
 #alert-box.show{
-transform:translateY(0);
-opacity:1;
+  transform:translateY(0);
+  opacity:1;
 }
 
-/* SECTIONS */
+/* ================= SECTIONS ================= */
 
 .section-title{
-background:var(--section-bg);
-color:var(--section-text);
-display:inline-block;
-padding:6px 14px;
-margin:20px 15px 10px;
-border-radius:6px;
-font-size:14px;
+  background:var(--section-bg);
+  color:var(--section-text);
+  display:inline-block;
+  padding:6px 14px;
+  margin:20px 15px 10px;
+  border-radius:6px;
+  font-size:14px;
 }
 
 .grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:15px;
-padding:0 15px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  padding:0 15px;
 }
 
 .card{
-background:var(--card-bg);
-border-radius:22px;
-padding:22px;
-text-align:center;
-box-shadow:var(--shadow);
-cursor:pointer;
+  background:var(--card-bg);
+  border-radius:22px;
+  padding:22px;
+  text-align:center;
+  box-shadow:var(--shadow);
+  cursor:pointer;
 }
 
 .card img{
-width:55px;
-margin-bottom:12px;
+  width:55px;
+  margin-bottom:12px;
 }
 
 .card div{
-font-size:16px;
-font-weight:700;
+  font-size:16px;
+  font-weight:700;
 }
 
 .list-btn{
-background:var(--card-bg);
-margin:12px 15px;
-padding:18px;
-border-radius:22px;
-display:flex;
-align-items:center;
-gap:12px;
-box-shadow:var(--shadow);
-font-weight:700;
-cursor:pointer;
+  background:var(--card-bg);
+  margin:12px 15px;
+  padding:18px;
+  border-radius:22px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  box-shadow:var(--shadow);
+  font-weight:700;
+  cursor:pointer;
 }
 
 </style>
@@ -373,9 +386,9 @@ setInterval(updateUI,10000);
 
 </script>
 
-<!-- CLOCHE -->
-
 <script>
+
+/* CLOCHE */
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
