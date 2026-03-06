@@ -16,31 +16,31 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
-<!-- ONESIGNAL -->
+<!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
 <script>
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 OneSignalDeferred.push(async function(OneSignal) {
-await OneSignal.init({
-appId:"85a477ff-3d8d-4975-960d-c7e69100a0ff",
-notifyButton:{enable:false},
-promptOptions:{
-slidedown:{
-prompts:[{
-type:"push",
-autoPrompt:true,
-text:{
-actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
-acceptButton:"Autoriser",
-cancelButton:"Plus tard"
+  await OneSignal.init({
+    appId:"85a477ff-3d8d-4975-960d-c7e69100a0ff",
+    notifyButton:{enable:false},
+    promptOptions:{
+      slidedown:{
+        prompts:[{
+          type:"push",
+          autoPrompt:true,
+          text:{
+            actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
+            acceptButton:"Autoriser",
+            cancelButton:"Plus tard"
 }}]}}});
 });
 </script>
 
 <style>
 
-/* ===== BASE ===== */
+/* BASE */
 
 body{
 margin:0;
@@ -49,7 +49,7 @@ background:#f4f4f4;
 overflow-y:auto;
 }
 
-/* ===== HEADER ===== */
+/* HEADER */
 
 header{
 position:fixed;
@@ -80,7 +80,7 @@ font-weight:700;
 color:#181E3B;
 }
 
-/* ===== CLOCHE ===== */
+/* CLOCHE */
 
 #bellBox{
 position:absolute;
@@ -104,13 +104,13 @@ align-items:center;
 justify-content:center;
 }
 
-/* ===== CONTENT ===== */
+/* CONTENT */
 
 .page-content{
 margin-top:70px;
 }
 
-/* ===== STATUS ===== */
+/* STATUS */
 
 #opening-status{
 text-align:center;
@@ -120,7 +120,7 @@ margin-top:10px;
 display:none;
 }
 
-/* ===== BANDEAU ORANGE ===== */
+/* BANDEAU */
 
 #alert-box{
 display:none;
@@ -131,7 +131,7 @@ text-align:center;
 font-size:14px;
 }
 
-/* ===== UI ===== */
+/* UI */
 
 #welcome{
 text-align:center;
@@ -194,7 +194,7 @@ cursor:pointer;
 width:26px;
 }
 
-/* ===== DARK MODE ===== */
+/* DARK MODE */
 
 @media (prefers-color-scheme: dark){
 
@@ -236,7 +236,8 @@ color:white;
 }
 
 .header-left img{
-filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.7));
+filter:brightness(0) invert(1)
+drop-shadow(0 0 8px rgba(255,255,255,0.7));
 }
 
 }
@@ -283,11 +284,23 @@ filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.7));
 <div class="grid">
 <div class="card" onclick="go('horaires.html')"><img src="image/time.svg"><div>HORAIRES</div></div>
 <div class="card" onclick="go('meteo.html')"><img src="image/meteo.svg"><div>MÉTÉO</div></div>
+
 <div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')"><img src="image/cavasoft.svg"><div>COURS</div></div>
 <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')"><img src="image/service.svg"><div>SERVICES</div></div>
 <div class="card" onclick="go('concours.html')"><img src="image/concours.svg"><div>CONCOURS</div></div>
 <div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')"><img src="image/soins.svg"><div>SOINS</div></div>
 </div>
+
+<div class="section-title">AUTRES</div>
+
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/category/laverie')"><img src="image/laverie.svg"> LAVERIE</div>
+<div class="list-btn" onclick="openExternal('tarifs.pdf')"><img src="image/tarif.svg"> TARIFS</div>
+
+<div class="section-title">COMPTE</div>
+
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/profile/my/profile')"><img src="image/compte.svg"> MON COMPTE</div>
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/my-bookings')"><img src="image/reservation.svg"> MES RÉSERVATIONS</div>
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/cart-page')"><img src="image/panier.svg"> MON PANIER</div>
 
 </div>
 
@@ -315,6 +328,8 @@ async function updateUI(){
 
 const alertBox=document.getElementById("alert-box");
 const status=document.getElementById("opening-status");
+
+try{
 
 const [statuts,horaires,exceptions]=await Promise.all([
 fetch(STATUTS_URL).then(r=>r.json()),
@@ -368,6 +383,8 @@ status.style.color="#c0392b";
 status.textContent=`Écuries fermées ${open} – ${close}`;
 }
 
+}catch(e){}
+
 }
 
 updateUI();
@@ -381,9 +398,9 @@ fetch(p,{cache:"force-cache"}).catch(()=>{});
 
 </script>
 
-<script>
+<!-- CLOCHE -->
 
-/* CLOCHE */
+<script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
@@ -396,8 +413,14 @@ catch(e){return[];}
 
 function parseDateFR(str){
 if(!str)return null;
-if(str.includes("-")){const p=str.split("-");return new Date(p[0],p[1]-1,p[2]);}
-if(str.includes("/")){const p=str.split("/");return new Date(p[2],p[1]-1,p[0]);}
+if(str.includes("-")){
+const p=str.split("-");
+return new Date(p[0],p[1]-1,p[2]);
+}
+if(str.includes("/")){
+const p=str.split("/");
+return new Date(p[2],p[1]-1,p[0]);
+}
 return null;
 }
 
