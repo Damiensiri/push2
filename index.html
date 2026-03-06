@@ -310,12 +310,8 @@ color:white;
 
 <script>
 
-/* NAVIGATION */
-
 function go(url){window.location.href=url;}
 function openExternal(url){window.open(url,"_blank");}
-
-/* API */
 
 const STATUTS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=statuts";
 const HORAIRES_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=horaires";
@@ -351,8 +347,6 @@ function updateUI(horaires,exceptions,statuts){
 const status=document.getElementById("opening-status");
 const alertBox=document.getElementById("alert-box");
 
-/* BANDEAU */
-
 const accueil=statuts.find(e=>e.espace==="accueil");
 
 if(accueil && accueil.alerte && accueil.alerte.trim()!==""){
@@ -362,9 +356,10 @@ alertBox.innerHTML="⚠️ "+accueil.alerte;
 alertBox.style.display="none";
 }
 
-/* EXCEPTIONS */
+const now=new Date();
 
-const today=new Date().toISOString().slice(0,10);
+const today=
+now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
 
 const ex=exceptions.find(e=>e.date===today);
 
@@ -373,8 +368,6 @@ status.style.color="#c0392b";
 status.textContent=ex.message;
 return;
 }
-
-/* HORAIRES */
 
 const todayName=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][new Date().getDay()];
 
@@ -388,12 +381,12 @@ const close=formatTime(h.ferme);
 const [oh,om]=open.split(":");
 const [ch,cm]=close.split(":");
 
-const now=new Date();
+const nowTime=new Date();
 
 const o=new Date();o.setHours(oh,om,0,0);
 const c=new Date();c.setHours(ch,cm,0,0);
 
-if(now>=o && now<=c){
+if(nowTime>=o && nowTime<=c){
 status.style.color="#2e7d32";
 status.textContent=`Écuries ouvertes ${open} – ${close}`;
 }else{
@@ -404,10 +397,7 @@ status.textContent=`Écuries fermées ${open} – ${close}`;
 }
 
 load();
-
 setInterval(load,10000);
-
-/* PRELOAD */
 
 ["paddocks.html","travail.html","plan.html","horaires.html"].forEach(p=>{
 fetch(p,{cache:"force-cache"}).catch(()=>{});
