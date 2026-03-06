@@ -11,192 +11,156 @@
 
 <style>
 
-/* ================= VARIABLES ================= */
-
 :root{
-  --bg:#f4f4f4;
-  --header-bg:#f4f4f4;
-  --text:#181E3B;
-  --card-bg:#ffffff;
-  --shadow:0 6px 18px rgba(0,0,0,0.08);
-  --info:#E88B00;
-  --reserve-bg:#E88B00;
+--bg:#f4f4f4;
+--header-bg:#f4f4f4;
+--text:#181E3B;
+--card-bg:#ffffff;
+--shadow:0 6px 18px rgba(0,0,0,0.08);
+--info:#E88B00;
+--reserve-bg:#E88B00;
 }
 
 @media (prefers-color-scheme: dark){
-  :root{
-    --bg:#0f1115;
-    --header-bg:#0f1115;
-    --text:#ffffff;
-    --card-bg:#1c1f26;
-    --shadow:0 10px 30px rgba(0,0,0,0.6);
-    --info:#E88B00; /* reste orange même en dark */
-    --reserve-bg:#c87400;
-  }
-
-  #backBtn img{
-    filter:
-      brightness(0) invert(1)
-      drop-shadow(0 0 6px rgba(255,255,255,0.5));
-  }
-}
-
-/* ================= BASE ================= */
-
-body{
-  margin:0;
-  font-family:'Montserrat',sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  transition:background .3s ease,color .3s ease;
-}
-
-/* ================= PAGE ================= */
-
-.page{
-  min-height:100vh;
-  transform:translateX(100%);
-  transition:transform .35s ease;
-}
-.page.active{ transform:translateX(0); }
-.page.exit{ transform:translateX(100%); }
-
-/* ================= HEADER ================= */
-
-header{
-  position:relative;
-  height:70px;
-  background:var(--header-bg);
-}
-
-#backBtn{
-  position:absolute;
-  left:15px;
-  top:50%;
-  transform:translateY(-50%);
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:var(--card-bg);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:var(--shadow);
-  cursor:pointer;
+:root{
+--bg:#0f1115;
+--header-bg:#0f1115;
+--text:#ffffff;
+--card-bg:#1c1f26;
+--shadow:0 10px 30px rgba(0,0,0,0.6);
+--info:#E88B00;
+--reserve-bg:#c87400;
 }
 
 #backBtn img{
-  width:22px;
-  height:22px;
-  transition:filter .3s ease;
+filter:brightness(0) invert(1) drop-shadow(0 0 6px rgba(255,255,255,0.5));
 }
+}
+
+body{
+margin:0;
+font-family:'Montserrat',sans-serif;
+background:var(--bg);
+color:var(--text);
+}
+
+.page{
+min-height:100vh;
+transform:translateX(100%);
+transition:transform .35s ease;
+}
+.page.active{transform:translateX(0);}
+.page.exit{transform:translateX(100%);}
+
+header{
+position:relative;
+height:70px;
+background:var(--header-bg);
+}
+
+#backBtn{
+position:absolute;
+left:15px;
+top:50%;
+transform:translateY(-50%);
+width:42px;
+height:42px;
+border-radius:50%;
+background:var(--card-bg);
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:var(--shadow);
+cursor:pointer;
+}
+
+#backBtn img{width:22px;}
 
 header h1{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  margin:0;
-  font-size:18px;
-  font-weight:700;
-  color:var(--text);
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+margin:0;
+font-size:18px;
+font-weight:700;
 }
 
-/* ================= CARDS ================= */
-
 .card{
-  background:var(--card-bg);
-  margin:0 15px 20px;
-  padding:18px;
-  border-radius:22px;
-  box-shadow:var(--shadow);
+background:var(--card-bg);
+margin:0 15px 20px;
+padding:18px;
+border-radius:22px;
+box-shadow:var(--shadow);
 }
 
 .card-top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+display:flex;
+justify-content:space-between;
+align-items:center;
 }
 
 .left-title{
-  display:flex;
-  align-items:center;
-  gap:8px;
+display:flex;
+align-items:center;
+gap:8px;
 }
 
-.left-title img{
-  width:26px;
-}
+.left-title img{width:26px;}
 
 .card-title{
-  font-size:20px;
-  font-weight:700;
+font-size:20px;
+font-weight:700;
 }
 
-.card-top img.statut{
-  width:26px;
-}
+.card-top img.statut{width:26px;}
 
 .card-middle{
-  display:flex;
-  justify-content:flex-end;
-  margin-top:10px;
-  font-size:14px;
+display:flex;
+justify-content:flex-end;
+margin-top:10px;
+font-size:14px;
 }
 
 .card-info{
-  margin-top:10px;
-  font-size:13px;
-  color:var(--info);
-  white-space:pre-line;
+margin-top:10px;
+font-size:13px;
+color:var(--info);
+white-space:pre-line;
 }
-
-/* ================= BOUTON RESERVER ================= */
 
 #reserveBox{
-  margin:30px 15px;
-  background:var(--reserve-bg);
-  color:white;
-  border-radius:14px;
-  padding:14px;
-  text-align:center;
-  font-weight:600;
-  font-size:16px;
-  display:none;
-  justify-content:center;
-  align-items:center;
-  gap:8px;
-  cursor:pointer;
-  box-shadow:var(--shadow);
-  transition:background .3s ease, transform .15s ease;
+margin:30px 15px;
+background:var(--reserve-bg);
+color:white;
+border-radius:14px;
+padding:14px;
+text-align:center;
+font-weight:600;
+font-size:16px;
+display:none;
+justify-content:center;
+align-items:center;
+gap:8px;
+cursor:pointer;
+box-shadow:var(--shadow);
 }
 
-#reserveBox:hover{
-  transform:translateY(-2px);
-}
-
-#reserveBox img{
-  width:20px;
-}
-
-/* ================= LEGENDE ================= */
+#reserveBox img{width:20px;}
 
 .legend{
-  margin:25px 20px;
-  font-size:15px;
-  color:var(--text);
+margin:25px 20px;
+font-size:15px;
 }
 
 .legend-item{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-bottom:18px;
+display:flex;
+align-items:center;
+gap:10px;
+margin-bottom:18px;
 }
 
-.legend-item img{
-  width:22px;
-}
+.legend-item img{width:22px;}
 
 </style>
 </head>
@@ -206,150 +170,170 @@ header h1{
 <div class="page" id="page">
 
 <header>
-  <div id="backBtn" onclick="goBack()">
-    <img src="image/back.svg">
-  </div>
-  <h1>PADDOCKS</h1>
+<div id="backBtn" onclick="goBack()">
+<img src="image/back.svg">
+</div>
+<h1>PADDOCKS</h1>
 </header>
 
 <div class="card">
-  <div class="card-top">
-    <div class="left-title">
-      <img src="image/paddock.svg">
-      <div class="card-title">Maison</div>
-    </div>
-    <img id="maison-statut" class="statut">
-  </div>
-  <div class="card-middle">
-    <div id="maison-horaire"></div>
-  </div>
-  <div class="card-info" id="maison-info"></div>
+<div class="card-top">
+<div class="left-title">
+<img src="image/paddock.svg">
+<div class="card-title">Maison</div>
+</div>
+<img id="maison-statut" class="statut">
+</div>
+<div class="card-middle">
+<div id="maison-horaire"></div>
+</div>
+<div class="card-info" id="maison-info"></div>
 </div>
 
 <div class="card">
-  <div class="card-top">
-    <div class="left-title">
-      <img src="image/paddock.svg">
-      <div class="card-title">Grande voie</div>
-    </div>
-    <img id="grande-voie-statut" class="statut">
-  </div>
-  <div class="card-middle">
-    <div id="grande-voie-horaire"></div>
-  </div>
-  <div class="card-info" id="grande-voie-info"></div>
+<div class="card-top">
+<div class="left-title">
+<img src="image/paddock.svg">
+<div class="card-title">Grande voie</div>
+</div>
+<img id="grande-voie-statut" class="statut">
+</div>
+<div class="card-middle">
+<div id="grande-voie-horaire"></div>
+</div>
+<div class="card-info" id="grande-voie-info"></div>
 </div>
 
 <div class="card">
-  <div class="card-top">
-    <div class="left-title">
-      <img src="image/paddock.svg">
-      <div class="card-title">Beudot</div>
-    </div>
-    <img id="beudot-statut" class="statut">
-  </div>
-  <div class="card-middle">
-    <div id="beudot-horaire"></div>
-  </div>
-  <div class="card-info" id="beudot-info"></div>
+<div class="card-top">
+<div class="left-title">
+<img src="image/paddock.svg">
+<div class="card-title">Beudot</div>
+</div>
+<img id="beudot-statut" class="statut">
+</div>
+<div class="card-middle">
+<div id="beudot-horaire"></div>
+</div>
+<div class="card-info" id="beudot-info"></div>
 </div>
 
 <div id="reserveBox" onclick="goReserve()">
-  <img src="https://static.wixstatic.com/shapes/ff7f34_9b4da08e0dd544ec9a450433caf8c376.svg">
-  Réserver
+<img src="https://static.wixstatic.com/shapes/ff7f34_9b4da08e0dd544ec9a450433caf8c376.svg">
+Réserver
 </div>
 
 <div class="legend">
-  <div class="legend-item"><img src="image/ouvert.png"> Ouvert</div>
-  <div class="legend-item"><img src="image/prevision.png"> Prévision d'ouverture</div>
-  <div class="legend-item"><img src="image/ferme.png"> Fermé</div>
-  <div class="legend-item"><img src="image/horsservice.png"> Hors service</div>
+<div class="legend-item"><img src="image/ouvert.png"> Ouvert</div>
+<div class="legend-item"><img src="image/prevision.png"> Prévision d'ouverture</div>
+<div class="legend-item"><img src="image/ferme.png"> Fermé</div>
+<div class="legend-item"><img src="image/horsservice.png"> Hors service</div>
 </div>
 
 </div>
 
 <script>
 
-if(window.matchMedia('(prefers-color-scheme: dark)').matches){
-  document.querySelector('meta[name="theme-color"]').setAttribute("content","#0f1115");
-}
-
-window.addEventListener("DOMContentLoaded",()=>{
-  requestAnimationFrame(()=>{
-    document.getElementById("page").classList.add("active");
-  });
-});
-
-const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
-const REFRESH=60000;
-
-const ICONS_STATUT={
-  "ouvert":"image/ouvert.png",
-  "ferme":"image/ferme.png",
-  "prevision":"image/prevision.png",
-  "hors-service":"image/horsservice.png"
-};
+const API="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=statuts";
 
 const ESPACES=["maison","grande-voie","beudot"];
-const RESERVE_URL="https://www.ce-dugrandrang.com/book-online?category=ebb4678d-9213-49a4-9c62-168e3bdce954";
 
-function loadData(){
+const ICONS={
+"ouvert":"image/ouvert.png",
+"ferme":"image/ferme.png",
+"prevision":"image/prevision.png",
+"hors-service":"image/horsservice.png"
+};
 
-fetch(SHEET_URL,{cache:"no-store"})
-.then(r=>r.json())
-.then(data=>{
+let lastData="";
 
-  let afficherBouton=false;
+function render(data){
 
-  ESPACES.forEach(espace=>{
+const signature=JSON.stringify(data);
+if(signature===lastData) return;
+lastData=signature;
 
-    const row=data.find(e=>e.espace===espace);
-    if(!row) return;
+let bouton=false;
 
-    document.getElementById(espace+"-statut").src =
-      ICONS_STATUT[row.statut_auto] || "";
+ESPACES.forEach(e=>{
 
-    const horaire=row.horaire_special || row.horaire_affiche || "";
-    const el=document.getElementById(espace+"-horaire");
-    el.innerText=horaire;
+const row=data.find(x=>x.espace===e);
+if(!row) return;
 
-    // 🟠 toujours orange si horaire spécial
-    if(row.horaire_special){
-      el.style.color="#E88B00";
-      el.style.fontWeight="600";
-    }else{
-      el.style.color="var(--text)";
-      el.style.fontWeight="400";
-    }
+document.getElementById(e+"-statut").src=ICONS[row.statut_auto]||"";
 
-    document.getElementById(espace+"-info").innerText=row.info || "";
+const h=row.horaire_special||row.horaire_affiche||"";
 
-    if(row.statut_auto==="ouvert" || row.statut_auto==="prevision"){
-      afficherBouton=true;
-    }
+const el=document.getElementById(e+"-horaire");
 
-  });
+el.innerText=h;
 
-  document.getElementById("reserveBox").style.display =
-    afficherBouton ? "flex" : "none";
+if(row.horaire_special){
+el.style.color="#E88B00";
+el.style.fontWeight="600";
+}else{
+el.style.color="var(--text)";
+el.style.fontWeight="400";
+}
+
+document.getElementById(e+"-info").innerText=row.info||"";
+
+if(row.statut_auto==="ouvert"||row.statut_auto==="prevision"){
+bouton=true;
+}
 
 });
+
+document.getElementById("reserveBox").style.display=bouton?"flex":"none";
+
+}
+
+async function load(){
+
+try{
+
+const r=await fetch(API+"&t="+Date.now(),{cache:"no-store"});
+const data=await r.json();
+
+localStorage.setItem("statuts",JSON.stringify(data));
+
+render(data);
+
+}catch(e){
+console.log("API error",e);
+}
 
 }
 
 function goBack(){
-  const page=document.getElementById("page");
-  page.classList.remove("active");
-  page.classList.add("exit");
-  setTimeout(()=>{ window.location.href="index.html"; },300);
+const page=document.getElementById("page");
+page.classList.remove("active");
+page.classList.add("exit");
+setTimeout(()=>location.href="index.html",300);
 }
 
 function goReserve(){
-  window.open(RESERVE_URL,"_blank");
+window.open("https://www.ce-dugrandrang.com/book-online?category=ebb4678d-9213-49a4-9c62-168e3bdce954","_blank");
 }
 
-loadData();
-setInterval(loadData,REFRESH);
+window.onload=()=>{
+
+document.getElementById("page").classList.add("active");
+
+/* affichage instantané depuis cache */
+
+const cache=localStorage.getItem("statuts");
+if(cache){
+try{
+render(JSON.parse(cache));
+}catch(e){}
+}
+
+load();
+
+setInterval(load,10000);
+
+};
 
 </script>
 
