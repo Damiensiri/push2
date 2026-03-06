@@ -7,8 +7,8 @@
 <title>Ecurie Damien Siri</title>
 
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="image/icon-192x192.png">
 
+<link rel="apple-touch-icon" href="image/icon-192x192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Ecurie DS">
@@ -21,68 +21,61 @@
 <script>
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 OneSignalDeferred.push(async function(OneSignal) {
-  await OneSignal.init({
-    appId: "85a477ff-3d8d-4975-960d-c7e69100a0ff",
-    notifyButton:{ enable:false },
-    promptOptions:{
-      slidedown:{
-        prompts:[{
-          type:"push",
-          autoPrompt:true,
-          text:{
-            actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
-            acceptButton:"Autoriser",
-            cancelButton:"Plus tard"
-          }
-        }]
-      }
-    }
-  });
+await OneSignal.init({
+appId:"85a477ff-3d8d-4975-960d-c7e69100a0ff",
+notifyButton:{enable:false},
+promptOptions:{
+slidedown:{
+prompts:[{
+type:"push",
+autoPrompt:true,
+text:{
+actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
+acceptButton:"Autoriser",
+cancelButton:"Plus tard"
+}}]}}});
 });
 </script>
 
 <style>
 
-/* VARIABLES */
+/* BASE */
 
-:root{
-  --bg:#f4f4f4;
-  --header-bg:#f4f4f4;
-  --text:#181E3B;
-  --card-bg:#ffffff;
-  --section-bg:#181E3B;
-  --section-text:#ffffff;
-  --shadow:0 6px 18px rgba(0,0,0,0.08);
+body{
+margin:0;
+font-family:'Montserrat',sans-serif;
+background:#f4f4f4;
+overflow-y:auto;
 }
 
 /* DARK MODE */
 
 @media (prefers-color-scheme: dark){
 
-:root{
-  --bg:#0f1115;
-  --header-bg:#0f1115;
-  --text:#ffffff;
-  --card-bg:#1c1f26;
-  --section-bg:#ffffff;
-  --section-text:#000000;
-  --shadow:0 10px 30px rgba(0,0,0,0.6);
+body{
+background:#0f1115;
+color:white;
+}
+
+header{
+background:#0f1115;
 }
 
 .header-left img{
-  filter:brightness(0) invert(1)
-         drop-shadow(0 0 8px rgba(255,255,255,0.7));
+filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.7));
 }
 
+.card,
+.list-btn{
+background:#1c1f26;
+box-shadow:0 10px 30px rgba(0,0,0,0.6);
 }
 
-html,body{
-margin:0;
-height:100%;
-font-family:'Montserrat',sans-serif;
-background:var(--bg);
-color:var(--text);
-overflow:hidden;
+.section-title{
+background:white;
+color:black;
+}
+
 }
 
 /* HEADER */
@@ -92,8 +85,8 @@ position:fixed;
 top:0;
 left:0;
 width:100%;
-height:64px;
-background:var(--header-bg);
+height:70px;
+background:#f4f4f4;
 z-index:1000;
 display:flex;
 align-items:center;
@@ -113,9 +106,10 @@ header h1{
 margin:0;
 font-size:20px;
 font-weight:700;
+color:#181E3B;
 }
 
-/* BELL */
+/* CLOCHE */
 
 #bellBox{
 position:absolute;
@@ -142,68 +136,47 @@ justify-content:center;
 /* CONTENT */
 
 .page-content{
-position:fixed;
-top:20px;
-left:0;
-right:0;
-bottom:0;
-overflow-y:auto;
-padding-bottom:20px;
+margin-top:70px;
 }
 
-#welcome{
-text-align:center;
-font-size:44px;
-font-weight:700;
-margin:35px 0 16px;
-}
+/* STATUT OUVERTURE */
 
 #opening-status{
 text-align:center;
-margin-bottom:16px;
-display:none;
-font-size:15px;
+font-size:14px;
 font-weight:600;
+margin-top:10px;
+display:none;
 }
 
-/* ALERT */
-
-#alert-wrapper{
-width:100%;
-display:flex;
-justify-content:center;
-overflow:hidden;
-}
+/* BANDEAU ORANGE */
 
 #alert-box{
-width:100%;
-height:27px;
-background:#E88B00;
 display:none;
-align-items:center;
-gap:8px;
-padding:0 12px;
+background:#E88B00;
 color:white;
+padding:8px 12px;
 font-size:14px;
-transform:translateY(-100%);
-opacity:0;
-transition:transform .4s ease, opacity .4s ease;
+text-align:center;
 }
 
-#alert-box.show{
-transform:translateY(0);
-opacity:1;
-}
+/* UI */
 
-/* SECTIONS */
+#welcome{
+text-align:center;
+font-size:36px;
+font-weight:700;
+color:#181E3B;
+margin:4px 0 15px;
+}
 
 .section-title{
-background:var(--section-bg);
-color:var(--section-text);
+background:#181E3B;
+color:white;
 display:inline-block;
-padding:6px 14px;
+padding:6px 12px;
 margin:20px 15px 10px;
-border-radius:6px;
+border-radius:4px;
 font-size:14px;
 }
 
@@ -215,17 +188,17 @@ padding:0 15px;
 }
 
 .card{
-background:var(--card-bg);
-border-radius:22px;
-padding:22px;
+background:white;
+border-radius:20px;
+padding:20px;
 text-align:center;
-box-shadow:var(--shadow);
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
 cursor:pointer;
 }
 
 .card img{
 width:55px;
-margin-bottom:12px;
+margin-bottom:10px;
 }
 
 .card div{
@@ -234,16 +207,20 @@ font-weight:700;
 }
 
 .list-btn{
-background:var(--card-bg);
-margin:12px 15px;
+background:white;
+margin:10px 15px;
 padding:18px;
-border-radius:22px;
+border-radius:20px;
 display:flex;
 align-items:center;
 gap:12px;
-box-shadow:var(--shadow);
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
 font-weight:700;
 cursor:pointer;
+}
+
+.list-btn img{
+width:26px;
 }
 
 </style>
@@ -266,15 +243,13 @@ cursor:pointer;
 
 </header>
 
+<div id="alert-box"></div>
+
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
 
 <div id="opening-status"></div>
-
-<div id="alert-wrapper">
-<div id="alert-box"></div>
-</div>
 
 <div class="section-title">ESPACES</div>
 
@@ -303,6 +278,8 @@ cursor:pointer;
 function go(url){window.location.href=url;}
 function openExternal(url){window.open(url,"_blank");}
 
+/* API */
+
 const STATUTS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=statuts";
 const HORAIRES_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=horaires";
 const EXCEPTIONS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=exceptions";
@@ -318,10 +295,8 @@ return val.substring(0,5);
 
 async function updateUI(){
 
-const status=document.getElementById("opening-status");
 const alertBox=document.getElementById("alert-box");
-
-try{
+const status=document.getElementById("opening-status");
 
 const [statuts,horaires,exceptions]=await Promise.all([
 fetch(STATUTS_URL).then(r=>r.json()),
@@ -332,10 +307,8 @@ fetch(EXCEPTIONS_URL).then(r=>r.json())
 const accueil=statuts.find(e=>e.espace==="accueil");
 
 if(accueil && accueil.alerte){
-alertBox.style.display="flex";
-alertBox.innerHTML="⚠️ "+accueil.alerte;
-setTimeout(()=>alertBox.classList.add("show"),50);
-return;
+alertBox.style.display="block";
+alertBox.innerText=accueil.alerte;
 }
 
 const today=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][new Date().getDay()];
@@ -355,15 +328,18 @@ return;
 
 const h=horaires.find(r=>r.jour.toLowerCase()===today);
 
+if(!h)return;
+
 const open=formatTime(h.ouvert);
 const close=formatTime(h.ferme);
 
 status.style.display="block";
 
+const now=new Date();
+
 const [oh,om]=open.split(":");
 const [ch,cm]=close.split(":");
 
-const now=new Date();
 const o=new Date();o.setHours(oh,om,0,0);
 const c=new Date();c.setHours(ch,cm,0,0);
 
@@ -375,14 +351,12 @@ status.style.color="#c0392b";
 status.textContent=`Écuries fermées ${open} – ${close}`;
 }
 
-}catch(e){}
-
 }
 
 updateUI();
 setInterval(updateUI,10000);
 
-/* PRELOAD PAGES */
+/* PRELOAD */
 
 ["paddocks.html","travail.html","plan.html","horaires.html"].forEach(p=>{
 fetch(p,{cache:"force-cache"}).catch(()=>{});
@@ -390,9 +364,9 @@ fetch(p,{cache:"force-cache"}).catch(()=>{});
 
 </script>
 
-<script>
+<!-- CLOCHE -->
 
-/* CLOCHE */
+<script>
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
