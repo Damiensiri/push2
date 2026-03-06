@@ -18,6 +18,7 @@
 
 <!-- ONESIGNAL -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
 <script>
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 OneSignalDeferred.push(async function(OneSignal) {
@@ -39,7 +40,7 @@ cancelButton:"Plus tard"
 
 <style>
 
-/* BASE */
+/* ===== BASE ===== */
 
 body{
 margin:0;
@@ -48,37 +49,7 @@ background:#f4f4f4;
 overflow-y:auto;
 }
 
-/* DARK MODE */
-
-@media (prefers-color-scheme: dark){
-
-body{
-background:#0f1115;
-color:white;
-}
-
-header{
-background:#0f1115;
-}
-
-.header-left img{
-filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.7));
-}
-
-.card,
-.list-btn{
-background:#1c1f26;
-box-shadow:0 10px 30px rgba(0,0,0,0.6);
-}
-
-.section-title{
-background:white;
-color:black;
-}
-
-}
-
-/* HEADER */
+/* ===== HEADER ===== */
 
 header{
 position:fixed;
@@ -109,7 +80,7 @@ font-weight:700;
 color:#181E3B;
 }
 
-/* CLOCHE */
+/* ===== CLOCHE ===== */
 
 #bellBox{
 position:absolute;
@@ -133,34 +104,34 @@ align-items:center;
 justify-content:center;
 }
 
-/* CONTENT */
+/* ===== CONTENT ===== */
 
 .page-content{
 margin-top:70px;
 }
 
-/* STATUT OUVERTURE */
+/* ===== STATUS ===== */
 
 #opening-status{
 text-align:center;
-font-size:14px;
+font-size:15px;
 font-weight:600;
 margin-top:10px;
 display:none;
 }
 
-/* BANDEAU ORANGE */
+/* ===== BANDEAU ORANGE ===== */
 
 #alert-box{
 display:none;
 background:#E88B00;
 color:white;
 padding:8px 12px;
-font-size:14px;
 text-align:center;
+font-size:14px;
 }
 
-/* UI */
+/* ===== UI ===== */
 
 #welcome{
 text-align:center;
@@ -221,6 +192,53 @@ cursor:pointer;
 
 .list-btn img{
 width:26px;
+}
+
+/* ===== DARK MODE ===== */
+
+@media (prefers-color-scheme: dark){
+
+body{
+background:#05070c;
+color:white;
+}
+
+header{
+background:#05070c;
+}
+
+header h1{
+color:white;
+}
+
+#welcome{
+color:white;
+}
+
+.section-title{
+background:white;
+color:black;
+}
+
+.card{
+background:#1b1f2a;
+box-shadow:0 15px 40px rgba(0,0,0,0.7);
+}
+
+.list-btn{
+background:#1b1f2a;
+box-shadow:0 15px 40px rgba(0,0,0,0.7);
+color:white;
+}
+
+.card div{
+color:white;
+}
+
+.header-left img{
+filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.7));
+}
+
 }
 
 </style>
@@ -286,11 +304,11 @@ const EXCEPTIONS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTb
 
 function formatTime(val){
 if(!val)return "--:--";
-if(val.includes("T")){
 const d=new Date(val);
+if(!isNaN(d)){
 return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
 }
-return val.substring(0,5);
+return String(val).substring(0,5);
 }
 
 async function updateUI(){
@@ -335,11 +353,10 @@ const close=formatTime(h.ferme);
 
 status.style.display="block";
 
-const now=new Date();
-
 const [oh,om]=open.split(":");
 const [ch,cm]=close.split(":");
 
+const now=new Date();
 const o=new Date();o.setHours(oh,om,0,0);
 const c=new Date();c.setHours(ch,cm,0,0);
 
@@ -364,9 +381,9 @@ fetch(p,{cache:"force-cache"}).catch(()=>{});
 
 </script>
 
-<!-- CLOCHE -->
-
 <script>
+
+/* CLOCHE */
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
