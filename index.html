@@ -361,7 +361,10 @@ const now=new Date();
 const today=
 now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
 
-const ex=exceptions.find(e=>e.date===today);
+const ex = exceptions.find(e=>{
+if(!e.date) return false;
+return e.date.substring(0,10) === today;
+});
 
 if(ex){
 status.style.color="#c0392b";
