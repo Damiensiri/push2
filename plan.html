@@ -252,7 +252,7 @@ header h1{
   }
 
   #reserveBox{
-    background:#c87400; /* moins agressif */
+    background:#c87400;
     box-shadow:0 12px 30px rgba(0,0,0,0.6);
   }
 
@@ -333,7 +333,7 @@ window.addEventListener("DOMContentLoaded",()=>{
   });
 });
 
-const SHEET_URL="https://opensheet.elk.sh/1-VbRioKfM6JHU-Oep0pa6H3S0VVuvYLyUMXTdSdRbzI/statuts";
+const SHEET_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=statuts";
 const RESERVE_URL="https://www.ce-dugrandrang.com/book-online?category=ebb4678d-9213-49a4-9c62-168e3bdce954";
 
 const ICONS={
@@ -344,6 +344,19 @@ const ICONS={
 };
 
 let DATA=[];
+
+/* DOM */
+
+const panelTitle=document.getElementById("panelTitle");
+const statut=document.getElementById("statut");
+const horaire=document.getElementById("horaire");
+const info=document.getElementById("info");
+const liberte=document.getElementById("liberte");
+const longe=document.getElementById("longe");
+const optionsRow=document.getElementById("optionsRow");
+const reserveBox=document.getElementById("reserveBox");
+const closePanel=document.getElementById("closePanel");
+const panel=document.getElementById("panel");
 
 function formatTitle(t){
   const map={
@@ -356,21 +369,45 @@ function formatTitle(t){
   return map[t]||t;
 }
 
+function renderIcons(data){
+
+data.forEach(e=>{
+  const icon=ICONS[(e.statut_auto||"").toLowerCase().trim()];
+  const el=document.getElementById("icon-"+e.espace);
+  if(el && icon) el.src=icon;
+});
+
+}
+
 function loadData(){
-fetch(SHEET_URL,{cache:"no-store"})
+
+fetch(SHEET_URL+"&t="+Date.now(),{cache:"no-store"})
 .then(r=>r.json())
 .then(d=>{
+
   DATA=d;
-  d.forEach(e=>{
-    const icon=ICONS[e.statut_auto?.toLowerCase()];
-    const el=document.getElementById("icon-"+e.espace);
-    if(el && icon) el.src=icon;
-  });
+
+  localStorage.setItem("statuts",JSON.stringify(d));
+
+  renderIcons(d);
+
 });
+
+}
+
+/* lecture cache instantanée */
+
+const cache=localStorage.getItem("statuts");
+
+if(cache){
+try{
+DATA=JSON.parse(cache);
+renderIcons(DATA);
+}catch(e){}
 }
 
 loadData();
-setInterval(loadData,60000);
+setInterval(loadData,10000);
 
 function openSpace(espace){
 
@@ -398,14 +435,17 @@ if(special){
 info.innerText=e.info||"Aucune info";
 
 let show=false;
+
 if(e.liberte){
   liberte.innerHTML=`Liberté : <span style="color:${e.liberte==="oui"?"green":"red"};font-weight:700">${e.liberte.toUpperCase()}</span>`;
   show=true;
 }
+
 if(e.longe){
   longe.innerHTML=`Longe : <span style="color:${e.longe==="oui"?"green":"red"};font-weight:700">${e.longe.toUpperCase()}</span>`;
   show=true;
 }
+
 optionsRow.style.display=show?"block":"none";
 
 if((espace==="maison"||espace==="grande-voie"||espace==="beudot") &&
@@ -416,6 +456,7 @@ if((espace==="maison"||espace==="grande-voie"||espace==="beudot") &&
 }
 
 panel.classList.add("active");
+
 }
 
 closePanel.onclick=()=>panel.classList.remove("active");
