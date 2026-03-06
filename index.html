@@ -47,8 +47,6 @@ cancelButton:"Plus tard"
 
 <style>
 
-/* BASE */
-
 body{
 margin:0;
 font-family:'Montserrat',sans-serif;
@@ -111,7 +109,7 @@ align-items:center;
 justify-content:center;
 }
 
-/* CONTENU */
+/* PAGE */
 
 .page-content{
 margin-top:70px;
@@ -122,17 +120,17 @@ padding-bottom:40px;
 
 #welcome{
 text-align:center;
-font-size:44px;
+font-size:36px;
 font-weight:700;
 color:#181E3B;
-margin:10px 0 10px;
+margin:4px 0 10px;
 }
 
 #opening-status{
 text-align:center;
 font-size:18px;
 font-weight:700;
-margin-bottom:10px;
+margin-bottom:8px;
 }
 
 /* BANDEAU ORANGE */
@@ -141,10 +139,10 @@ margin-bottom:10px;
 display:none;
 background:#E88B00;
 color:white;
-padding:8px 14px;
+padding:8px 12px;
 font-size:14px;
 font-weight:600;
-margin:10px 0 16px;
+margin:10px 0 15px;
 align-items:center;
 gap:8px;
 }
@@ -280,70 +278,42 @@ color:white;
 <div class="section-title">ESPACES</div>
 
 <div class="grid">
-
-<div class="card" onclick="go('travail.html')">
-<img src="image/travail.svg">
-<div>TRAVAIL</div>
+<div class="card" onclick="go('travail.html')"><img src="image/travail.svg"><div>TRAVAIL</div></div>
+<div class="card" onclick="go('paddocks.html')"><img src="image/paddock.svg"><div>PADDOCK</div></div>
 </div>
 
-<div class="card" onclick="go('paddocks.html')">
-<img src="image/paddock.svg">
-<div>PADDOCK</div>
-</div>
-
-</div>
-
-<div class="list-btn" onclick="go('plan.html')">
-<img src="image/plan.svg"> PLAN INTERACTIF
-</div>
+<div class="list-btn" onclick="go('plan.html')"><img src="image/plan.svg"> PLAN INTERACTIF</div>
 
 <div class="section-title">PRATIQUE</div>
 
 <div class="grid">
-
-<div class="card" onclick="go('horaires.html')">
-<img src="image/time.svg">
-<div>HORAIRES</div>
+<div class="card" onclick="go('horaires.html')"><img src="image/time.svg"><div>HORAIRES</div></div>
+<div class="card" onclick="go('meteo.html')"><img src="image/meteo.svg"><div>MÉTÉO</div></div>
+<div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')"><img src="image/cavasoft.svg"><div>COURS</div></div>
+<div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')"><img src="image/service.svg"><div>SERVICES</div></div>
+<div class="card" onclick="go('concours.html')"><img src="image/concours.svg"><div>CONCOURS</div></div>
+<div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')"><img src="image/soins.svg"><div>SOINS</div></div>
 </div>
 
-<div class="card" onclick="go('meteo.html')">
-<img src="image/meteo.svg">
-<div>MÉTÉO</div>
-</div>
+<div class="section-title">AUTRES</div>
 
-<div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')">
-<img src="image/cavasoft.svg">
-<div>COURS</div>
-</div>
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/category/laverie')"><img src="image/laverie.svg"> LAVERIE</div>
+<div class="list-btn" onclick="openExternal('tarifs.pdf')"><img src="image/tarif.svg"> TARIFS</div>
 
-<div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')">
-<img src="image/service.svg">
-<div>SERVICES</div>
-</div>
+<div class="section-title">COMPTE</div>
 
-<div class="card" onclick="go('concours.html')">
-<img src="image/concours.svg">
-<div>CONCOURS</div>
-</div>
-
-<div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')">
-<img src="image/soins.svg">
-<div>SOINS</div>
-</div>
-
-</div>
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/profile/my/profile')"><img src="image/compte.svg"> MON COMPTE</div>
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/my-bookings')"><img src="image/reservation.svg"> MES RÉSERVATIONS</div>
+<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/cart-page')"><img src="image/panier.svg"> MON PANIER</div>
 
 </div>
 
 <script>
 
-function go(url){
-window.location.href=url;
-}
+/* NAVIGATION */
 
-function openExternal(url){
-window.open(url,"_blank");
-}
+function go(url){window.location.href=url;}
+function openExternal(url){window.open(url,"_blank");}
 
 /* API */
 
@@ -381,36 +351,30 @@ function updateUI(horaires,exceptions,statuts){
 const status=document.getElementById("opening-status");
 const alertBox=document.getElementById("alert-box");
 
-/* bandeau */
+/* BANDEAU */
 
 const accueil=statuts.find(e=>e.espace==="accueil");
 
-if(accueil && accueil.alerte){
-
+if(accueil && accueil.alerte && accueil.alerte.trim()!==""){
 alertBox.style.display="flex";
 alertBox.innerHTML="⚠️ "+accueil.alerte;
-
 }else{
-
 alertBox.style.display="none";
-
 }
 
-/* exceptions */
+/* EXCEPTIONS */
 
 const today=new Date().toISOString().slice(0,10);
 
 const ex=exceptions.find(e=>e.date===today);
 
 if(ex){
-
 status.style.color="#c0392b";
 status.textContent=ex.message;
 return;
-
 }
 
-/* horaires */
+/* HORAIRES */
 
 const todayName=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][new Date().getDay()];
 
@@ -426,22 +390,15 @@ const [ch,cm]=close.split(":");
 
 const now=new Date();
 
-const o=new Date();
-o.setHours(oh,om,0,0);
-
-const c=new Date();
-c.setHours(ch,cm,0,0);
+const o=new Date();o.setHours(oh,om,0,0);
+const c=new Date();c.setHours(ch,cm,0,0);
 
 if(now>=o && now<=c){
-
 status.style.color="#2e7d32";
 status.textContent=`Écuries ouvertes ${open} – ${close}`;
-
 }else{
-
 status.style.color="#c0392b";
 status.textContent=`Écuries fermées ${open} – ${close}`;
-
 }
 
 }
@@ -458,9 +415,9 @@ fetch(p,{cache:"force-cache"}).catch(()=>{});
 
 </script>
 
-<!-- CLOCHE -->
-
 <script>
+
+/* CLOCHE */
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
@@ -532,9 +489,7 @@ badge.style.display=count>0?"flex":"none";
 badge.textContent=count;
 
 }catch(e){
-
 badge.style.display="none";
-
 }
 
 }
