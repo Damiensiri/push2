@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -22,19 +23,25 @@
 <script>
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 OneSignalDeferred.push(async function(OneSignal) {
-  await OneSignal.init({
-    appId:"85a477ff-3d8d-4975-960d-c7e69100a0ff",
-    notifyButton:{enable:false},
-    promptOptions:{
-      slidedown:{
-        prompts:[{
-          type:"push",
-          autoPrompt:true,
-          text:{
-            actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
-            acceptButton:"Autoriser",
-            cancelButton:"Plus tard"
-}}]}}});
+
+await OneSignal.init({
+appId:"85a477ff-3d8d-4975-960d-c7e69100a0ff",
+notifyButton:{enable:false},
+promptOptions:{
+slidedown:{
+prompts:[{
+type:"push",
+autoPrompt:true,
+text:{
+actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
+acceptButton:"Autoriser",
+cancelButton:"Plus tard"
+}
+}]
+}
+}
+});
+
 });
 </script>
 
@@ -104,42 +111,45 @@ align-items:center;
 justify-content:center;
 }
 
-/* CONTENT */
+/* CONTENU */
 
 .page-content{
 margin-top:70px;
+padding-bottom:40px;
 }
 
-/* STATUS */
+/* TITRES */
+
+#welcome{
+text-align:center;
+font-size:44px;
+font-weight:700;
+color:#181E3B;
+margin:10px 0 10px;
+}
 
 #opening-status{
 text-align:center;
-font-size:15px;
-font-weight:600;
-margin-top:10px;
-display:none;
+font-size:18px;
+font-weight:700;
+margin-bottom:10px;
 }
 
-/* BANDEAU */
+/* BANDEAU ORANGE */
 
 #alert-box{
 display:none;
 background:#E88B00;
 color:white;
-padding:8px 12px;
-text-align:center;
+padding:8px 14px;
 font-size:14px;
+font-weight:600;
+margin:10px 0 16px;
+align-items:center;
+gap:8px;
 }
 
-/* UI */
-
-#welcome{
-text-align:center;
-font-size:36px;
-font-weight:700;
-color:#181E3B;
-margin:4px 0 15px;
-}
+/* SECTIONS */
 
 .section-title{
 background:#181E3B;
@@ -211,33 +221,30 @@ header h1{
 color:white;
 }
 
+.header-left img{
+filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.8));
+}
+
 #welcome{
 color:white;
 }
 
-.section-title{
-background:white;
-color:black;
-}
-
 .card{
 background:#1b1f2a;
-box-shadow:0 15px 40px rgba(0,0,0,0.7);
+box-shadow:0 15px 40px rgba(0,0,0,0.6);
 }
 
 .list-btn{
 background:#1b1f2a;
-box-shadow:0 15px 40px rgba(0,0,0,0.7);
-color:white;
+box-shadow:0 15px 40px rgba(0,0,0,0.6);
 }
 
 .card div{
 color:white;
 }
 
-.header-left img{
-filter:brightness(0) invert(1)
-drop-shadow(0 0 8px rgba(255,255,255,0.7));
+.list-btn{
+color:white;
 }
 
 }
@@ -262,52 +269,81 @@ drop-shadow(0 0 8px rgba(255,255,255,0.7));
 
 </header>
 
-<div id="alert-box"></div>
-
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
 
 <div id="opening-status"></div>
 
+<div id="alert-box"></div>
+
 <div class="section-title">ESPACES</div>
 
 <div class="grid">
-<div class="card" onclick="go('travail.html')"><img src="image/travail.svg"><div>TRAVAIL</div></div>
-<div class="card" onclick="go('paddocks.html')"><img src="image/paddock.svg"><div>PADDOCK</div></div>
+
+<div class="card" onclick="go('travail.html')">
+<img src="image/travail.svg">
+<div>TRAVAIL</div>
 </div>
 
-<div class="list-btn" onclick="go('plan.html')"><img src="image/plan.svg"> PLAN INTERACTIF</div>
+<div class="card" onclick="go('paddocks.html')">
+<img src="image/paddock.svg">
+<div>PADDOCK</div>
+</div>
+
+</div>
+
+<div class="list-btn" onclick="go('plan.html')">
+<img src="image/plan.svg"> PLAN INTERACTIF
+</div>
 
 <div class="section-title">PRATIQUE</div>
 
 <div class="grid">
-<div class="card" onclick="go('horaires.html')"><img src="image/time.svg"><div>HORAIRES</div></div>
-<div class="card" onclick="go('meteo.html')"><img src="image/meteo.svg"><div>MÉTÉO</div></div>
 
-<div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')"><img src="image/cavasoft.svg"><div>COURS</div></div>
-<div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')"><img src="image/service.svg"><div>SERVICES</div></div>
-<div class="card" onclick="go('concours.html')"><img src="image/concours.svg"><div>CONCOURS</div></div>
-<div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')"><img src="image/soins.svg"><div>SOINS</div></div>
+<div class="card" onclick="go('horaires.html')">
+<img src="image/time.svg">
+<div>HORAIRES</div>
 </div>
 
-<div class="section-title">AUTRES</div>
+<div class="card" onclick="go('meteo.html')">
+<img src="image/meteo.svg">
+<div>MÉTÉO</div>
+</div>
 
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/category/laverie')"><img src="image/laverie.svg"> LAVERIE</div>
-<div class="list-btn" onclick="openExternal('tarifs.pdf')"><img src="image/tarif.svg"> TARIFS</div>
+<div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')">
+<img src="image/cavasoft.svg">
+<div>COURS</div>
+</div>
 
-<div class="section-title">COMPTE</div>
+<div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/book-online?category=194a368e-8a4f-4212-a33e-ae1656e4de8a')">
+<img src="image/service.svg">
+<div>SERVICES</div>
+</div>
 
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/profile/my/profile')"><img src="image/compte.svg"> MON COMPTE</div>
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/my-bookings')"><img src="image/reservation.svg"> MES RÉSERVATIONS</div>
-<div class="list-btn" onclick="openExternal('https://www.ce-dugrandrang.com/cart-page')"><img src="image/panier.svg"> MON PANIER</div>
+<div class="card" onclick="go('concours.html')">
+<img src="image/concours.svg">
+<div>CONCOURS</div>
+</div>
+
+<div class="card" onclick="openExternal('https://www.ce-dugrandrang.com/category/soins')">
+<img src="image/soins.svg">
+<div>SOINS</div>
+</div>
+
+</div>
 
 </div>
 
 <script>
 
-function go(url){window.location.href=url;}
-function openExternal(url){window.open(url,"_blank");}
+function go(url){
+window.location.href=url;
+}
+
+function openExternal(url){
+window.open(url,"_blank");
+}
 
 /* API */
 
@@ -316,79 +352,103 @@ const HORAIRES_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4
 const EXCEPTIONS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=exceptions";
 
 function formatTime(val){
-if(!val)return "--:--";
+
+if(!val)return"--:--";
+
+if(val.includes("T")){
 const d=new Date(val);
-if(!isNaN(d)){
 return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
 }
-return String(val).substring(0,5);
+
+return val.substring(0,5);
+
 }
 
-async function updateUI(){
+async function load(){
 
-const alertBox=document.getElementById("alert-box");
-const status=document.getElementById("opening-status");
-
-try{
-
-const [statuts,horaires,exceptions]=await Promise.all([
-fetch(STATUTS_URL).then(r=>r.json()),
+const [horaires,exceptions,statuts]=await Promise.all([
 fetch(HORAIRES_URL).then(r=>r.json()),
-fetch(EXCEPTIONS_URL).then(r=>r.json())
+fetch(EXCEPTIONS_URL).then(r=>r.json()),
+fetch(STATUTS_URL).then(r=>r.json())
 ]);
+
+updateUI(horaires,exceptions,statuts);
+
+}
+
+function updateUI(horaires,exceptions,statuts){
+
+const status=document.getElementById("opening-status");
+const alertBox=document.getElementById("alert-box");
+
+/* bandeau */
 
 const accueil=statuts.find(e=>e.espace==="accueil");
 
 if(accueil && accueil.alerte){
-alertBox.style.display="block";
-alertBox.innerText=accueil.alerte;
+
+alertBox.style.display="flex";
+alertBox.innerHTML="⚠️ "+accueil.alerte;
+
+}else{
+
+alertBox.style.display="none";
+
 }
 
-const today=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][new Date().getDay()];
+/* exceptions */
 
-const ex=exceptions.find(e=>{
-const d=new Date(e.date);
-const day=d.toLocaleDateString("fr-FR",{weekday:"long"}).toLowerCase();
-return day===today;
-});
+const today=new Date().toISOString().slice(0,10);
+
+const ex=exceptions.find(e=>e.date===today);
 
 if(ex){
-status.style.display="block";
+
 status.style.color="#c0392b";
 status.textContent=ex.message;
 return;
+
 }
 
-const h=horaires.find(r=>r.jour.toLowerCase()===today);
+/* horaires */
+
+const todayName=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][new Date().getDay()];
+
+const h=horaires.find(r=>r.jour.toLowerCase()===todayName);
 
 if(!h)return;
 
 const open=formatTime(h.ouvert);
 const close=formatTime(h.ferme);
 
-status.style.display="block";
-
 const [oh,om]=open.split(":");
 const [ch,cm]=close.split(":");
 
 const now=new Date();
-const o=new Date();o.setHours(oh,om,0,0);
-const c=new Date();c.setHours(ch,cm,0,0);
+
+const o=new Date();
+o.setHours(oh,om,0,0);
+
+const c=new Date();
+c.setHours(ch,cm,0,0);
 
 if(now>=o && now<=c){
+
 status.style.color="#2e7d32";
 status.textContent=`Écuries ouvertes ${open} – ${close}`;
+
 }else{
+
 status.style.color="#c0392b";
 status.textContent=`Écuries fermées ${open} – ${close}`;
-}
-
-}catch(e){}
 
 }
 
-updateUI();
-setInterval(updateUI,10000);
+}
+
+load();
+
+setInterval(load,10000);
 
 /* PRELOAD */
 
@@ -412,16 +472,21 @@ catch(e){return[];}
 }
 
 function parseDateFR(str){
+
 if(!str)return null;
+
 if(str.includes("-")){
 const p=str.split("-");
 return new Date(p[0],p[1]-1,p[2]);
 }
+
 if(str.includes("/")){
 const p=str.split("/");
 return new Date(p[2],p[1]-1,p[0]);
 }
+
 return null;
+
 }
 
 async function updateBell(){
@@ -437,9 +502,11 @@ const today=new Date();
 today.setHours(0,0,0,0);
 
 const lues=getLues().map(String);
+
 let count=0;
 
 data.filter(n=>{
+
 if(n.epingle==="oui")return true;
 if(n.active!=="oui")return false;
 
@@ -454,16 +521,20 @@ if(!exp)return true;
 return exp>=today;
 
 }).forEach(n=>{
+
 if(!lues.includes(String(n.id))){
 count++;
 }
+
 });
 
 badge.style.display=count>0?"flex":"none";
 badge.textContent=count;
 
 }catch(e){
+
 badge.style.display="none";
+
 }
 
 }
