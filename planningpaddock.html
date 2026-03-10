@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Réservation paddock</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+margin:0;
+background:#f4f4f4;
+font-family:'Montserrat',sans-serif;
+}
+
+.page{
+min-height:100vh;
+}
+
+header{
+position:relative;
+height:70px;
+}
+
+#backBtn{
+position:absolute;
+left:15px;
+top:50%;
+transform:translateY(-50%);
+width:42px;
+height:42px;
+border-radius:50%;
+background:white;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 3px 8px rgba(0,0,0,0.15);
+cursor:pointer;
+}
+
+#backBtn img{width:22px}
+
+header h1{
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+margin:0;
+font-size:18px;
+font-weight:700;
+}
+
+.card{
+background:white;
+margin:20px;
+padding:22px;
+border-radius:22px;
+box-shadow:0 5px 12px rgba(0,0,0,0.12);
+}
+
+label{
+font-weight:600;
+font-size:14px;
+}
+
+select,input{
+width:100%;
+padding:12px;
+margin-top:6px;
+margin-bottom:16px;
+border-radius:10px;
+border:none;
+background:#f4f4f4;
+}
+
+button{
+width:100%;
+padding:14px;
+border-radius:12px;
+border:none;
+background:#181E3B;
+color:white;
+font-weight:700;
+cursor:pointer;
+margin-top:20px;
+}
+
+.dayBtn{
+padding:10px;
+margin-bottom:8px;
+border-radius:10px;
+background:#f4f4f4;
+text-align:center;
+cursor:pointer;
+font-weight:600;
+}
+
+.dayBtn.active{
+background:#181E3B;
+color:white;
+}
+
+.row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:10px;
+border-bottom:1px solid #eee;
+}
+
+.row.free{cursor:pointer}
+
+.row.selected{
+background:#c9d7ff;
+border-left:4px solid #181E3B;
+}
+
+.freeText{
+color:#2ecc71;
+font-weight:600;
+}
+
+.reservedText{
+color:#e74c3c;
+font-weight:600;
+}
+
+.mineText{
+color:#2980b9;
+font-weight:700;
+}
+
+.fullMessage{
+text-align:center;
+padding:15px;
+font-weight:600;
+color:#999;
+}
+
+@media(prefers-color-scheme:dark){
+
+body{background:#0f1115;color:white}
+.card{background:#1c1f26}
+select,input{background:#252a33;color:white}
+.row{border-bottom:1px solid #333}
+.dayBtn{background:#252a33}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+<header>
+
+<div id="backBtn" onclick="location.href='index.html'">
+<img src="image/back.svg">
+</div>
+
+<h1 id="title">PADDOCK</h1>
+
+</header>
+
+<div class="card">
+
+<label>Durée</label>
+<select id="duration">
+<option value="60">1h</option>
+<option value="90">1h30</option>
+</select>
+
+<label>Paddock</label>
+<select id="paddock"></select>
+
+<label>Jour</label>
+<div id="days"></div>
+
+<label>Prénom</label>
+<input id="name">
+
+<label>Email (optionnel)</label>
+<input id="email">
+
+<div id="planning"></div>
+
+<button onclick="book()">Réserver</button>
+
+</div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+
+const firebaseConfig={
+apiKey:"AIzaSyBn6Hgu-xvsWqpwJ-i4lZyI0QjKMBvOeXA",
+authDomain:"ecurie-paddock.firebaseapp.com",
+projectId:"ecurie-paddock",
+storageBucket:"ecurie-paddock.firebasestorage.app",
+messagingSenderId:"501153278739",
+appId:"1:501153278739:web:824b4344c381f2a94548e6"
+}
+
+firebase.initializeApp(firebaseConfig)
+const db=firebase.firestore()
+
+let reservations=[]
+let horaires={}
+let selectedDate=null
+let selected=null
+
+let adminMode=false
+let tapCount=0
+
+const title=document.getElementById("title")
+
+title.addEventListener("click",()=>{
+
+tapCount++
+
+if(tapCount>=5){
+
+if(!adminMode){
+
+const pass=prompt("Mot de passe admin")
+
+if(pass==="0359140"){
+adminMode=true
+title.innerHTML="PADDOCK 🔧"
+generate()
+}
+
+}else{
+
+adminMode=false
+title.innerHTML="PADDOCK"
+generate()
+
+}
+
+tapCount=0
+
+}
+
+setTimeout(()=>{tapCount=0},1200)
+
+})
+
+let myReservations=JSON.parse(localStorage.getItem("myReservations")||"[]")
+
+const durationSelect=document.getElementById("duration")
+const paddockSelect=document.getElementById("paddock")
+
+function updatePaddocks(){
+
+const duration=durationSelect.value
+
+paddockSelect.innerHTML=""
+
+if(duration==="90"){
+
+paddockSelect.innerHTML=`
+<option value="grande">Grande voie</option>
+<option value="beudot">Beudot</option>
+`
+
+}else{
+
+paddockSelect.innerHTML=`
+<option value="maison">Maison</option>
+<option value="grande">Grande voie</option>
+<option value="beudot">Beudot</option>
+`
+
+}
+
+generate()
+
+}
+
+durationSelect.addEventListener("change",updatePaddocks)
+
+async function loadData(){
+
+const r=await db.collection("reservations").get()
+
+reservations=[]
+
+r.forEach(doc=>{
+let data=doc.data()
+data.id=doc.id
+reservations.push(data)
+})
+
+const h=await db.collection("horaires").get()
+
+horaires={}
+
+h.forEach(doc=>{
+horaires[doc.id]=doc.data()
+})
+
+generate()
+
+}
+
+function buildDays(){
+
+const container=document.getElementById("days")
+container.innerHTML=""
+
+for(let i=0;i<3;i++){
+
+let d=new Date()
+d.setDate(d.getDate()+i)
+
+let label=i===0?"Aujourd’hui":i===1?"Demain":"Après-demain"
+
+let btn=document.createElement("div")
+btn.className="dayBtn"
+
+btn.innerText=label+" "+d.getDate()
+
+btn.onclick=()=>{
+
+selectedDate=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")
+
+document.querySelectorAll(".dayBtn").forEach(b=>b.classList.remove("active"))
+btn.classList.add("active")
+
+generate()
+
+}
+
+container.appendChild(btn)
+
+if(i===0){
+btn.classList.add("active")
+selectedDate=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")
+}
+
+}
+
+}
+
+function generate(){
+
+const paddock=paddockSelect.value
+const duration=parseInt(durationSelect.value)
+
+if(!paddock)return
+
+const container=document.getElementById("planning")
+container.innerHTML=""
+
+const parts=selectedDate.split("-")
+const d=new Date(parts[0],parts[1]-1,parts[2])
+
+const names=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"]
+
+let jour=names[d.getDay()]
+
+if(!horaires[paddock] || !horaires[paddock][jour] || horaires[paddock][jour].closed){
+
+container.innerHTML='<div class="fullMessage">Paddock fermé</div>'
+return
+
+}
+
+const config=horaires[paddock][jour]
+
+let start=parseInt(config.open.split(":")[0])
+let end=parseInt(config.close.split(":")[0])
+
+let slots=[]
+let current=start
+
+while(current < end){
+
+let hour=Math.floor(current)
+let minutes=current%1===0 ? "00" : "30"
+
+let time=String(hour).padStart(2,"0")+":"+minutes
+
+slots.push(time)
+
+let reservation=reservations.find(r=>{
+
+if(r.date!==selectedDate) return false
+if(r.paddock!==paddock) return false
+
+let [rh,rm]=r.time.split(":").map(Number)
+
+let resStart=rh+(rm/60)
+
+return resStart===current
+
+})
+
+if(reservation){
+
+current += reservation.duration/60
+
+}else{
+
+current += 1
+
+}
+
+}
+
+slots.forEach(time=>{
+
+let [hour,minutes]=time.split(":").map(Number)
+
+/* cacher créneaux passés et <10min sauf admin */
+
+const now=new Date()
+const today=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0")
+
+let slotTime=new Date(now.getFullYear(),now.getMonth(),now.getDate(),hour,minutes)
+
+if(!adminMode && selectedDate===today){
+
+let diff=(slotTime-now)/60000
+
+if(diff<10) return
+
+}
+
+if(hour+(minutes/60)+(duration/60) > end) return
+
+let conflict=false
+let mine=false
+let docId=null
+let reserverName=""
+
+reservations.forEach(r=>{
+
+if(r.date===selectedDate && r.paddock===paddock){
+
+let [rh,rm]=r.time.split(":").map(Number)
+
+let resStart=rh+(rm/60)
+let resEnd=resStart+(r.duration/60)
+
+let slotStart=hour+(minutes/60)
+
+if(slotStart>=resStart && slotStart<resEnd){
+
+conflict=true
+reserverName=r.name
+
+if(myReservations.includes(r.id)){
+mine=true
+docId=r.id
+}
+
+if(adminMode){
+docId=r.id
+}
+
+}
+
+}
+
+})
+
+let row=document.createElement("div")
+
+if(mine){
+
+row.className="row"
+row.innerHTML=`<div>${time}</div><div class="mineText">Annuler</div>`
+row.onclick=()=>cancelReservation(docId)
+
+}
+
+else if(!conflict){
+
+row.className="row free"
+
+row.innerHTML=`<div>${time}</div><div class="freeText">libre</div>`
+
+row.onclick=()=>{
+
+selected={time,paddock,date:selectedDate,duration}
+
+document.querySelectorAll(".row").forEach(r=>r.classList.remove("selected"))
+
+row.classList.add("selected")
+
+}
+
+}
+
+else{
+
+row.className="row"
+
+if(adminMode){
+
+row.innerHTML=`<div>${time}</div><div class="reservedText">${reserverName}</div>`
+row.onclick=()=>cancelReservation(docId)
+
+}else{
+
+row.innerHTML=`<div>${time}</div><div class="reservedText">réservé</div>`
+
+}
+
+}
+
+container.appendChild(row)
+
+})
+
+}
+
+async function book(){
+
+let name=document.getElementById("name").value.trim()
+
+if(!name){
+alert("Prénom obligatoire")
+return
+}
+
+if(!selected){
+alert("Choisissez un créneau")
+return
+}
+
+if(!adminMode){
+
+if(reservations.find(r=>r.date===selected.date && r.name.toLowerCase()===name.toLowerCase())){
+alert("Vous avez déjà une réservation ce jour")
+return
+}
+
+}
+
+const doc=await db.collection("reservations").add({
+
+name:name,
+email:document.getElementById("email").value,
+paddock:selected.paddock,
+date:selected.date,
+time:selected.time,
+duration:selected.duration
+
+})
+
+myReservations.push(doc.id)
+
+localStorage.setItem("myReservations",JSON.stringify(myReservations))
+
+alert("Réservation confirmée")
+
+loadData()
+
+}
+
+async function cancelReservation(id){
+
+await db.collection("reservations").doc(id).delete()
+
+myReservations=myReservations.filter(r=>r!==id)
+
+localStorage.setItem("myReservations",JSON.stringify(myReservations))
+
+alert("Réservation annulée")
+
+loadData()
+
+}
+
+window.addEventListener("DOMContentLoaded",()=>{
+
+buildDays()
+updatePaddocks()
+loadData()
+
+})
+
+paddockSelect.onchange=generate
+
+</script>
+
+</body>
+</html>
