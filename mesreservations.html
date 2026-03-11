@@ -34,3 +34,162 @@ display:flex;
 align-items:center;
 justify-content:center;
 box-shadow:0 3px 8px rgba(0,0,0,0.15);
+cursor:pointer;
+}
+
+#backBtn img{width:22px}
+
+header h1{
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%,-50%);
+margin:0;
+font-size:18px;
+font-weight:700;
+}
+
+.container{
+padding:20px;
+}
+
+.card{
+background:white;
+padding:18px;
+border-radius:18px;
+box-shadow:0 4px 10px rgba(0,0,0,0.12);
+margin-bottom:15px;
+}
+
+.card h3{
+margin:0 0 8px 0;
+font-size:16px;
+}
+
+.card p{
+margin:4px 0;
+font-size:14px;
+}
+
+button{
+margin-top:12px;
+width:100%;
+padding:12px;
+border:none;
+border-radius:10px;
+background:#e74c3c;
+color:white;
+font-weight:600;
+cursor:pointer;
+}
+
+.empty{
+text-align:center;
+color:#888;
+margin-top:40px;
+font-weight:600;
+}
+
+@media(prefers-color-scheme:dark){
+
+body{background:#0f1115;color:white}
+.card{background:#1c1f26}
+
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div id="backBtn" onclick="location.href='index.html'">
+<img src="image/back.svg">
+</div>
+
+<h1>Mes réservations</h1>
+
+</header>
+
+<div class="container" id="list"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+
+const firebaseConfig={
+apiKey:"AIzaSyBn6Hgu-xvsWqpwJ-i4lZyI0QjKMBvOeXA",
+authDomain:"ecurie-paddock.firebaseapp.com",
+projectId:"ecurie-paddock",
+storageBucket:"ecurie-paddock.firebasestorage.app",
+messagingSenderId:"501153278739",
+appId:"1:501153278739:web:824b4344c381f2a94548e6"
+}
+
+firebase.initializeApp(firebaseConfig)
+const db=firebase.firestore()
+
+let myReservations=JSON.parse(localStorage.getItem("myReservations")||"[]")
+
+async function load(){
+
+const container=document.getElementById("list")
+container.innerHTML=""
+
+let count=0
+
+for(const id of myReservations){
+
+const doc=await db.collection("reservations").doc(id).get()
+
+if(!doc.exists) continue
+
+count++
+
+const data=doc.data()
+
+let card=document.createElement("div")
+card.className="card"
+
+card.innerHTML=`
+
+<h3>${data.paddock}</h3>
+
+<p><strong>Date :</strong> ${data.date}</p>
+<p><strong>Heure :</strong> ${data.time}</p>
+<p><strong>Durée :</strong> ${data.duration} min</p>
+
+<button onclick="cancel('${id}')">Annuler</button>
+
+`
+
+container.appendChild(card)
+
+}
+
+if(count===0){
+container.innerHTML='<div class="empty">Aucune réservation</div>'
+}
+
+}
+
+async function cancel(id){
+
+await db.collection("reservations").doc(id).delete()
+
+myReservations=myReservations.filter(r=>r!==id)
+
+localStorage.setItem("myReservations",JSON.stringify(myReservations))
+
+load()
+
+}
+
+load()
+
+</script>
+
+</body>
+</html>
