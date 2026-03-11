@@ -16,9 +16,7 @@ background:#f4f4f4;
 font-family:'Montserrat',sans-serif;
 }
 
-.page{
-min-height:100vh;
-}
+.page{min-height:100vh;}
 
 header{
 position:relative;
@@ -61,10 +59,7 @@ border-radius:22px;
 box-shadow:0 5px 12px rgba(0,0,0,0.12);
 }
 
-label{
-font-weight:600;
-font-size:14px;
-}
+label{font-weight:600;font-size:14px;}
 
 select,input{
 width:100%;
@@ -118,20 +113,9 @@ background:#c9d7ff;
 border-left:4px solid #181E3B;
 }
 
-.freeText{
-color:#2ecc71;
-font-weight:600;
-}
-
-.reservedText{
-color:#e74c3c;
-font-weight:600;
-}
-
-.mineText{
-color:#2980b9;
-font-weight:700;
-}
+.freeText{color:#2ecc71;font-weight:600;}
+.reservedText{color:#e74c3c;font-weight:600;}
+.mineText{color:#2980b9;font-weight:700;}
 
 .fullMessage{
 text-align:center;
@@ -158,25 +142,32 @@ select,input{background:#252a33;color:white}
 <div class="page">
 
 <header>
-
 <div id="backBtn" onclick="location.href='index.html'">
 <img src="image/back.svg">
 </div>
-
 <h1 id="title">PADDOCK</h1>
-
 </header>
 
 <div class="card">
 
+<label>Type</label>
+<select id="type">
+<option value="reservation">Réservation paddock</option>
+<option value="mise">Demande mise au paddock (+5€)</option>
+</select>
+
+<div id="blocDuration">
 <label>Durée</label>
 <select id="duration">
 <option value="60">1h</option>
 <option value="90">1h30</option>
 </select>
+</div>
 
+<div id="blocPaddock">
 <label>Paddock</label>
 <select id="paddock"></select>
+</div>
 
 <label>Jour</label>
 <div id="days"></div>
@@ -189,16 +180,18 @@ select,input{background:#252a33;color:white}
 
 <div id="planning"></div>
 
-<button onclick="book()">Réserver</button>
+<button id="mainButton" onclick="book()">Réserver</button>
 
 </div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 
 <script>
+
+emailjs.init("03cdce-AcdCC03k_v")
 
 const firebaseConfig={
 apiKey:"AIzaSyBn6Hgu-xvsWqpwJ-i4lZyI0QjKMBvOeXA",
@@ -258,6 +251,24 @@ let myReservations=JSON.parse(localStorage.getItem("myReservations")||"[]")
 
 const durationSelect=document.getElementById("duration")
 const paddockSelect=document.getElementById("paddock")
+
+function initType(){
+
+const typeSelect=document.getElementById("type")
+
+typeSelect.addEventListener("change",()=>{
+
+const mise=typeSelect.value==="mise"
+
+document.getElementById("blocDuration").style.display=mise?"none":"block"
+document.getElementById("blocPaddock").style.display=mise?"none":"block"
+document.getElementById("planning").style.display=mise?"none":"block"
+
+document.getElementById("mainButton").innerText=mise?"Demander":"Réserver"
+
+})
+
+}
 
 function updatePaddocks(){
 
@@ -406,13 +417,9 @@ return resStart===current
 })
 
 if(reservation){
-
 current += reservation.duration/60
-
 }else{
-
 current += 1
-
 }
 
 }
@@ -420,8 +427,6 @@ current += 1
 slots.forEach(time=>{
 
 let [hour,minutes]=time.split(":").map(Number)
-
-/* cacher créneaux passés et <10min sauf admin */
 
 const now=new Date()
 const today=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0")
@@ -527,6 +532,62 @@ container.appendChild(row)
 
 async function book(){
 
+const type=document.getElementById("type").value
+
+if(type==="mise"){
+
+if(!selectedDate){
+alert("Choisissez un jour")
+return
+}
+
+const d=new Date(selectedDate)
+const day=d.getDay()
+
+if(day===0 || day===6){
+alert("Demande impossible le week-end")
+return
+}
+
+const now=new Date()
+const veille=new Date(d)
+
+veille.setDate(veille.getDate()-1)
+veille.setHours(20,0,0,0)
+
+if(now>veille){
+alert("Demande possible uniquement jusqu'à 20h la veille")
+return
+}
+
+let name=document.getElementById("name").value.trim()
+let email=document.getElementById("email").value
+
+if(!name){
+alert("Prénom obligatoire")
+return
+}
+
+emailjs.send("service_mkpsbdf","template_0qhjhhg",{
+
+jour:selectedDate,
+prenom:name,
+email:email
+
+}).then(()=>{
+
+alert("Demande envoyée (5€)")
+
+}).catch(()=>{
+
+alert("Erreur envoi mail")
+
+})
+
+return
+
+}
+
 let name=document.getElementById("name").value.trim()
 
 if(!name){
@@ -538,6 +599,8 @@ if(!selected){
 alert("Choisissez un créneau")
 return
 }
+
+/* SECURITE : 1 RESERVATION PAR JOUR (SAUF ADMIN) */
 
 if(!adminMode){
 
@@ -585,6 +648,7 @@ loadData()
 
 window.addEventListener("DOMContentLoaded",()=>{
 
+initType()
 buildDays()
 updatePaddocks()
 loadData()
