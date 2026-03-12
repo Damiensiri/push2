@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Panier</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+
+<style>
+
+body{
+margin:0;
+font-family:'Montserrat',sans-serif;
+background:#0f1115;
+color:white;
+}
+
+/* ===== ANIMATION PAGE ===== */
+
+.page{
+min-height:100vh;
+transform:translateX(100%);
+transition:0.35s;
+}
+
+.page.active{
+transform:translateX(0);
+}
+
+.page.exit{
+transform:translateX(100%);
+}
+
+/* HEADER */
+
+header{
+position:relative;
+height:70px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:700;
+font-size:20px;
+}
+
+#backBtn{
+position:absolute;
+left:15px;
+top:50%;
+transform:translateY(-50%);
+width:42px;
+height:42px;
+border-radius:50%;
+background:#1c1f26;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 3px 8px rgba(0,0,0,0.4);
+cursor:pointer;
+}
+
+#backBtn img{
+width:22px;
+height:22px;
+filter:brightness(0) invert(1);
+}
+
+/* CONTENT */
+
+.container{
+padding:20px;
+}
+
+.item{
+display:flex;
+justify-content:space-between;
+margin-bottom:15px;
+padding:15px;
+background:#1c1f26;
+border-radius:12px;
+}
+
+.total{
+font-size:22px;
+font-weight:700;
+margin-top:20px;
+}
+
+button{
+width:100%;
+padding:14px;
+border:none;
+border-radius:12px;
+margin-top:15px;
+font-size:16px;
+cursor:pointer;
+}
+
+.commander{
+background:#2e43b8;
+color:white;
+}
+
+.vider{
+background:#444;
+color:white;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="page" id="page">
+
+<header>
+
+<div id="backBtn" onclick="goBack()">
+<img src="image/back.svg">
+</div>
+
+Panier
+
+</header>
+
+<div class="container">
+
+<div id="cartList"></div>
+
+<div class="total">
+Total : <span id="total">0</span> €
+</div>
+
+<button class="commander" onclick="commander()">
+Commander
+</button>
+
+<button class="vider" onclick="vider()">
+Vider le panier
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+/* ===== ANIMATION OUVERTURE ===== */
+
+window.addEventListener("DOMContentLoaded",()=>{
+requestAnimationFrame(()=>{
+document.getElementById("page").classList.add("active");
+});
+});
+
+/* ===== ANIMATION FERMETURE ===== */
+
+function goBack(){
+
+const p=document.getElementById("page")
+
+p.classList.remove("active")
+p.classList.add("exit")
+
+setTimeout(()=>{
+location.href="index.html"
+},300)
+
+}
+
+/* EMAILJS */
+
+(function(){
+emailjs.init("03cdce-AcdCC03k_v");
+})();
+
+/* PANIER */
+
+let cart = JSON.parse(localStorage.getItem("cart") || "[]")
+
+function render(){
+
+let html=""
+let total=0
+
+cart.forEach(item=>{
+
+html+=`
+<div class="item">
+<div>${item.name} x${item.qty}</div>
+<div>${item.price*item.qty} €</div>
+</div>
+`
+
+total+=item.price*item.qty
+
+})
+
+document.getElementById("cartList").innerHTML=html
+document.getElementById("total").innerText=total
+
+}
+
+render()
+
+/* VIDER PANIER */
+
+function vider(){
+
+localStorage.removeItem("cart")
+cart=[]
+render()
+
+}
+
+/* COMMANDER */
+
+function commander(){
+
+if(cart.length===0){
+alert("Panier vide")
+return
+}
+
+let nom = prompt("Votre nom")
+let prenom = prompt("Votre prénom")
+let email = prompt("Votre email")
+
+if(!nom || !prenom || !email){
+alert("Informations manquantes")
+return
+}
+
+let total=0
+let commandeHTML=""
+
+cart.forEach(item=>{
+
+let lineTotal=item.price*item.qty
+
+commandeHTML+=`
+<tr>
+<td>${item.name}</td>
+<td align="center">${item.qty}</td>
+<td align="right">${lineTotal} €</td>
+</tr>
+`
+
+total+=lineTotal
+
+})
+
+emailjs.send("service_mkpsbdf","template_ftv15rb",{
+
+nom:nom,
+prenom:prenom,
+email:email,
+commande:commandeHTML,
+total:total
+
+})
+
+.then(()=>{
+
+let orders = JSON.parse(localStorage.getItem("orders") || "[]")
+
+orders.push({
+date:new Date().toLocaleString(),
+items:cart,
+total:total
+})
+
+localStorage.setItem("orders", JSON.stringify(orders))
+localStorage.setItem("lastOrder", JSON.stringify({items:cart,total:total}))
+
+localStorage.removeItem("cart")
+
+window.location.href="confirmation.html"
+
+})
+
+.catch(()=>{
+alert("Erreur envoi email")
+})
+
+}
+
+</script>
+
+</body>
+</html>
