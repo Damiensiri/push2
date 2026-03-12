@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mes commandes</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+margin:0;
+font-family:'Montserrat',sans-serif;
+background:#0f1115;
+color:white;
+}
+
+/* ===== ANIMATION PAGE ===== */
+
+.page{
+min-height:100vh;
+transform:translateX(100%);
+transition:0.35s;
+}
+
+.page.active{
+transform:translateX(0);
+}
+
+.page.exit{
+transform:translateX(100%);
+}
+
+/* HEADER */
+
+header{
+position:relative;
+height:70px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:700;
+font-size:20px;
+}
+
+#backBtn{
+position:absolute;
+left:15px;
+top:50%;
+transform:translateY(-50%);
+width:42px;
+height:42px;
+border-radius:50%;
+background:#1c1f26;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 3px 8px rgba(0,0,0,0.4);
+cursor:pointer;
+}
+
+#backBtn img{
+width:22px;
+height:22px;
+filter:brightness(0) invert(1);
+}
+
+/* CONTENT */
+
+.container{
+padding:20px;
+}
+
+.order{
+background:#1c1f26;
+padding:15px;
+border-radius:12px;
+margin-bottom:20px;
+}
+
+.date{
+font-size:12px;
+opacity:.6;
+margin-bottom:10px;
+}
+
+.item{
+display:flex;
+justify-content:space-between;
+font-size:14px;
+margin-bottom:5px;
+}
+
+.total{
+margin-top:10px;
+font-weight:700;
+}
+
+.empty{
+opacity:.6;
+margin-top:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="page" id="page">
+
+<header>
+
+<div id="backBtn" onclick="goBack()">
+<img src="image/back.svg">
+</div>
+
+Mes commandes
+
+</header>
+
+<div class="container">
+
+<div id="orders"></div>
+
+</div>
+
+</div>
+
+<script>
+
+/* ===== ANIMATION OUVERTURE ===== */
+
+window.addEventListener("DOMContentLoaded",()=>{
+requestAnimationFrame(()=>{
+document.getElementById("page").classList.add("active");
+});
+});
+
+/* ===== ANIMATION FERMETURE ===== */
+
+function goBack(){
+
+const p=document.getElementById("page")
+
+p.classList.remove("active")
+p.classList.add("exit")
+
+setTimeout(()=>{
+location.href="index.html"
+},300)
+
+}
+
+/* ===== CODE ORIGINAL ===== */
+
+let orders = JSON.parse(localStorage.getItem("orders") || "[]")
+
+let html=""
+
+if(orders.length === 0){
+
+html=`<div class="empty">Aucune commande pour le moment.</div>`
+
+}else{
+
+orders.reverse().forEach(order=>{
+
+let items=""
+
+order.items.forEach(i=>{
+
+items+=`
+<div class="item">
+<div>${i.name} x${i.qty}</div>
+<div>${i.price*i.qty} €</div>
+</div>
+`
+
+})
+
+html+=`
+<div class="order">
+
+<div class="date">${order.date}</div>
+
+${items}
+
+<div class="total">
+Total : ${order.total} €
+</div>
+
+</div>
+`
+
+})
+
+}
+
+document.getElementById("orders").innerHTML=html
+
+</script>
+
+</body>
+</html>
