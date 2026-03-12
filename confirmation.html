@@ -1,28 +1,209 @@
-Skip to content
-Damiensiri
-ecran
-Repository navigation
-Code
-Issues
-Pull requests
-Actions
-Projects
-Wiki
-Security
-1
- (1)
-ecran
-/confirmation.html
-Damiensiri
-Damiensiri
-Update confirmation.html
-fc90e49
- · 
-11 hours ago
-209 lines (150 loc) · 2.85 KB
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-Code
+<title>Commande confirmée</title>
 
-Blame
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
- 
+<style>
+
+body{
+margin:0;
+font-family:'Montserrat',sans-serif;
+background:#0f1115;
+color:white;
+}
+
+/* ===== ANIMATION PAGE ===== */
+
+.page{
+min-height:100vh;
+transform:translateX(100%);
+transition:0.35s;
+}
+
+.page.active{
+transform:translateX(0);
+}
+
+.page.exit{
+transform:translateX(100%);
+}
+
+/* HEADER */
+
+header{
+position:relative;
+height:70px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:700;
+font-size:20px;
+}
+
+#backBtn{
+position:absolute;
+left:15px;
+top:50%;
+transform:translateY(-50%);
+width:42px;
+height:42px;
+border-radius:50%;
+background:#1c1f26;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 3px 8px rgba(0,0,0,0.4);
+cursor:pointer;
+}
+
+#backBtn img{
+width:22px;
+height:22px;
+filter:brightness(0) invert(1);
+}
+
+/* CONTENT */
+
+.container{
+padding:30px;
+}
+
+.item{
+display:flex;
+justify-content:space-between;
+margin-bottom:10px;
+padding:12px;
+background:#1c1f26;
+border-radius:10px;
+}
+
+.total{
+margin-top:20px;
+font-size:22px;
+font-weight:700;
+}
+
+button{
+width:100%;
+padding:14px;
+margin-top:30px;
+background:#2e43b8;
+color:white;
+border:none;
+border-radius:12px;
+font-size:16px;
+cursor:pointer;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="page" id="page">
+
+<header>
+
+<div id="backBtn" onclick="goBack()">
+<img src="image/back.svg">
+</div>
+
+Commande envoyée
+
+</header>
+
+<div class="container">
+
+<h2>Commande envoyée ✔</h2>
+
+<div id="order"></div>
+
+<div class="total">
+Total : <span id="total"></span> €
+</div>
+
+<button onclick="closeOrder()">
+Fermer
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+/* ===== ANIMATION OUVERTURE ===== */
+
+window.addEventListener("DOMContentLoaded",()=>{
+requestAnimationFrame(()=>{
+document.getElementById("page").classList.add("active");
+});
+});
+
+/* ===== ANIMATION RETOUR ===== */
+
+function goBack(){
+
+const p=document.getElementById("page")
+
+p.classList.remove("active")
+p.classList.add("exit")
+
+setTimeout(()=>{
+location.href="index.html"
+},300)
+
+}
+
+/* ===== CONTENU ORIGINAL ===== */
+
+let order = JSON.parse(localStorage.getItem("lastOrder") || "{}")
+
+let html=""
+
+if(order.items){
+
+order.items.forEach(item=>{
+
+html+=`
+<div class="item">
+<div>${item.name} x${item.qty}</div>
+<div>${item.price*item.qty} €</div>
+</div>
+`
+
+})
+
+document.getElementById("order").innerHTML=html
+document.getElementById("total").innerText=order.total
+
+}else{
+
+document.getElementById("order").innerHTML="Aucune commande trouvée."
+
+}
+
+/* BOUTON FERMER */
+
+function closeOrder(){
+
+const p=document.getElementById("page")
+
+p.classList.remove("active")
+p.classList.add("exit")
+
+setTimeout(()=>{
+window.location.href="mes-commandes.html"
+},300)
+
+}
+
+</script>
+
+</body>
+</html>
