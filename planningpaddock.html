@@ -39,7 +39,10 @@ box-shadow:0 3px 8px rgba(0,0,0,0.15);
 cursor:pointer;
 }
 
-#backBtn img{width:22px}
+#backBtn img{
+width:22px;
+height:22px;
+}
 
 header h1{
 position:absolute;
@@ -124,13 +127,42 @@ font-weight:600;
 color:#999;
 }
 
+/* DARK MODE */
+
 @media(prefers-color-scheme:dark){
 
-body{background:#0f1115;color:white}
-.card{background:#1c1f26}
-select,input{background:#252a33;color:white}
-.row{border-bottom:1px solid #333}
-.dayBtn{background:#252a33}
+body{
+background:#0f1115;
+color:white;
+}
+
+.card{
+background:#1c1f26;
+}
+
+select,input{
+background:#252a33;
+color:white;
+}
+
+.row{
+border-bottom:1px solid #333;
+}
+
+.dayBtn{
+background:#252a33;
+}
+
+/* bouton retour identique aux autres pages */
+
+#backBtn{
+background:#1c1f26;
+box-shadow:0 12px 30px rgba(0,0,0,0.6);
+}
+
+#backBtn img{
+filter:brightness(0) invert(1);
+}
 
 }
 
@@ -599,8 +631,6 @@ if(!selected){
 alert("Choisissez un créneau")
 return
 }
-
-/* SECURITE : 1 RESERVATION PAR JOUR (SAUF ADMIN) */
 
 if(!adminMode){
 
