@@ -76,7 +76,9 @@ box-shadow:0 5px 12px rgba(0,0,0,0.12);
 
 label{font-weight:600;font-size:14px;}
 
-select,input{
+input,
+select,
+textarea{
 width:100%;
 padding:12px;
 margin-top:6px;
@@ -84,6 +86,7 @@ margin-bottom:16px;
 border-radius:10px;
 border:none;
 background:#f4f4f4;
+font-size:16px !important;
 }
 
 button{
@@ -784,6 +787,18 @@ loadData()
 
 paddockSelect.onchange=generate
 
+// refresh planning toutes les 3 minutes
+setInterval(()=>{
+loadData()
+},180000)
+
+// refresh quand la page redevient visible
+document.addEventListener("visibilitychange", () => {
+if (!document.hidden) {
+loadData()
+}
+})
+  
 </script>
 <div id="confirmSheet">
 
