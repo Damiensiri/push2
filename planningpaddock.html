@@ -153,6 +153,19 @@ border-bottom:1px solid #333;
 background:#252a33;
 }
 
+.sheetNew{
+background:#3246d3;
+}
+
+.sheetFinish{
+background:#2ecc71;
+}
+
+.sheetNew,
+.sheetFinish{
+color:white;
+}
+
 /* bouton retour identique aux autres pages */
 
 #backBtn{
@@ -165,7 +178,49 @@ filter:brightness(0) invert(1);
 }
 
 }
+/* BANDEAU CONFIRMATION */
 
+#confirmSheet{
+position:fixed;
+bottom:-100%;
+left:0;
+width:100%;
+background:#1c1f26;
+color:white;
+border-radius:22px 22px 0 0;
+box-shadow:0 -10px 40px rgba(0,0,0,0.25);
+transition:0.35s;
+z-index:999;
+}
+
+#confirmSheet.show{
+bottom:0;
+}
+
+.sheetContent{
+padding:26px;
+text-align:center;
+}
+
+.sheetBtn{
+width:100%;
+padding:14px;
+border-radius:12px;
+border:none;
+font-weight:700;
+cursor:pointer;
+margin-top:10px;
+}
+
+.sheetNew{
+background:#181E3B;
+color:white;
+}
+
+.sheetFinish{
+background:#2ecc71;
+color:white;
+}
 </style>
 </head>
 
@@ -236,6 +291,19 @@ appId:"1:501153278739:web:824b4344c381f2a94548e6"
 
 firebase.initializeApp(firebaseConfig)
 const db=firebase.firestore()
+function showSheet(title,text){
+
+document.getElementById("sheetTitle").innerText = title
+document.getElementById("sheetText").innerHTML = text
+document.getElementById("confirmSheet").classList.add("show")
+
+}
+
+function closeSheet(){
+
+document.getElementById("confirmSheet").classList.remove("show")
+
+}
 
 let reservations=[]
 let horaires={}
@@ -608,12 +676,16 @@ email:email
 
 }).then(()=>{
 
-alert("Demande envoyée (5€)")
-
+showSheet(
+"Demande envoyée",
+"Jour : "+selectedDate+"<br>Nous vous confirmerons la mise au paddock."
+)
 }).catch(()=>{
 
-alert("Erreur envoi mail")
-
+showSheet(
+"Erreur",
+"L'envoi du mail a échoué."
+)
 })
 
 return
@@ -656,7 +728,12 @@ myReservations.push(doc.id)
 
 localStorage.setItem("myReservations",JSON.stringify(myReservations))
 
-alert("Réservation confirmée")
+showSheet(
+"Réservation confirmée",
+"Paddock : "+selected.paddock+"<br>"+
+"Jour : "+selected.date+"<br>"+
+"Heure : "+selected.time
+)
 
 loadData()
 
@@ -670,7 +747,10 @@ myReservations=myReservations.filter(r=>r!==id)
 
 localStorage.setItem("myReservations",JSON.stringify(myReservations))
 
-alert("Réservation annulée")
+showSheet(
+"Réservation annulée",
+"Le créneau a été libéré."
+)
 
 loadData()
 
@@ -688,6 +768,25 @@ loadData()
 paddockSelect.onchange=generate
 
 </script>
+<div id="confirmSheet">
+
+<div class="sheetContent">
+
+<h3 id="sheetTitle"></h3>
+
+<div id="sheetText"></div>
+
+<button class="sheetBtn sheetNew" onclick="closeSheet()">
+Nouvelle réservation
+</button>
+
+<button class="sheetBtn sheetFinish" onclick="location.href='index.html'">
+Terminer
+</button>
+
+</div>
+  
+</div>
 
 </body>
 </html>
