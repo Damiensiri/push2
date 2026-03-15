@@ -106,6 +106,28 @@ margin-top:40px;
 font-weight:600;
 }
 
+/* ===== COULEURS STATUT ===== */
+
+.status{
+font-weight:600;
+}
+
+.status-attente{
+color:#f39c12;
+}
+
+.status-accepte{
+color:#27ae60;
+}
+
+.status-refuse{
+color:#e74c3c;
+}
+
+.status-realise{
+color:#2980b9;
+}
+
 @media(prefers-color-scheme:dark){
 
 body{background:#0f1115;color:white}
@@ -185,6 +207,37 @@ appId:"1:501153278739:web:824b4344c381f2a94548e6"
 firebase.initializeApp(firebaseConfig)
 const db=firebase.firestore()
 
+/* ===== GOOGLE SHEET ===== */
+
+const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRxfmZEcNesum_QBxIe2-tEihtnRSEaVC1x8Y_S3N5MEHcV4tJY3X-7i9NdTBQTBRuzDHHW9NViYrrh/pub?gid=1049919550&single=true&output=csv"
+
+async function loadSheet(){
+
+const res=await fetch(sheetURL)
+const text=await res.text()
+
+const rows=text.split("\n").slice(1)
+
+let demandes=[]
+
+rows.forEach(r=>{
+
+const c=r.split(",")
+
+demandes.push({
+nom:c[1],
+date:c[2],
+email:c[3],
+statut:c[4],
+commentaire:c[5]
+})
+
+})
+
+return demandes
+
+}
+
 /* ===== LOCAL STORAGE ===== */
 
 let myReservations = JSON.parse(localStorage.getItem("myReservations") || "[]")
@@ -232,11 +285,29 @@ container.appendChild(card)
 
 /* ===== DEMANDES MISE PADDOCK ===== */
 
+const sheetData = await loadSheet()
+
 for(let i=0;i<myMises.length;i++){
 
 const mise=myMises[i]
 
 count++
+
+let statut="En attente"
+let commentaire=""
+
+const match=sheetData.find(d=>d.nom===mise.name && d.date===mise.date)
+
+if(match){
+statut=match.statut || "En attente"
+commentaire=match.commentaire || ""
+}
+
+let statusClass="status-attente"
+
+if(statut==="Accepté"){statusClass="status-accepte"}
+if(statut==="Refusé"){statusClass="status-refuse"}
+if(statut==="Réalisé"){statusClass="status-realise"}
 
 let card=document.createElement("div")
 card.className="card"
@@ -246,9 +317,14 @@ card.innerHTML=`
 <h3>Mise au paddock</h3>
 
 <p><strong>Date :</strong> ${mise.date}</p>
-<p><strong>Nom :</strong> ${mise.name}</p>
 
-<p style="margin-top:10px;color:#888;font-size:13px;">
+<p class="status ${statusClass}">
+<strong>Statut :</strong> ${statut}
+</p>
+
+${commentaire ? `<p><strong>Info :</strong> ${commentaire}</p>` : ""}
+
+<p style="font-size:13px;color:#888;margin-top:10px">
 Pour annuler cette demande contacter Damien
 </p>
 
@@ -281,8 +357,21 @@ load()
 }
 
 /* ===== START ===== */
-
 load()
+
+/* ===== AUTO REFRESH ===== */
+
+setInterval(()=>{
+load()
+},120000)
+
+document.addEventListener("visibilitychange", () => {
+
+if (!document.hidden) {
+load()
+}
+
+})
 
 </script>
 
