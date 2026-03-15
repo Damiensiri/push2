@@ -696,16 +696,27 @@ email:email
 
 }).then(()=>{
 
+let mises = JSON.parse(localStorage.getItem("myMises") || "[]")
+
+mises.push({
+date:selectedDate,
+name:name
+})
+
+localStorage.setItem("myMises", JSON.stringify(mises))
+
 showSheet(
 "Demande envoyée",
 "Jour : "+selectedDate+"<br>Nous vous confirmerons la mise au paddock."
 )
+
 }).catch(()=>{
 
 showSheet(
 "Erreur",
 "L'envoi du mail a échoué."
 )
+
 })
 
 return
@@ -812,7 +823,7 @@ loadData()
 Nouvelle réservation
 </button>
 
-<button class="sheetBtn sheetFinish" onclick="location.href='index.html'">
+<button class="sheetBtn sheetFinish" onclick="location.href='mesreservations.html'">
 Terminer
 </button>
 
