@@ -696,6 +696,17 @@ email:email
 
 }).then(()=>{
 
+  // envoi vers Google Form
+fetch("https://docs.google.com/forms/d/e/1FAIpQLScqcDgOy64o6ZyVuLlQrgPbAR60yIoMZzChOANrA_ZzyAD-xg/formResponse",{
+method:"POST",
+mode:"no-cors",
+body:new URLSearchParams({
+"entry.45941897":name,
+"entry.1156384077":selectedDate,
+"entry.502902379":email
+})
+})
+  
 let mises = JSON.parse(localStorage.getItem("myMises") || "[]")
 
 mises.push({
