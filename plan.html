@@ -138,6 +138,30 @@ header h1{
 
 #panel.active{ transform:translateY(0); }
 
+/* ===== cercle disney ===== */
+
+#panelIcon{
+position:absolute;
+top:-30px;
+left:50%;
+transform:translateX(-50%);
+width:60px;
+height:60px;
+border-radius:50%;
+background:#ffffff;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 8px 25px rgba(0,0,0,0.25);
+}
+
+#panelIcon img{
+width:30px;
+height:30px;
+}
+
+/* ================= PANEL CONTENT ================= */
+
 #panelHeader{
   display:flex;
   justify-content:space-between;
@@ -232,6 +256,10 @@ header h1{
     box-shadow:0 25px 60px rgba(0,0,0,0.75);
   }
 
+  #panelIcon{
+    background:#1c1f26;
+  }
+
   .label{
     color:#9aa0a6;
   }
@@ -291,6 +319,10 @@ header h1{
 
 <div id="panel">
 
+<div id="panelIcon">
+<img id="panelIconImg">
+</div>
+
 <div id="panelHeader">
   <div id="panelTitle">---</div>
   <div id="closePanel">✕</div>
@@ -327,6 +359,20 @@ header h1{
 
 <script>
 
+/* ================= PANEL ICON ================= */
+
+function setPanelIcon(espace){
+
+if(espace==="carriere" || espace==="manege"){
+document.getElementById("panelIconImg").src="image/travail.svg";
+}else{
+document.getElementById("panelIconImg").src="image/paddock.svg";
+}
+
+}
+
+/* ================= EXISTING CODE ================= */
+
 window.addEventListener("DOMContentLoaded",()=>{
   requestAnimationFrame(()=>{
     document.getElementById("page").classList.add("active");
@@ -344,8 +390,6 @@ const ICONS={
 };
 
 let DATA=[];
-
-/* DOM */
 
 const panelTitle=document.getElementById("panelTitle");
 const statut=document.getElementById("statut");
@@ -395,8 +439,6 @@ fetch(SHEET_URL+"&t="+Date.now(),{cache:"no-store"})
 
 }
 
-/* lecture cache instantanée */
-
 const cache=localStorage.getItem("statuts");
 
 if(cache){
@@ -410,6 +452,8 @@ loadData();
 setInterval(loadData,10000);
 
 function openSpace(espace){
+
+setPanelIcon(espace);
 
 const e=DATA.find(x=>x.espace===espace);
 if(!e) return;
