@@ -168,34 +168,50 @@ padding:0 15px;
 
 .card{
 background:white;
-border-radius:20px;
-padding:20px;
+border-radius:18px;
+padding:14px;
 text-align:center;
 box-shadow:0 3px 8px rgba(0,0,0,0.08);
 cursor:pointer;
+transition:transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:active{
+transform:scale(0.97);
+box-shadow:0 2px 6px rgba(0,0,0,0.15);
 }
 
 .card img{
-width:55px;
-margin-bottom:10px;
+width:42px;
+margin-bottom:6px;
 }
 
 .card div{
-font-size:16px;
+font-size:14px;
 font-weight:700;
 }
 
 .list-btn{
 background:white;
-margin:10px 15px;
-padding:18px;
-border-radius:20px;
+margin:8px 15px;
+padding:14px;
+border-radius:18px;
 display:flex;
 align-items:center;
-gap:12px;
+gap:10px;
 box-shadow:0 3px 8px rgba(0,0,0,0.08);
 font-weight:700;
 cursor:pointer;
+transition:transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.list-btn:active{
+transform:scale(0.98);
+box-shadow:0 2px 6px rgba(0,0,0,0.15);
+}
+
+.list-btn img{
+width:22px;
 }
 
 .list-btn img{
