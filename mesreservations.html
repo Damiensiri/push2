@@ -128,6 +128,10 @@ color:#e74c3c;
 color:#2980b9;
 }
 
+.status-annule{
+color:#e74c3c;
+}
+
 @media(prefers-color-scheme:dark){
 
 body{background:#0f1115;color:white}
@@ -309,6 +313,7 @@ let statusClass="status-attente"
 if(statut==="Accepté"){statusClass="status-accepte"}
 if(statut==="Refusé"){statusClass="status-refuse"}
 if(statut==="Réalisé"){statusClass="status-realise"}
+if(statut==="Annulé"){statusClass="status-annule"}
 
 let card=document.createElement("div")
 card.className="card"
