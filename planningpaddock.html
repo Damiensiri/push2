@@ -419,27 +419,33 @@ generate()
 
 durationSelect.addEventListener("change",updatePaddocks)
 
-async function loadData(){
+function loadDataRealtime(){
 
-const r=await db.collection("reservations").get()
+db.collection("reservations").onSnapshot(snapshot=>{
 
-reservations=[]
+reservations = []
 
-r.forEach(doc=>{
-let data=doc.data()
-data.id=doc.id
+snapshot.forEach(doc=>{
+let data = doc.data()
+data.id = doc.id
 reservations.push(data)
 })
 
-const h=await db.collection("horaires").get()
+generate()
 
-horaires={}
+})
 
-h.forEach(doc=>{
-horaires[doc.id]=doc.data()
+db.collection("horaires").onSnapshot(snapshot=>{
+
+horaires = {}
+
+snapshot.forEach(doc=>{
+horaires[doc.id] = doc.data()
 })
 
 generate()
+
+})
 
 }
 
@@ -777,8 +783,6 @@ showSheet(
 "Heure : "+selected.time
 )
 
-loadData()
-
 }
 
 async function cancelReservation(id){
@@ -794,8 +798,6 @@ showSheet(
 "Le créneau a été libéré."
 )
 
-loadData()
-
 }
 
 window.addEventListener("DOMContentLoaded",()=>{
@@ -803,23 +805,11 @@ window.addEventListener("DOMContentLoaded",()=>{
 initType()
 buildDays()
 updatePaddocks()
-loadData()
+loadDataRealtime()
 
 })
 
 paddockSelect.onchange=generate
-
-// refresh planning toutes les 3 minutes
-setInterval(()=>{
-loadData()
-},180000)
-
-// refresh quand la page redevient visible
-document.addEventListener("visibilitychange", () => {
-if (!document.hidden) {
-loadData()
-}
-})
   
 </script>
 <div id="confirmSheet">
