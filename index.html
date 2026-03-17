@@ -162,14 +162,24 @@ font-size:14px;
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:15px;
+gap:20px 14px; /* vertical / horizontal */
 padding:0 15px;
 }
 
+.grid{
+margin-bottom:10px;
+}
+  
 .card{
 background:white;
-border-radius:18px;
-padding:14px;
+border-radius:16px;
+height:95px;
+width:92%;
+margin:0 auto;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
 text-align:center;
 box-shadow:0 3px 8px rgba(0,0,0,0.08);
 cursor:pointer;
@@ -182,23 +192,24 @@ box-shadow:0 2px 6px rgba(0,0,0,0.15);
 }
 
 .card img{
-width:42px;
-margin-bottom:6px;
+width:34px;
+margin-bottom:4px;
 }
 
 .card div{
-font-size:14px;
+font-size:12px;
 font-weight:700;
 }
-
+  
 .list-btn{
 background:white;
-margin:8px 15px;
-padding:14px;
+margin:14px auto;
+padding:16px 16px;
 border-radius:18px;
+width:88%;
 display:flex;
 align-items:center;
-gap:10px;
+gap:12px;
 box-shadow:0 3px 8px rgba(0,0,0,0.08);
 font-weight:700;
 cursor:pointer;
@@ -214,8 +225,8 @@ box-shadow:0 2px 6px rgba(0,0,0,0.15);
 width:22px;
 }
 
-.list-btn img{
-width:26px;
+.list-btn{
+margin:18px auto;
 }
 
 /* DARK MODE */
