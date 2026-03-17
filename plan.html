@@ -507,8 +507,11 @@ haloCircle.style.strokeDashoffset="0";
 
 /* horaires */
 
-horaire.innerText=e.horaire_affiche||"---";
-
+if(e.horaire_special && e.horaire_special.trim() !== ""){
+horaire.innerHTML = `<span style="color:#E88B00;font-weight:700">${e.horaire_special}</span>`;
+}else{
+horaire.innerText = e.horaire_affiche||"---";
+}
 /* options */
 
 let show=false;
