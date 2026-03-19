@@ -687,7 +687,7 @@ return
 }
 
 let name=document.getElementById("name").value.trim()
-let email=document.getElementById("email").value
+let email=document.getElementById("email").value.trim()
 
 if(!name){
 alert("Prénom obligatoire")
@@ -695,14 +695,19 @@ return
 }
 
 emailjs.send("service_mkpsbdf","template_0qhjhhg",{
+title: "📩 Demande de mise au paddock",
+message: `
+📅 <strong>Jour :</strong> ${selectedDate}<br><br>
 
-jour:selectedDate,
-prenom:name,
-email:email
-
+<span style="color:#e67e22;font-weight:600;">
+⏳ En attente de confirmation
+</span>
+`,
+prenom: name,
+email: email
 }).then(()=>{
 
-  // envoi vers Google Form
+// envoi vers Google Form
 fetch("https://docs.google.com/forms/d/e/1FAIpQLScqcDgOy64o6ZyVuLlQrgPbAR60yIoMZzChOANrA_ZzyAD-xg/formResponse",{
 method:"POST",
 mode:"no-cors",
@@ -712,7 +717,8 @@ body:new URLSearchParams({
 "entry.502902379":email
 })
 })
-  
+
+// stockage local
 let mises = JSON.parse(localStorage.getItem("myMises") || "[]")
 
 mises.push({
@@ -761,7 +767,7 @@ return
 
 }
 
-const doc=await db.collection("reservations").add({
+const doc = await db.collection("reservations").add({
 
 name:name,
 email:document.getElementById("email").value,
@@ -772,6 +778,43 @@ duration:selected.duration
 
 })
 
+let email = document.getElementById("email").value.trim()
+
+// 👉 toujours envoyer à toi
+emailjs.send("service_mkpsbdf","template_0qhjhhg",{
+title: "📥 Nouvelle réservation paddock",
+message: `
+📍 <strong>Paddock :</strong> ${selected.paddock}<br>
+📅 <strong>Jour :</strong> ${selected.date}<br>
+⏰ <strong>Heure :</strong> ${selected.time}<br><br>
+
+👤 <strong>Client :</strong> ${name}<br>
+📧 <strong>Email :</strong> ${email || "Non renseigné"}
+`,
+prenom: name,
+email: "damiensiri.pro@hotmail.fr"
+})
+
+// 👉 envoi client uniquement si email
+if(email && email.includes("@")){
+
+emailjs.send("service_mkpsbdf","template_0qhjhhg",{
+title: "✅ Réservation confirmée",
+message: `
+📍 <strong>Paddock :</strong> ${selected.paddock}<br>
+📅 <strong>Jour :</strong> ${selected.date}<br>
+⏰ <strong>Heure :</strong> ${selected.time}<br><br>
+
+<span style="color:#2ecc71;font-weight:600;">
+✔️ Créneau réservé avec succès
+</span>
+`,
+prenom: name,
+email: email
+})
+}
+
+// 👉 TOUJOURS exécuté (important)
 myReservations.push(doc.id)
 
 localStorage.setItem("myReservations",JSON.stringify(myReservations))
@@ -784,6 +827,7 @@ showSheet(
 )
 
 }
+
 
 async function cancelReservation(id){
 
