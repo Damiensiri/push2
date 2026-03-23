@@ -831,11 +831,15 @@ showSheet(
 
 async function cancelReservation(id){
 
+if(!confirm("⚠️ Confirmer l'annulation de cette réservation ?")){
+return
+}
+
 await db.collection("reservations").doc(id).delete()
 
-myReservations=myReservations.filter(r=>r!==id)
+myReservations = myReservations.filter(r => r !== id)
 
-localStorage.setItem("myReservations",JSON.stringify(myReservations))
+localStorage.setItem("myReservations", JSON.stringify(myReservations))
 
 showSheet(
 "Réservation annulée",
