@@ -69,6 +69,13 @@ font-weight:700;
 padding:20px;
 }
 
+.section-title{
+font-weight:700;
+margin:10px 0;
+font-size:15px;
+color:#666;
+}
+
 .card{
 background:white;
 padding:18px;
@@ -108,32 +115,14 @@ font-weight:600;
 
 /* ===== COULEURS STATUT ===== */
 
-.status{
-font-weight:600;
-}
-
-.status-attente{
-color:#f39c12;
-}
-
-.status-accepte{
-color:#27ae60;
-}
-
-.status-refuse{
-color:#e74c3c;
-}
-
-.status-realise{
-color:#2980b9;
-}
-
-.status-annule{
-color:#e74c3c;
-}
+.status{font-weight:600;}
+.status-attente{color:#f39c12;}
+.status-accepte{color:#27ae60;}
+.status-refuse{color:#e74c3c;}
+.status-realise{color:#2980b9;}
+.status-annule{color:#e74c3c;}
 
 @media(prefers-color-scheme:dark){
-
 body{background:#0f1115;color:white}
 .card{background:#1c1f26}
 
@@ -145,7 +134,6 @@ box-shadow:0 12px 30px rgba(0,0,0,0.6);
 #backBtn img{
 filter:brightness(0) invert(1);
 }
-
 }
 
 </style>
@@ -156,16 +144,23 @@ filter:brightness(0) invert(1);
 <div class="page" id="page">
 
 <header>
-
 <div id="backBtn" onclick="goBack()">
 <img src="image/back.svg">
 </div>
-
 <h1>Mes réservations</h1>
-
 </header>
 
-<div class="container" id="list"></div>
+<div class="container">
+
+<div id="avenir"></div>
+
+<div id="toggleHistory" style="margin-top:25px;font-weight:600;cursor:pointer;text-align:center;">
+Voir l’historique ▼
+</div>
+
+<div id="historique" style="display:none;margin-top:15px;"></div>
+
+</div>
 
 </div>
 
@@ -174,7 +169,7 @@ filter:brightness(0) invert(1);
 
 <script>
 
-/* ===== ANIMATION OUVERTURE ===== */
+/* ===== ANIMATION ===== */
 
 window.addEventListener("DOMContentLoaded",()=>{
 requestAnimationFrame(()=>{
@@ -182,25 +177,17 @@ document.getElementById("page").classList.add("active");
 });
 });
 
-/* ===== ANIMATION FERMETURE ===== */
-
 function goBack(){
-
 const p=document.getElementById("page")
-
 p.classList.remove("active")
 p.classList.add("exit")
-
-setTimeout(()=>{
-location.href="index.html"
-},300)
-
+setTimeout(()=>{location.href="index.html"},300)
 }
 
 /* ===== FIREBASE ===== */
 
 const firebaseConfig={
-apiKey:"AIzaSyBn6Hgu-xvsWqpwJ-i4lZyI0QjKMBvOeXA",
+apiKey:"AIzaSy...",
 authDomain:"ecurie-paddock.firebaseapp.com",
 projectId:"ecurie-paddock",
 storageBucket:"ecurie-paddock.firebasestorage.app",
@@ -211,24 +198,27 @@ appId:"1:501153278739:web:824b4344c381f2a94548e6"
 firebase.initializeApp(firebaseConfig)
 const db=firebase.firestore()
 
+/* ===== DATE CHECK ===== */
+
+function isPast(dateStr, timeStr="00:00"){
+const dateTime=new Date(dateStr+"T"+timeStr)
+return dateTime < new Date()
+}
+
 /* ===== GOOGLE SHEET ===== */
 
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRxfmZEcNesum_QBxIe2-tEihtnRSEaVC1x8Y_S3N5MEHcV4tJY3X-7i9NdTBQTBRuzDHHW9NViYrrh/pub?gid=1049919550&single=true&output=csv"
 
 async function loadSheet(){
-
 const res=await fetch(sheetURL)
 const text=await res.text()
-
 const rows=text.split("\n").slice(1)
 rows.reverse()
 
 let demandes=[]
 
 rows.forEach(r=>{
-
 const c=r.split(",")
-
 demandes.push({
 nom:c[1],
 date:c[2],
@@ -236,11 +226,9 @@ email:c[3],
 statut:c[4],
 commentaire:c[5]
 })
-
 })
 
 return demandes
-
 }
 
 /* ===== LOCAL STORAGE ===== */
@@ -252,51 +240,51 @@ let myMises = JSON.parse(localStorage.getItem("myMises") || "[]")
 
 async function load(){
 
-const container=document.getElementById("list")
-container.innerHTML=""
+const avenir=document.getElementById("avenir")
+const historique=document.getElementById("historique")
+
+avenir.innerHTML=""
+historique.innerHTML=""
 
 let count=0
 
-/* ===== RESERVATIONS FIREBASE ===== */
+/* ===== RESERVATIONS ===== */
 
 for(const id of myReservations){
 
 const doc=await db.collection("reservations").doc(id).get()
-
 if(!doc.exists) continue
 
-count++
-
 const data=doc.data()
+let old=isPast(data.date,data.time)
 
 let card=document.createElement("div")
 card.className="card"
 
 card.innerHTML=`
-
 <h3>${data.paddock}</h3>
-
 <p><strong>Date :</strong> ${data.date}</p>
 <p><strong>Heure :</strong> ${data.time}</p>
 <p><strong>Durée :</strong> ${data.duration} min</p>
-
-<button onclick="cancelReservation('${id}')">Annuler</button>
-
+${!old ? `<button onclick="cancelReservation('${id}')">Annuler</button>` : ""}
 `
 
-container.appendChild(card)
-
+if(old){
+historique.appendChild(card)
+}else{
+avenir.appendChild(card)
+count++
+}
 }
 
-/* ===== DEMANDES MISE PADDOCK ===== */
+/* ===== DEMANDES ===== */
 
-const sheetData = await loadSheet()
+const sheetData=await loadSheet()
 
 for(let i=myMises.length-1;i>=0;i--){
 
 const mise=myMises[i]
-
-count++
+let old=isPast(mise.date)
 
 let statut="En attente"
 let commentaire=""
@@ -309,74 +297,69 @@ commentaire=match.commentaire || ""
 }
 
 let statusClass="status-attente"
-
-if(statut==="Accepté"){statusClass="status-accepte"}
-if(statut==="Refusé"){statusClass="status-refuse"}
-if(statut==="Réalisé"){statusClass="status-realise"}
-if(statut==="Annulé"){statusClass="status-annule"}
+if(statut==="Accepté") statusClass="status-accepte"
+if(statut==="Refusé") statusClass="status-refuse"
+if(statut==="Réalisé") statusClass="status-realise"
+if(statut==="Annulé") statusClass="status-annule"
 
 let card=document.createElement("div")
 card.className="card"
 
 card.innerHTML=`
-
 <h3>Mise au paddock</h3>
-
 <p><strong>Date :</strong> ${mise.date}</p>
-
 <p class="status ${statusClass}">
 <strong>Statut :</strong> ${statut}
 </p>
-
 ${commentaire ? `<p><strong>Info :</strong> ${commentaire}</p>` : ""}
-
-<p style="font-size:13px;color:#888;margin-top:10px">
-Pour annuler cette demande contacter Damien
-</p>
-
 `
 
-container.appendChild(card)
-
+if(old){
+historique.appendChild(card)
+}else{
+avenir.appendChild(card)
+count++
+}
 }
 
-/* ===== MESSAGE VIDE ===== */
+/* ===== VIDE ===== */
 
 if(count===0){
-container.innerHTML='<div class="empty">Aucune réservation</div>'
+avenir.innerHTML='<div class="empty">Aucune réservation à venir</div>'
 }
 
 }
 
-/* ===== ANNULATION RESERVATION ===== */
+/* ===== ANNULATION ===== */
 
 async function cancelReservation(id){
-
 await db.collection("reservations").doc(id).delete()
-
 myReservations=myReservations.filter(r=>r!==id)
-
 localStorage.setItem("myReservations",JSON.stringify(myReservations))
-
 load()
+}
 
+/* ===== TOGGLE ===== */
+
+document.getElementById("toggleHistory").onclick=()=>{
+const hist=document.getElementById("historique")
+if(hist.style.display==="none"){
+hist.style.display="block"
+document.getElementById("toggleHistory").innerText="Masquer l’historique ▲"
+}else{
+hist.style.display="none"
+document.getElementById("toggleHistory").innerText="Voir l’historique ▼"
+}
 }
 
 /* ===== START ===== */
+
 load()
 
-/* ===== AUTO REFRESH ===== */
+setInterval(()=>{load()},120000)
 
-setInterval(()=>{
-load()
-},120000)
-
-document.addEventListener("visibilitychange", () => {
-
-if (!document.hidden) {
-load()
-}
-
+document.addEventListener("visibilitychange",()=>{
+if(!document.hidden) load()
 })
 
 </script>
