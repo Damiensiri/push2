@@ -3,76 +3,99 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Ecurie Damien Siri</title>
 
+<link rel="manifest" href="manifest.json">
+
+<link rel="apple-touch-icon" href="image/icon-192x192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ecurie DS">
+<meta name="theme-color" content="#f4f4f4">
+
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
+
+<!-- OneSignal -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+
+<script>
+window.OneSignalDeferred = window.OneSignalDeferred || [];
+OneSignalDeferred.push(async function(OneSignal) {
+
+await OneSignal.init({
+appId:"85a477ff-3d8d-4975-960d-c7e69100a0ff",
+notifyButton:{enable:false},
+promptOptions:{
+slidedown:{
+prompts:[{
+type:"push",
+autoPrompt:true,
+text:{
+actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
+acceptButton:"Autoriser",
+cancelButton:"Plus tard"
+}
+}]
+}
+}
+});
+
+});
+</script>
 
 <style>
 
-/* ===== RESET ===== */
+/* ===== BASE ===== */
 
 body{
 margin:0;
 font-family:'Montserrat',sans-serif;
-overflow-x:hidden;
 background:#f4f4f4;
+overflow-y:auto;
 }
 
-/* ===== LAYER 1 : IMAGE PADDOCK ===== */
+/* ===== FOND PADDOCK ===== */
 
-.bg{
+body::before{
+content:"";
 position:fixed;
 top:0;
 left:0;
-width:110%;
-height:110%;
+width:100%;
+height:100%;
 background:url("image/02F829CD-3211-4373-A1B6-03DBA17F2739.png") center/cover no-repeat;
 z-index:0;
-
-will-change:transform;
 animation:bgMove 60s ease-in-out infinite;
 }
 
-/* ===== LAYER 2 : LUMIÈRE ===== */
-
-.light{
+/* voile lisibilité */
+body::after{
+content:"";
 position:fixed;
 top:0;
 left:0;
 width:100%;
 height:100%;
 background:
-radial-gradient(circle at 60% 30%, rgba(255,200,120,0.25), transparent 60%),
 linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
-z-index:1;
-
-animation:lightPulse 18s ease-in-out infinite;
+z-index:0;
 }
 
-/* ===== LAYER 3 : NUAGES LÉGERS ===== */
-
-.clouds{
-position:fixed;
-top:0;
-left:0;
-width:200%;
-height:100%;
-opacity:0.05;
-background:url("https://www.transparenttextures.com/patterns/clouds.png");
-z-index:2;
-
-animation:cloudMove 120s linear infinite;
+/* animation douce */
+@keyframes bgMove{
+0%{transform:scale(1);}
+50%{transform:scale(1.05);}
+100%{transform:scale(1);}
 }
 
-/* ===== CONTENT ===== */
-
+/* contenu au-dessus */
 .page-content{
-position:relative;
-z-index:3;
-padding-top:80px;
+margin-top:70px;
 padding-bottom:40px;
+position:relative;
+z-index:1;
 }
 
 /* ===== HEADER ===== */
@@ -85,84 +108,170 @@ width:100%;
 height:70px;
 background:rgba(255,255,255,0.6);
 backdrop-filter:blur(10px);
-z-index:10;
+z-index:1000;
 display:flex;
 align-items:center;
 justify-content:center;
 }
 
+.header-left{
+position:absolute;
+left:12px;
+}
+
+.header-left img{
+height:40px;
+}
+
 header h1{
-font-size:18px;
 margin:0;
+font-size:20px;
+font-weight:700;
 color:#181E3B;
 }
 
-/* ===== UI ===== */
+/* ===== CLOCHE ===== */
+
+#bellBox{
+position:absolute;
+right:12px;
+font-size:22px;
+cursor:pointer;
+}
+
+#bellBadge{
+position:absolute;
+top:-6px;
+right:-6px;
+background:red;
+color:white;
+width:16px;
+height:16px;
+font-size:10px;
+border-radius:50%;
+display:none;
+align-items:center;
+justify-content:center;
+}
+
+/* ===== TITRES ===== */
 
 #welcome{
 text-align:center;
-font-size:32px;
+font-size:36px;
 font-weight:700;
 color:#181E3B;
-margin-bottom:10px;
+margin:4px 0 10px;
+}
+
+#opening-status{
+text-align:center;
+font-size:14px;
+font-weight:700;
+margin-bottom:8px;
+}
+
+/* ===== BANDEAU ===== */
+
+#alert-box{
+display:none;
+background:#E88B00;
+color:white;
+padding:8px 12px;
+font-size:12px;
+font-weight:600;
+margin:10px 0 15px;
+align-items:center;
+gap:8px;
+}
+
+/* ===== SECTIONS ===== */
+
+.section-title{
+background:#181E3B;
+color:white;
+display:inline-block;
+padding:6px 12px;
+margin:20px 15px 10px;
+border-radius:4px;
+font-size:14px;
 }
 
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:14px;
-padding:0 12px;
+gap:20px 14px;
+padding:0 15px;
+margin-bottom:10px;
 }
+
+/* ===== CARDS ===== */
 
 .card{
 background:rgba(255,255,255,0.85);
 border-radius:16px;
-height:90px;
+height:95px;
+width:92%;
+margin:0 auto;
 display:flex;
+flex-direction:column;
 align-items:center;
 justify-content:center;
-font-weight:700;
+text-align:center;
 box-shadow:0 6px 20px rgba(0,0,0,0.15);
-
-will-change:transform;
-animation:cardFloat 6s ease-in-out infinite;
+cursor:pointer;
+transition:transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-.card:nth-child(2){animation-delay:1s;}
-
-/* ===== ANIMATIONS ===== */
-
-@keyframes bgMove{
-0%{transform:translate(0,0) scale(1);}
-50%{transform:translate(-2%, -2%) scale(1.05);}
-100%{transform:translate(0,0) scale(1);}
+.card:active{
+transform:scale(0.97);
 }
 
-@keyframes lightPulse{
-0%{opacity:0.9;}
-50%{opacity:1;}
-100%{opacity:0.9;}
+.card img{
+width:34px;
+margin-bottom:4px;
 }
 
-@keyframes cloudMove{
-0%{transform:translateX(0);}
-100%{transform:translateX(-50%);}
+.card div{
+font-size:12px;
+font-weight:700;
+}
+  
+/* ===== LIST BTN ===== */
+
+.list-btn{
+background:rgba(255,255,255,0.85);
+margin:18px auto;
+padding:16px 16px;
+border-radius:18px;
+width:88%;
+display:flex;
+align-items:center;
+gap:12px;
+box-shadow:0 6px 20px rgba(0,0,0,0.15);
+font-weight:700;
+cursor:pointer;
+transition:transform 0.15s ease, box-shadow 0.15s ease;
 }
 
-@keyframes cardFloat{
-0%{transform:translateY(0);}
-50%{transform:translateY(-3px);}
-100%{transform:translateY(0);}
+.list-btn:active{
+transform:scale(0.98);
+}
+
+.list-btn img{
+width:22px;
 }
 
 /* ===== DARK MODE ===== */
 
 @media (prefers-color-scheme: dark){
 
-.light{
-background:
-radial-gradient(circle at 60% 30%, rgba(255,140,0,0.15), transparent 60%),
-linear-gradient(180deg, rgba(5,7,12,0.8), rgba(5,7,12,0.9));
+body::after{
+background:linear-gradient(
+180deg,
+rgba(5,7,12,0.7),
+rgba(5,7,12,0.85)
+);
 }
 
 header{
@@ -174,8 +283,14 @@ header h1,
 color:white;
 }
 
-.card{
+.header-left img{
+filter:brightness(0) invert(1);
+}
+
+.card,
+.list-btn{
 background:rgba(27,31,42,0.85);
+box-shadow:0 15px 40px rgba(0,0,0,0.6);
 color:white;
 }
 
@@ -186,25 +301,65 @@ color:white;
 
 <body>
 
-<!-- LAYERS -->
-<div class="bg"></div>
-<div class="light"></div>
-<div class="clouds"></div>
-
 <header>
+
+<div class="header-left">
+<img src="image/logo.png">
+</div>
+
 <h1>ECURIE DAMIEN SIRI</h1>
+
+<div id="bellBox" onclick="go('notifications.html')">
+🔔
+<span id="bellBadge"></span>
+</div>
+
 </header>
 
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
 
+<div id="opening-status"></div>
+
+<div id="alert-box"></div>
+
+<div class="section-title">ESPACES</div>
+
 <div class="grid">
-<div class="card">TRAVAIL</div>
-<div class="card">PADDOCK</div>
+<div class="card" onclick="go('travail.html')"><img src="image/travail.svg"><div>TRAVAIL</div></div>
+<div class="card" onclick="go('paddocks.html')"><img src="image/paddock.svg"><div>PADDOCK</div></div>
 </div>
 
+<div class="list-btn" onclick="go('plan.html')"><img src="image/plan.svg"> PLAN INTERACTIF</div>
+
+<div class="section-title">PRATIQUE</div>
+
+<div class="grid">
+<div class="card" onclick="go('horaires.html')"><img src="image/time.svg"><div>HORAIRES</div></div>
+<div class="card" onclick="go('meteo.html')"><img src="image/meteo.svg"><div>MÉTÉO</div></div>
+<div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')"><img src="image/cavasoft.svg"><div>COURS</div></div>
+<div class="card" onclick="go('service.html')"><img src="image/service.svg"><div>SERVICES</div></div>
+<div class="card" onclick="go('concours.html')"><img src="image/concours.svg"><div>CONCOURS</div></div>
+<div class="card" onclick="go('soins.html')"><img src="image/soins.svg"><div>SOINS</div></div>
 </div>
+
+<div class="section-title">AUTRES</div>
+
+<div class="list-btn" onclick="go('laverie.html')"><img src="image/laverie.svg"> LAVERIE</div>
+<div class="list-btn" onclick="openExternal('tarifs.pdf')"><img src="image/tarif.svg"> TARIFS</div>
+
+<div class="section-title">COMPTE</div>
+
+<div class="list-btn" onclick="go('mes-commandes.html')"><img src="image/compte.svg"> MES COMMANDES</div>
+<div class="list-btn" onclick="go('mesreservations.html')"><img src="image/reservation.svg"> MES RÉSERVATIONS</div>
+<div class="list-btn" onclick="go('panier.html')"><img src="image/panier.svg"> MON PANIER</div>
+</div>
+
+<script>
+function go(url){window.location.href=url;}
+function openExternal(url){window.open(url,"_blank");}
+</script>
 
 </body>
 </html>
