@@ -65,11 +65,9 @@ width:100%;
 height:100%;
 background:url("image/02F829CD-3211-4373-A1B6-03DBA17F2739.png") center/cover no-repeat;
 z-index:0;
-opacity:0.9;
 animation:bgMove 60s ease-in-out infinite;
 }
 
-/* voile lisibilité */
 body::after{
 content:"";
 position:fixed;
@@ -84,30 +82,31 @@ rgba(255,255,255,0.75)
 z-index:0;
 }
 
-/* animation fond */
 @keyframes bgMove{
 0%{transform:scale(1);}
 50%{transform:scale(1.05);}
 100%{transform:scale(1);}
 }
 
-/* ===== CHEVAL ===== */
+/* ===== CHEVAL (FIX VISIBLE) ===== */
 
 .horse{
 position:fixed;
-bottom:10px;
-left:-120px;
-width:120px;
+bottom:20px;
+left:-80px;
+width:140px;
 color:#000;
-opacity:0.06;
-z-index:0;
+opacity:0.25;
+z-index:2;
 pointer-events:none;
-animation:horseWalk 45s linear infinite;
+
+animation:horseWalk 20s linear infinite;
+filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));
 }
 
 @keyframes horseWalk{
 0%{transform:translateX(0);}
-100%{transform:translateX(120vw);}
+100%{transform:translateX(130vw);}
 }
 
 /* HEADER */
@@ -309,7 +308,7 @@ color:white;
 
 .horse{
 color:white;
-opacity:0.04;
+opacity:0.15;
 }
 
 }
