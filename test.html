@@ -54,7 +54,7 @@ background:#f4f4f4;
 overflow-y:auto;
 }
 
-/* ===== FOND ===== */
+/* ===== FOND PADDOCK ===== */
 
 body::before{
 content:"";
@@ -68,6 +68,8 @@ z-index:0;
 animation:bgMove 60s ease-in-out infinite;
 }
 
+/* ===== LUMIÈRE ===== */
+
 body::after{
 content:"";
 position:fixed;
@@ -75,9 +77,14 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
+background:
+radial-gradient(circle at 60% 30%, rgba(255,200,120,0.25), transparent 60%),
+linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
+animation:lightShift 20s ease-in-out infinite;
 z-index:0;
 }
+
+/* ===== ANIMATIONS ===== */
 
 @keyframes bgMove{
 0%{transform:scale(1);}
@@ -85,26 +92,32 @@ z-index:0;
 100%{transform:scale(1);}
 }
 
+@keyframes lightShift{
+0%{opacity:0.9;}
+50%{opacity:1;}
+100%{opacity:0.9;}
+}
+
 /* ===== CHEVAL ===== */
 
 .horse{
 position:fixed;
-bottom:20px;
-left:10px;
-width:180px;
-opacity:0.08;
+bottom:10px;
+left:5%;
+width:140px;
+color:#000;
+opacity:0.07;
 z-index:0;
-
-animation:horseMove 20s ease-in-out infinite;
+animation:horseMove 25s ease-in-out infinite;
 }
 
 @keyframes horseMove{
-0%{transform:translateX(0);}
-50%{transform:translateX(20px);}
-100%{transform:translateX(0);}
+0%{transform:translateX(0) translateY(0);}
+50%{transform:translateX(15px) translateY(-3px);}
+100%{transform:translateX(0) translateY(0);}
 }
 
-/* ===== CONTENT ===== */
+/* ===== CONTENU ===== */
 
 .page-content{
 margin-top:70px;
@@ -179,14 +192,39 @@ color:#181E3B;
 margin:4px 0 10px;
 }
 
+#opening-status{
+text-align:center;
+font-size:14px;
+font-weight:700;
+margin-bottom:8px;
+}
+
+#alert-box{
+display:none;
+background:#E88B00;
+color:white;
+padding:8px 12px;
+font-size:12px;
+font-weight:600;
+margin:10px 0 15px;
+}
+
+.section-title{
+background:#181E3B;
+color:white;
+display:inline-block;
+padding:6px 12px;
+margin:20px 15px 10px;
+border-radius:4px;
+font-size:14px;
+}
+
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:20px 14px;
 padding:0 15px;
 }
-
-/* ===== CARDS ===== */
 
 .card{
 background:rgba(255,255,255,0.85);
@@ -195,17 +233,50 @@ height:95px;
 width:92%;
 margin:0 auto;
 display:flex;
+flex-direction:column;
 align-items:center;
 justify-content:center;
+text-align:center;
 box-shadow:0 6px 20px rgba(0,0,0,0.15);
+cursor:pointer;
 }
 
-/* ===== DARK ===== */
+.card img{
+width:34px;
+margin-bottom:4px;
+}
+
+.card div{
+font-size:12px;
+font-weight:700;
+}
+
+.list-btn{
+background:rgba(255,255,255,0.85);
+margin:18px auto;
+padding:16px;
+border-radius:18px;
+width:88%;
+display:flex;
+align-items:center;
+gap:12px;
+box-shadow:0 6px 20px rgba(0,0,0,0.15);
+font-weight:700;
+cursor:pointer;
+}
+
+.list-btn img{
+width:22px;
+}
+
+/* ===== DARK MODE ===== */
 
 @media (prefers-color-scheme: dark){
 
 body::after{
-background:linear-gradient(180deg, rgba(5,7,12,0.7), rgba(5,7,12,0.85));
+background:
+radial-gradient(circle at 60% 30%, rgba(255,140,0,0.15), transparent 60%),
+linear-gradient(180deg, rgba(5,7,12,0.7), rgba(5,7,12,0.85));
 }
 
 header{
@@ -217,9 +288,19 @@ header h1,
 color:white;
 }
 
-.card{
+.header-left img{
+filter:brightness(0) invert(1);
+}
+
+.card,
+.list-btn{
 background:rgba(27,31,42,0.85);
 color:white;
+}
+
+.horse{
+color:white;
+opacity:0.05;
 }
 
 }
@@ -229,9 +310,9 @@ color:white;
 
 <body>
 
-<!-- CHEVAL SVG -->
-<svg class="horse" viewBox="0 0 200 100">
-<path d="M10 80 Q40 20 80 60 T150 70 Q170 80 180 60" fill="none" stroke="black" stroke-width="3"/>
+<!-- CHEVAL -->
+<svg class="horse" viewBox="0 0 512 512">
+<path fill="currentColor" d="M256 50 C180 60,120 120,110 200 C100 260,140 320,200 340 C230 350,260 350,300 340 C360 320,400 260,390 200 C380 120,320 60,256 50Z M200 340 L180 420 L210 420 L230 350 M300 340 L320 420 L350 420 L330 350Z"/>
 </svg>
 
 <header>
@@ -250,23 +331,28 @@ color:white;
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
+<div id="opening-status"></div>
+<div id="alert-box"></div>
+
+<div class="section-title">ESPACES</div>
 
 <div class="grid">
-<div class="card" onclick="go('travail.html')">TRAVAIL</div>
-<div class="card" onclick="go('paddocks.html')">PADDOCK</div>
+<div class="card" onclick="go('travail.html')"><img src="image/travail.svg"><div>TRAVAIL</div></div>
+<div class="card" onclick="go('paddocks.html')"><img src="image/paddock.svg"><div>PADDOCK</div></div>
 </div>
+
+<div class="list-btn" onclick="go('plan.html')"><img src="image/plan.svg"> PLAN INTERACTIF</div>
 
 </div>
 
-<!-- JS navigation -->
 <script>
 function go(url){window.location.href=url;}
 function openExternal(url){window.open(url,"_blank");}
 </script>
 
-<!-- 🔔 SCRIPT CLOCHE COMPLET -->
+<!-- SCRIPT CLOCHE -->
 <script>
-
+// (identique à ton code d’origine)
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
 const STORAGE_KEY="alerts_lues";
@@ -333,7 +419,6 @@ badge.style.display="none";
 
 updateBell();
 setInterval(updateBell,60000);
-
 </script>
 
 </body>
