@@ -17,83 +17,18 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
-<!-- OneSignal -->
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-
-<script>
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-OneSignalDeferred.push(async function(OneSignal) {
-
-await OneSignal.init({
-appId:"85a477ff-3d8d-4975-960d-c7e69100a0ff",
-notifyButton:{enable:false},
-promptOptions:{
-slidedown:{
-prompts:[{
-type:"push",
-autoPrompt:true,
-text:{
-actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",
-acceptButton:"Autoriser",
-cancelButton:"Plus tard"
-}
-}]
-}
-}
-});
-
-});
-</script>
-
 <style>
 
-/* ===== BACKGROUND ANIMÉ ===== */
+/* ===== FOND PADDOCK ===== */
 
 body{
 margin:0;
 font-family:'Montserrat',sans-serif;
 overflow-y:auto;
-
-/* dégradé animé */
-background:
-radial-gradient(circle at 20% 20%, rgba(24,30,59,0.08), transparent 40%),
-radial-gradient(circle at 80% 0%, rgba(232,139,0,0.10), transparent 40%),
-linear-gradient(120deg, #ffffff, #f4f4f4, #ffffff);
-
-background-size:200% 200%;
-animation:bgMove 30s ease infinite;
+background:#f4f4f4;
 }
 
-/* animation principale */
-@keyframes bgMove{
-0%{background-position:0% 50%;}
-50%{background-position:100% 50%;}
-100%{background-position:0% 50%;}
-}
-
-/* halo flottant */
-body::after{
-content:"";
-position:fixed;
-top:-20%;
-left:-20%;
-width:140%;
-height:140%;
-background:
-radial-gradient(circle at 30% 30%, rgba(232,139,0,0.15), transparent 40%),
-radial-gradient(circle at 70% 60%, rgba(24,30,59,0.10), transparent 40%);
-animation:floatGlow 40s linear infinite;
-pointer-events:none;
-z-index:0;
-}
-
-@keyframes floatGlow{
-0%{transform:translate(0,0) rotate(0deg);}
-50%{transform:translate(-5%, -5%) rotate(10deg);}
-100%{transform:translate(0,0) rotate(0deg);}
-}
-
-/* grain léger */
+/* image paddock */
 body::before{
 content:"";
 position:fixed;
@@ -101,10 +36,33 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-pointer-events:none;
-opacity:0.04;
-background-image:url("https://www.transparenttextures.com/patterns/asfalt-light.png");
+background:url("image/paddock-bg.jpg") center/cover no-repeat;
 z-index:0;
+animation:bgZoom 40s ease-in-out infinite;
+}
+
+/* voile lisibilité */
+body::after{
+content:"";
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:linear-gradient(
+180deg,
+rgba(255,255,255,0.85) 0%,
+rgba(255,255,255,0.75) 40%,
+rgba(255,255,255,0.9) 100%
+);
+z-index:0;
+}
+
+/* animation douce */
+@keyframes bgZoom{
+0%{transform:scale(1);}
+50%{transform:scale(1.05);}
+100%{transform:scale(1);}
 }
 
 /* contenu au-dessus */
@@ -121,7 +79,7 @@ top:0;
 left:0;
 width:100%;
 height:70px;
-background:transparent;
+background:rgba(255,255,255,0.6);
 backdrop-filter:blur(10px);
 z-index:1000;
 display:flex;
@@ -230,8 +188,7 @@ margin-bottom:10px;
 /* ===== CARDS ===== */
 
 .card{
-background:rgba(255,255,255,0.75);
-backdrop-filter:blur(6px);
+background:rgba(255,255,255,0.85);
 border-radius:16px;
 height:95px;
 width:92%;
@@ -241,14 +198,13 @@ flex-direction:column;
 align-items:center;
 justify-content:center;
 text-align:center;
-box-shadow:0 8px 25px rgba(0,0,0,0.08);
+box-shadow:0 8px 25px rgba(0,0,0,0.15);
 cursor:pointer;
-transition:transform 0.15s ease, box-shadow 0.15s ease;
+transition:transform 0.15s ease;
 }
 
 .card:active{
 transform:scale(0.97);
-box-shadow:0 4px 12px rgba(0,0,0,0.15);
 }
 
 .card img{
@@ -264,8 +220,7 @@ font-weight:700;
 /* ===== LIST BTN ===== */
 
 .list-btn{
-background:rgba(255,255,255,0.75);
-backdrop-filter:blur(6px);
+background:rgba(255,255,255,0.85);
 margin:18px auto;
 padding:16px 16px;
 border-radius:18px;
@@ -273,15 +228,9 @@ width:88%;
 display:flex;
 align-items:center;
 gap:12px;
-box-shadow:0 8px 25px rgba(0,0,0,0.08);
+box-shadow:0 8px 25px rgba(0,0,0,0.15);
 font-weight:700;
 cursor:pointer;
-transition:transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.list-btn:active{
-transform:scale(0.98);
-box-shadow:0 4px 12px rgba(0,0,0,0.15);
 }
 
 .list-btn img{
@@ -292,14 +241,16 @@ width:22px;
 
 @media (prefers-color-scheme: dark){
 
-body{
-background:
-radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05), transparent 40%),
-radial-gradient(circle at 80% 0%, rgba(232,139,0,0.18), transparent 40%),
-linear-gradient(120deg, #05070c, #0f1115, #05070c);
+body::after{
+background:linear-gradient(
+180deg,
+rgba(5,7,12,0.7),
+rgba(5,7,12,0.85)
+);
+}
 
-background-size:200% 200%;
-animation:bgMove 30s ease infinite;
+header{
+background:rgba(10,12,18,0.6);
 }
 
 header h1,
@@ -313,12 +264,7 @@ filter:brightness(0) invert(1);
 
 .card,
 .list-btn{
-background:rgba(27,31,42,0.7);
-box-shadow:0 15px 40px rgba(0,0,0,0.6);
-}
-
-.card div,
-.list-btn{
+background:rgba(27,31,42,0.85);
 color:white;
 }
 
@@ -330,64 +276,29 @@ color:white;
 <body>
 
 <header>
-
 <div class="header-left">
 <img src="image/logo.png">
 </div>
 
 <h1>ECURIE DAMIEN SIRI</h1>
 
-<div id="bellBox" onclick="go('notifications.html')">
-🔔
-<span id="bellBadge"></span>
-</div>
-
+<div id="bellBox">🔔<span id="bellBadge"></span></div>
 </header>
 
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
-
 <div id="opening-status"></div>
-
 <div id="alert-box"></div>
 
 <div class="section-title">ESPACES</div>
 
 <div class="grid">
-<div class="card" onclick="go('travail.html')"><img src="image/travail.svg"><div>TRAVAIL</div></div>
-<div class="card" onclick="go('paddocks.html')"><img src="image/paddock.svg"><div>PADDOCK</div></div>
+<div class="card">TRAVAIL</div>
+<div class="card">PADDOCK</div>
 </div>
 
-<div class="list-btn" onclick="go('plan.html')"><img src="image/plan.svg"> PLAN INTERACTIF</div>
-
-<div class="section-title">PRATIQUE</div>
-
-<div class="grid">
-<div class="card" onclick="go('horaires.html')"><img src="image/time.svg"><div>HORAIRES</div></div>
-<div class="card" onclick="go('meteo.html')"><img src="image/meteo.svg"><div>MÉTÉO</div></div>
-<div class="card" onclick="openExternal('https://ce-grand-rang.cavasoft.fr')"><img src="image/cavasoft.svg"><div>COURS</div></div>
-<div class="card" onclick="go('service.html')"><img src="image/service.svg"><div>SERVICES</div></div>
-<div class="card" onclick="go('concours.html')"><img src="image/concours.svg"><div>CONCOURS</div></div>
-<div class="card" onclick="go('soins.html')"><img src="image/soins.svg"><div>SOINS</div></div>
 </div>
-
-<div class="section-title">AUTRES</div>
-
-<div class="list-btn" onclick="go('laverie.html')"><img src="image/laverie.svg"> LAVERIE</div>
-<div class="list-btn" onclick="openExternal('tarifs.pdf')"><img src="image/tarif.svg"> TARIFS</div>
-
-<div class="section-title">COMPTE</div>
-
-<div class="list-btn" onclick="go('mes-commandes.html')"><img src="image/compte.svg"> MES COMMANDES</div>
-<div class="list-btn" onclick="go('mesreservations.html')"><img src="image/reservation.svg"> MES RÉSERVATIONS</div>
-<div class="list-btn" onclick="go('panier.html')"><img src="image/panier.svg"> MON PANIER</div>
-</div>
-
-<script>
-function go(url){window.location.href=url;}
-function openExternal(url){window.open(url,"_blank");}
-</script>
 
 </body>
 </html>
