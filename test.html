@@ -3,7 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <title>Ecurie Damien Siri</title>
 
@@ -11,49 +11,47 @@
 
 <style>
 
-/* ===== BASE ===== */
+/* ===== RESET ===== */
 
 body{
 margin:0;
 font-family:'Montserrat',sans-serif;
-overflow-y:auto;
+overflow-x:hidden;
 background:#f4f4f4;
 }
 
-/* ===== PADDOCK ===== */
+/* ===== LAYER 1 : IMAGE PADDOCK ===== */
 
-body::before{
-content:"";
+.bg{
 position:fixed;
 top:0;
 left:0;
-width:100%;
-height:100%;
+width:110%;
+height:110%;
 background:url("image/paddock-bg.jpg") center/cover no-repeat;
 z-index:0;
 
-/* mouvement lent */
-animation:moveBg 60s ease-in-out infinite;
+will-change:transform;
+animation:bgMove 60s ease-in-out infinite;
 }
 
-/* ===== LUMIÈRE / ATMOSPHÈRE ===== */
+/* ===== LAYER 2 : LUMIÈRE ===== */
 
-body::after{
-content:"";
+.light{
 position:fixed;
 top:0;
 left:0;
 width:100%;
 height:100%;
 background:
-radial-gradient(circle at 50% 30%, rgba(255,200,120,0.25), transparent 60%),
+radial-gradient(circle at 60% 30%, rgba(255,200,120,0.25), transparent 60%),
 linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
-z-index:0;
+z-index:1;
 
-animation:lightShift 20s ease-in-out infinite;
+animation:lightPulse 18s ease-in-out infinite;
 }
 
-/* ===== NUAGES ===== */
+/* ===== LAYER 3 : NUAGES LÉGERS ===== */
 
 .clouds{
 position:fixed;
@@ -61,19 +59,19 @@ top:0;
 left:0;
 width:200%;
 height:100%;
+opacity:0.05;
 background:url("https://www.transparenttextures.com/patterns/clouds.png");
-opacity:0.08;
-z-index:0;
+z-index:2;
 
 animation:cloudMove 120s linear infinite;
 }
 
-/* ===== CONTENU ===== */
+/* ===== CONTENT ===== */
 
 .page-content{
 position:relative;
-z-index:1;
-margin-top:70px;
+z-index:3;
+padding-top:80px;
 padding-bottom:40px;
 }
 
@@ -87,79 +85,60 @@ width:100%;
 height:70px;
 background:rgba(255,255,255,0.6);
 backdrop-filter:blur(10px);
-z-index:1000;
+z-index:10;
 display:flex;
 align-items:center;
 justify-content:center;
 }
 
-.header-left{
-position:absolute;
-left:12px;
-}
-
-.header-left img{
-height:40px;
-}
-
 header h1{
+font-size:18px;
 margin:0;
-font-size:20px;
-font-weight:700;
 color:#181E3B;
 }
 
-/* ===== TITRES ===== */
+/* ===== UI ===== */
 
 #welcome{
 text-align:center;
-font-size:36px;
+font-size:32px;
 font-weight:700;
 color:#181E3B;
-margin:4px 0 10px;
+margin-bottom:10px;
 }
-
-/* ===== GRID ===== */
 
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:20px 14px;
-padding:0 15px;
+gap:14px;
+padding:0 12px;
 }
-
-/* ===== CARDS ===== */
 
 .card{
 background:rgba(255,255,255,0.85);
 border-radius:16px;
-height:95px;
+height:90px;
 display:flex;
 align-items:center;
 justify-content:center;
-box-shadow:0 8px 25px rgba(0,0,0,0.2);
+font-weight:700;
+box-shadow:0 6px 20px rgba(0,0,0,0.15);
 
-/* petit flottement */
-animation:floatCard 6s ease-in-out infinite;
+will-change:transform;
+animation:cardFloat 6s ease-in-out infinite;
 }
 
-.card:nth-child(2){
-animation-delay:1s;
-}
-
-.card:nth-child(3){
-animation-delay:2s;
-}
+.card:nth-child(2){animation-delay:1s;}
 
 /* ===== ANIMATIONS ===== */
 
-@keyframes moveBg{
-0%{transform:scale(1) translate(0,0);}
-50%{transform:scale(1.05) translate(-1%, -1%);}
-100%{transform:scale(1) translate(0,0);}
+@keyframes bgMove{
+0%{transform:translate(0,0) scale(1);}
+50%{transform:translate(-2%, -2%) scale(1.05);}
+100%{transform:translate(0,0) scale(1);}
 }
 
-@keyframes lightShift{
+@keyframes lightPulse{
 0%{opacity:0.9;}
 50%{opacity:1;}
 100%{opacity:0.9;}
@@ -170,9 +149,9 @@ animation-delay:2s;
 100%{transform:translateX(-50%);}
 }
 
-@keyframes floatCard{
+@keyframes cardFloat{
 0%{transform:translateY(0);}
-50%{transform:translateY(-4px);}
+50%{transform:translateY(-3px);}
 100%{transform:translateY(0);}
 }
 
@@ -180,9 +159,9 @@ animation-delay:2s;
 
 @media (prefers-color-scheme: dark){
 
-body::after{
+.light{
 background:
-radial-gradient(circle at 50% 30%, rgba(255,140,0,0.15), transparent 60%),
+radial-gradient(circle at 60% 30%, rgba(255,140,0,0.15), transparent 60%),
 linear-gradient(180deg, rgba(5,7,12,0.8), rgba(5,7,12,0.9));
 }
 
@@ -193,10 +172,6 @@ background:rgba(10,12,18,0.6);
 header h1,
 #welcome{
 color:white;
-}
-
-.header-left img{
-filter:brightness(0) invert(1);
 }
 
 .card{
@@ -211,12 +186,12 @@ color:white;
 
 <body>
 
+<!-- LAYERS -->
+<div class="bg"></div>
+<div class="light"></div>
 <div class="clouds"></div>
 
 <header>
-<div class="header-left">
-<img src="image/logo.png">
-</div>
 <h1>ECURIE DAMIEN SIRI</h1>
 </header>
 
