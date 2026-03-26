@@ -17,7 +17,6 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
-<!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
 <script>
@@ -52,7 +51,7 @@ background:#f4f4f4;
 overflow-y:auto;
 }
 
-/* ===== FOND ===== */
+/* ===== FOND PADDOCK PREMIUM ===== */
 
 body::before{
 content:"";
@@ -65,29 +64,19 @@ background:url("image/02F829CD-3211-4373-A1B6-03DBA17F2739.png") center/cover no
 z-index:0;
 }
 
-/* ===== CHEVAL RÉALISTE ===== */
-
-.horse{
+/* voile léger premium */
+body::after{
+content:"";
 position:fixed;
-bottom:15px;
-left:-150px;
-width:180px;
-opacity:0.18;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:linear-gradient(
+rgba(255,255,255,0.82),
+rgba(255,255,255,0.72)
+);
 z-index:0;
-pointer-events:none;
-
-animation:horseWalk 25s linear infinite;
-}
-
-/* silhouette réaliste */
-.horse path{
-fill:#000;
-}
-
-/* animation déplacement */
-@keyframes horseWalk{
-0%{transform:translateX(0);}
-100%{transform:translateX(130vw);}
 }
 
 /* HEADER */
@@ -98,23 +87,13 @@ top:0;
 left:0;
 width:100%;
 height:70px;
-background:#f4f4f4;
+background:rgba(255,255,255,0.75);
+backdrop-filter:blur(10px);
 z-index:1000;
 display:flex;
 align-items:center;
 justify-content:center;
 }
-
-/* contenu au-dessus */
-
-.page-content{
-position:relative;
-z-index:1;
-margin-top:70px;
-padding-bottom:40px;
-}
-
-/* ===== RESTE IDENTIQUE ===== */
 
 .header-left{
 position:absolute;
@@ -131,6 +110,8 @@ font-size:20px;
 font-weight:700;
 color:#181E3B;
 }
+
+/* CLOCHE */
 
 #bellBox{
 position:absolute;
@@ -154,6 +135,17 @@ align-items:center;
 justify-content:center;
 }
 
+/* PAGE */
+
+.page-content{
+margin-top:70px;
+padding-bottom:40px;
+position:relative;
+z-index:1;
+}
+
+/* TITRES */
+
 #welcome{
 text-align:center;
 font-size:36px;
@@ -169,6 +161,8 @@ font-weight:700;
 margin-bottom:8px;
 }
 
+/* BANDEAU ORANGE */
+
 #alert-box{
 display:none;
 background:#E88B00;
@@ -177,7 +171,11 @@ padding:8px 12px;
 font-size:12px;
 font-weight:600;
 margin:10px 0 15px;
+align-items:center;
+gap:8px;
 }
+
+/* SECTIONS */
 
 .section-title{
 background:#181E3B;
@@ -196,9 +194,9 @@ gap:20px 14px;
 padding:0 15px;
 margin-bottom:10px;
 }
-
+  
 .card{
-background:white;
+background:rgba(255,255,255,0.9);
 border-radius:16px;
 height:95px;
 width:92%;
@@ -207,8 +205,14 @@ display:flex;
 flex-direction:column;
 align-items:center;
 justify-content:center;
-box-shadow:0 3px 8px rgba(0,0,0,0.08);
+text-align:center;
+box-shadow:0 6px 20px rgba(0,0,0,0.12);
 cursor:pointer;
+transition:transform 0.15s ease;
+}
+
+.card:active{
+transform:scale(0.97);
 }
 
 .card img{
@@ -216,8 +220,13 @@ width:34px;
 margin-bottom:4px;
 }
 
+.card div{
+font-size:12px;
+font-weight:700;
+}
+  
 .list-btn{
-background:white;
+background:rgba(255,255,255,0.9);
 margin:18px auto;
 padding:16px;
 border-radius:18px;
@@ -225,7 +234,7 @@ width:88%;
 display:flex;
 align-items:center;
 gap:12px;
-box-shadow:0 3px 8px rgba(0,0,0,0.08);
+box-shadow:0 6px 20px rgba(0,0,0,0.12);
 font-weight:700;
 cursor:pointer;
 }
@@ -234,7 +243,7 @@ cursor:pointer;
 width:22px;
 }
 
-/* DARK */
+/* DARK MODE */
 
 @media (prefers-color-scheme: dark){
 
@@ -243,8 +252,15 @@ background:#05070c;
 color:white;
 }
 
+body::after{
+background:linear-gradient(
+rgba(5,7,12,0.75),
+rgba(5,7,12,0.9)
+);
+}
+
 header{
-background:#05070c;
+background:rgba(10,12,18,0.75);
 }
 
 header h1{
@@ -252,18 +268,17 @@ color:white;
 }
 
 .header-left img{
-filter:brightness(0) invert(1);
+filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.8));
+}
+
+#welcome{
+color:white;
 }
 
 .card,
 .list-btn{
-background:#1b1f2a;
+background:rgba(27,31,42,0.9);
 color:white;
-}
-
-.horse{
-opacity:0.12;
-filter:invert(1);
 }
 
 }
@@ -273,12 +288,8 @@ filter:invert(1);
 
 <body>
 
-<!-- 🐎 CHEVAL RÉALISTE -->
-<svg class="horse" viewBox="0 0 64 64">
-<path d="M2 42 C6 28,18 18,30 18 C42 18,54 28,58 40 L54 42 L50 40 L48 48 L44 48 L42 42 L32 42 L30 48 L26 48 L24 42 Z"/>
-</svg>
-
 <header>
+
 <div class="header-left">
 <img src="image/logo.png">
 </div>
@@ -289,8 +300,9 @@ filter:invert(1);
 🔔
 <span id="bellBadge"></span>
 </div>
+
 </header>
 
 <div class="page-content">
 
-<!-- TOUT TON CONTENU RESTE IDENTIQUE -->
+<!-- TOUT TON CONTENU RESTE STRICTEMENT IDENTIQUE -->
