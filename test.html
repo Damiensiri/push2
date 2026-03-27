@@ -285,7 +285,7 @@ background:#05070c;
 color:white;
 }
 
-/* voile sombre uniquement en dark */
+/* voile sombre */
 body::after{
 background:linear-gradient(
 rgba(5,7,12,0.75),
@@ -293,6 +293,7 @@ rgba(5,7,12,0.9)
 );
 }
 
+/* header */
 header{
 background:linear-gradient(
 rgba(20,25,35,0.35),
@@ -302,31 +303,24 @@ rgba(20,25,35,0.10)
 backdrop-filter:blur(20px) saturate(160%);
 -webkit-backdrop-filter:blur(20px) saturate(160%);
 
-/* ❌ on supprime la barre visible */
 border-bottom:none;
 
-/* lumière ultra subtile */
 box-shadow:
 inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
-}
-box-shadow:
-inset 0 1px 0 rgba(255,255,255,0.08),
-inset 0 -1px 0 rgba(0,0,0,0.6);
-
-border-bottom:1px solid rgba(255,255,255,0.08);
-}
-
+/* ✅ ICI TON TITRE BLANC */
 header h1{
 color:white;
 text-shadow:0 2px 8px rgba(0,0,0,0.6);
 }
 
+/* logo */
 .header-left img{
 filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.8));
 }
 
+/* contenu */
 #welcome{
 color:white;
 }
@@ -341,8 +335,11 @@ background:#1b1f2a;
 box-shadow:0 15px 40px rgba(0,0,0,0.6);
 }
 
-.card div{
+.card div,
+.list-btn{
 color:white;
+}
+
 }
 
 .list-btn{
