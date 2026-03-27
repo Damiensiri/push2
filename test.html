@@ -280,23 +280,33 @@ margin:18px auto;
 
 @media (prefers-color-scheme: dark){
 
-header{
-background:linear-gradient(
-rgba(20,25,35,0.35),
-rgba(20,25,35,0.10)
-);
-
-backdrop-filter:blur(20px) saturate(160%);
--webkit-backdrop-filter:blur(20px) saturate(160%);
-
-/* ❌ on supprime la barre visible */
-border-bottom:none;
-
-/* lumière ultra subtile */
-box-shadow:
-inset 0 1px 0 rgba(255,255,255,0.05);
+body{
+background:#05070c;
+color:white;
 }
 
+/* voile sombre uniquement en dark */
+body::after{
+background:linear-gradient(
+rgba(5,7,12,0.75),
+rgba(5,7,12,0.9)
+);
+}
+
+header{
+background:linear-gradient(
+rgba(20,25,35,0.65),
+rgba(20,25,35,0.25)
+);
+
+backdrop-filter:blur(18px) saturate(180%);
+-webkit-backdrop-filter:blur(18px) saturate(180%);
+
+box-shadow:
+inset 0 1px 0 rgba(255,255,255,0.08),
+inset 0 -1px 0 rgba(0,0,0,0.6);
+
+border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
 header h1{
