@@ -17,11 +17,13 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
+<!-- OneSignal -->
 <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 
 <script>
 window.OneSignalDeferred = window.OneSignalDeferred || [];
 OneSignalDeferred.push(async function(OneSignal) {
+
 await OneSignal.init({
 appId:"85a477ff-3d8d-4975-960d-c7e69100a0ff",
 notifyButton:{enable:false},
@@ -39,6 +41,7 @@ cancelButton:"Plus tard"
 }
 }
 });
+
 });
 </script>
 
@@ -48,7 +51,7 @@ body{
 margin:0;
 font-family:'Montserrat',sans-serif;
 background:#f4f4f4;
-overflow:hidden;
+overflow-y:auto;
 }
 
 /* HEADER */
@@ -80,7 +83,6 @@ margin:0;
 font-size:20px;
 font-weight:700;
 color:#181E3B;
-text-align:center;
 }
 
 /* CLOCHE */
@@ -107,36 +109,10 @@ align-items:center;
 justify-content:center;
 }
 
-/* APP WRAPPER */
-
-.app{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-}
-
-.scroll{
-position:absolute;
-top:70px;
-left:0;
-width:100%;
-height:calc(100% - 70px);
-
-overflow-y:auto;
--webkit-overflow-scrolling:touch;
-
-scrollbar-width:none;
-}
-
-.scroll::-webkit-scrollbar{
-display:none;
-}
-
 /* PAGE */
 
 .page-content{
+margin-top:70px;
 padding-bottom:40px;
 }
 
@@ -157,7 +133,7 @@ font-weight:700;
 margin-bottom:8px;
 }
 
-/* BANDEAU */
+/* BANDEAU ORANGE */
 
 #alert-box{
 display:none;
@@ -183,19 +159,17 @@ border-radius:4px;
 font-size:14px;
 }
 
-.eggs{
-font-size:28px;
-letter-spacing:6px;
-}
-
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
-gap:20px 14px;
+gap:20px 14px; /* vertical / horizontal */
 padding:0 15px;
-margin-bottom:10px;
 }
 
+.grid{
+margin-bottom:10px;
+}
+  
 .card{
 background:white;
 border-radius:16px;
@@ -226,11 +200,11 @@ margin-bottom:4px;
 font-size:12px;
 font-weight:700;
 }
-
+  
 .list-btn{
 background:white;
-margin:18px auto;
-padding:16px;
+margin:14px auto;
+padding:16px 16px;
 border-radius:18px;
 width:88%;
 display:flex;
@@ -239,13 +213,23 @@ gap:12px;
 box-shadow:0 3px 8px rgba(0,0,0,0.08);
 font-weight:700;
 cursor:pointer;
+transition:transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.list-btn:active{
+transform:scale(0.98);
+box-shadow:0 2px 6px rgba(0,0,0,0.15);
 }
 
 .list-btn img{
 width:22px;
 }
 
-/* DARK */
+.list-btn{
+margin:18px auto;
+}
+
+/* DARK MODE */
 
 @media (prefers-color-scheme: dark){
 
@@ -263,20 +247,27 @@ color:white;
 }
 
 .header-left img{
-filter:brightness(0) invert(1);
+filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.8));
 }
 
 #welcome{
 color:white;
 }
 
-.card,
+.card{
+background:#1b1f2a;
+box-shadow:0 15px 40px rgba(0,0,0,0.6);
+}
+
 .list-btn{
 background:#1b1f2a;
 box-shadow:0 15px 40px rgba(0,0,0,0.6);
 }
 
-.card div,
+.card div{
+color:white;
+}
+
 .list-btn{
 color:white;
 }
@@ -289,28 +280,26 @@ color:white;
 <body>
 
 <header>
+
 <div class="header-left">
 <img src="image/logo.png">
 </div>
 
-<h1>
-ECURIE DAMIEN SIRI
-<span class="eggs"><br></span>
-</h1>
+<h1>ECURIE DAMIEN SIRI</h1>
 
 <div id="bellBox" onclick="go('notifications.html')">
 🔔
 <span id="bellBadge"></span>
 </div>
-</header>
 
-<div class="app">
-<div class="scroll">
+</header>
 
 <div class="page-content">
 
 <div id="welcome">BIENVENUE</div>
+
 <div id="opening-status"></div>
+
 <div id="alert-box"></div>
 
 <div class="section-title">ESPACES</div>
@@ -343,14 +332,114 @@ ECURIE DAMIEN SIRI
 <div class="list-btn" onclick="go('mes-commandes.html')"><img src="image/compte.svg"> MES COMMANDES</div>
 <div class="list-btn" onclick="go('mesreservations.html')"><img src="image/reservation.svg"> MES RÉSERVATIONS</div>
 <div class="list-btn" onclick="go('panier.html')"><img src="image/panier.svg"> MON PANIER</div>
-
-</div>
-</div>
 </div>
 
 <script>
+
 function go(url){window.location.href=url;}
 function openExternal(url){window.open(url,"_blank");}
+
+const STATUTS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=statuts";
+const HORAIRES_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=horaires";
+const EXCEPTIONS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=exceptions";
+
+function formatTime(val){
+
+if(!val)return"--:--";
+
+if(val.includes("T")){
+const d=new Date(val);
+return d.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+}
+
+return val.substring(0,5);
+
+}
+
+async function load(){
+
+const [horaires,exceptions,statuts]=await Promise.all([
+fetch(HORAIRES_URL).then(r=>r.json()),
+fetch(EXCEPTIONS_URL).then(r=>r.json()),
+fetch(STATUTS_URL).then(r=>r.json())
+]);
+
+updateUI(horaires,exceptions,statuts);
+
+}
+
+function updateUI(horaires,exceptions,statuts){
+
+const status=document.getElementById("opening-status");
+const alertBox=document.getElementById("alert-box");
+
+const accueil=statuts.find(e=>e.espace==="accueil");
+
+if(accueil && accueil.alerte && accueil.alerte.trim()!==""){
+alertBox.style.display="flex";
+alertBox.innerHTML="⚠️ "+accueil.alerte;
+}else{
+alertBox.style.display="none";
+}
+
+const now=new Date();
+
+const today=
+now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
+
+const ex = exceptions.find(e=>{
+  if(!e.date) return false;
+
+  const d = new Date(e.date);
+
+  const local =
+    d.getFullYear() + "-" +
+    String(d.getMonth()+1).padStart(2,"0") + "-" +
+    String(d.getDate()).padStart(2,"0");
+
+  return local === today;
+});
+
+if(ex){
+status.style.color="#E88B00";
+status.textContent=ex.message;
+return;
+}
+
+const todayName=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][new Date().getDay()];
+
+const h=horaires.find(r=>r.jour.toLowerCase()===todayName);
+
+if(!h)return;
+
+const open=formatTime(h.ouvert);
+const close=formatTime(h.ferme);
+
+const [oh,om]=open.split(":");
+const [ch,cm]=close.split(":");
+
+const nowTime=new Date();
+
+const o=new Date();o.setHours(oh,om,0,0);
+const c=new Date();c.setHours(ch,cm,0,0);
+
+if(nowTime>=o && nowTime<=c){
+status.style.color="#2e7d32";
+status.textContent=`Écuries ouvertes ${open} – ${close}`;
+}else{
+status.style.color="#c0392b";
+status.textContent=`Écuries fermées ${open} – ${close}`;
+}
+
+}
+
+load();
+setInterval(load,10000);
+
+["paddocks.html","travail.html","plan.html","horaires.html"].forEach(p=>{
+fetch(p,{cache:"force-cache"}).catch(()=>{});
+});
+
 </script>
 
 <script>
