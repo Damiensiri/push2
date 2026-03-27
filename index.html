@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
 <title>Ecurie Damien Siri</title>
 
 <link rel="manifest" href="manifest.json">
 
 <link rel="apple-touch-icon" href="image/icon-192x192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Ecurie DS">
 <meta name="theme-color" content="#f4f4f4">
 
@@ -61,9 +61,26 @@ position:fixed;
 top:0;
 left:0;
 width:100%;
-height:70px;
-background:#f4f4f4;
+
+/* 🔥 SAFE AREA */
+padding-top: env(safe-area-inset-top);
+height: calc(70px + env(safe-area-inset-top));
+
+/* 🔥 verre iOS */
+background:linear-gradient(
+rgba(255,255,255,0.45),
+rgba(255,255,255,0.10)
+);
+
+backdrop-filter:blur(20px) saturate(180%);
+-webkit-backdrop-filter:blur(20px) saturate(180%);
+
+/* reflet Apple */
+box-shadow:
+inset 0 1px 0 rgba(255,255,255,0.6);
+
 z-index:1000;
+
 display:flex;
 align-items:center;
 justify-content:center;
@@ -82,9 +99,9 @@ header h1{
 margin:0;
 font-size:20px;
 font-weight:700;
-color:#181E3B;
+color:#181E3B; /* ✅ comme BIENVENUE */
+text-shadow:none; /* ❌ enlève l’effet blanc glow */
 }
-
 /* CLOCHE */
 
 #bellBox{
@@ -112,8 +129,10 @@ justify-content:center;
 /* PAGE */
 
 .page-content{
-margin-top:70px;
+margin-top: calc(70px + env(safe-area-inset-top));
 padding-bottom:40px;
+position:relative;
+z-index:1;
 }
 
 /* TITRES */
@@ -145,6 +164,34 @@ font-weight:600;
 margin:10px 0 15px;
 align-items:center;
 gap:8px;
+}
+
+/* ===== FOND PADDOCK ===== */
+
+body::before{
+content:"";
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:url("image/02F829CD-3211-4373-A1B6-03DBA17F2739.png") center/cover no-repeat;
+z-index:0;
+}
+
+/* voile pour lisibilité (important) */
+body::after{
+content:"";
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:linear-gradient(
+rgba(255,255,255,0.65),
+rgba(255,255,255,0.55)
+);
+z-index:0;
 }
 
 /* SECTIONS */
@@ -229,48 +276,62 @@ width:22px;
 margin:18px auto;
 }
 
-/* DARK MODE */
 
 @media (prefers-color-scheme: dark){
 
-body{
-background:#05070c;
-color:white;
-}
+  body{
+    background:#05070c;
+    color:white;
+  }
 
-header{
-background:#05070c;
-}
+  body::after{
+    background:linear-gradient(
+      rgba(5,7,12,0.75),
+      rgba(5,7,12,0.9)
+    );
+  }
 
-header h1{
-color:white;
-}
+  header{
+    background:linear-gradient(
+      rgba(20,25,35,0.30),
+      rgba(20,25,35,0.05)
+    );
 
-.header-left img{
-filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.8));
-}
+    backdrop-filter:blur(20px) saturate(160%);
+    -webkit-backdrop-filter:blur(20px) saturate(160%);
 
-#welcome{
-color:white;
-}
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,0.05);
+  }
 
-.card{
-background:#1b1f2a;
-box-shadow:0 15px 40px rgba(0,0,0,0.6);
-}
+  /* ✅ ICI (important) */
+  header h1{
+    color:white;
+    text-shadow:0 2px 8px rgba(0,0,0,0.6);
+  }
 
-.list-btn{
-background:#1b1f2a;
-box-shadow:0 15px 40px rgba(0,0,0,0.6);
-}
+  .header-left img{
+    filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.8));
+  }
 
-.card div{
-color:white;
-}
+  #welcome{
+    color:white;
+  }
 
-.list-btn{
-color:white;
-}
+  .card{
+    background:#1b1f2a;
+    box-shadow:0 15px 40px rgba(0,0,0,0.6);
+  }
+
+  .list-btn{
+    background:#1b1f2a;
+    box-shadow:0 15px 40px rgba(0,0,0,0.6);
+  }
+
+  .card div,
+  .list-btn{
+    color:white;
+  }
 
 }
 
