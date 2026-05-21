@@ -51,7 +51,36 @@ body{
 margin:0;
 font-family:'Montserrat',sans-serif;
 background:#f4f4f4;
+overflow:hidden;
+}
+
+/* APP WRAPPER */
+
+.app{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+}
+
+.scroll{
+position:absolute;
+top:70px;
+left:0;
+width:100%;
+height:calc(100% - 70px);
+
 overflow-y:auto;
+-webkit-overflow-scrolling:touch;
+
+scrollbar-width:none;
+
+box-sizing:border-box;
+}
+
+.scroll::-webkit-scrollbar{
+display:none;
 }
 
 /* HEADER */
@@ -113,7 +142,6 @@ justify-content:center;
 /* PAGE */
 
 .page-content{
-margin-top:70px;
 padding-bottom:40px;
 }
 
@@ -283,6 +311,8 @@ color:white;
 </style>
 </head>
 
+<!-- REMPLACE UNIQUEMENT ÇA -->
+
 <body>
 
 <header>
@@ -302,6 +332,9 @@ ECURIE DAMIEN SIRI
 </div>
 
 </header>
+
+<div class="app">
+<div class="scroll">
 
 <div class="page-content">
 
@@ -341,6 +374,9 @@ ECURIE DAMIEN SIRI
 <div class="list-btn" onclick="go('mes-commandes.html')"><img src="image/compte.svg"> MES COMMANDES</div>
 <div class="list-btn" onclick="go('mesreservations.html')"><img src="image/reservation.svg"> MES RÉSERVATIONS</div>
 <div class="list-btn" onclick="go('panier.html')"><img src="image/panier.svg"> MON PANIER</div>
+
+</div>
+</div>
 </div>
 
 <script>
