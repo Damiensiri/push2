@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Blocage paddocks</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+max-width:500px;
+margin:30px auto;
+padding:20px;
+background:#f4f4f4;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:12px;
+box-shadow:0 4px 12px rgba(0,0,0,.1);
+}
+
+h1{
+margin-top:0;
+}
+
+label{
+display:block;
+margin-top:15px;
+font-weight:bold;
+}
+
+input,select{
+width:100%;
+padding:10px;
+margin-top:5px;
+}
+
+.paddocks{
+margin-top:10px;
+}
+
+.paddocks label{
+font-weight:normal;
+display:block;
+margin-top:8px;
+}
+
+button{
+width:100%;
+margin-top:20px;
+padding:14px;
+border:none;
+border-radius:8px;
+background:#181E3B;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+#result{
+margin-top:15px;
+font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>🔥 Blocage paddocks</h1>
+
+<label>Date</label>
+<input type="date" id="date">
+
+<label>Heure début</label>
+<input type="time" id="start">
+
+<label>Heure fin</label>
+<input type="time" id="end">
+
+<div class="paddocks">
+
+<label>
+<input type="checkbox" value="maison">
+ Maison
+</label>
+
+<label>
+<input type="checkbox" value="grande">
+ Grande voie
+</label>
+
+<label>
+<input type="checkbox" value="beudot">
+ Beudot
+</label>
+
+</div>
+
+<button onclick="createBlocks()">
+Créer les blocages
+</button>
+
+<div id="result"></div>
+
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+
+const firebaseConfig={
+apiKey:"AIzaSyBn6Hgu-xvsWqpwJ-i4lZyI0QjKMBvOeXA",
+authDomain:"ecurie-paddock.firebaseapp.com",
+projectId:"ecurie-paddock",
+storageBucket:"ecurie-paddock.firebasestorage.app",
+messagingSenderId:"501153278739",
+appId:"1:501153278739:web:824b4344c381f2a94548e6"
+}
+
+firebase.initializeApp(firebaseConfig)
+
+const db=firebase.firestore()
+
+async function createBlocks(){
+
+const date=document.getElementById("date").value
+const start=document.getElementById("start").value
+const end=document.getElementById("end").value
+
+if(!date || !start || !end){
+alert("Complétez tous les champs")
+return
+}
+
+const selected=[...document.querySelectorAll("input[type=checkbox]:checked")]
+
+if(selected.length===0){
+alert("Choisissez au moins un paddock")
+return
+}
+
+const [h1,m1]=start.split(":").map(Number)
+const [h2,m2]=end.split(":").map(Number)
+
+const duration=((h2*60+m2)-(h1*60+m1))
+
+if(duration<=0){
+alert("Heure fin invalide")
+return
+}
+
+let count=0
+
+for(const paddock of selected){
+
+await db.collection("reservations").add({
+
+name:"BLOCAGE CANICULE",
+email:"",
+paddock:paddock.value,
+date:date,
+time:start,
+duration:duration
+
+})
+
+count++
+
+}
+
+document.getElementById("result").innerHTML=
+"✅ "+count+" blocage(s) créé(s)"
+
+}
+
+</script>
+
+</body>
+</html>
