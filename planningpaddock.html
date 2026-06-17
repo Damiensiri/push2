@@ -136,6 +136,23 @@ font-size:13px;
 font-weight:700;
 }
 
+.mineText{color:#2980b9;}
+
+.shortText{
+display:inline-flex;
+align-items:center;
+justify-content:center;
+min-width:72px;
+min-height:28px;
+padding:5px 10px;
+border-radius:999px;
+font-size:12px;
+font-weight:700;
+text-align:center;
+background:#f4f4f4;
+color:#f39c12;
+}
+
 .stepNumber{
 width:26px;
 height:26px;
@@ -1104,6 +1121,28 @@ if(slotStart < resEnd && slotEnd > resStart){
 }
 
 })
+let oneHourPossible = false
+
+if(conflict && duration === 90){
+
+    let slotStart = hour + (minutes / 60)
+    let slotEnd = slotStart + 1
+
+    oneHourPossible = !reservations.some(r=>{
+
+        if(r.date!==selectedDate) return false
+        if(r.paddock!==paddock) return false
+
+        let [rh,rm]=r.time.split(":").map(Number)
+
+        let resStart = rh + (rm/60)
+        let resEnd = resStart + (r.duration/60)
+
+        return slotStart < resEnd && slotEnd > resStart
+
+    })
+
+}
 
 let row=document.createElement("div")
 
@@ -1140,12 +1179,19 @@ row.className="row"
 
 if(adminMode){
 
-row.innerHTML=`<div>${time}</div><div class="reservedText">${reserverName}</div>`
-row.onclick=()=>cancelReservation(docId)
+    row.innerHTML=`<div>${time}</div><div class="reservedText">${reserverName}</div>`
+    row.onclick=()=>cancelReservation(docId)
+
+}else if(oneHourPossible){
+
+    row.className="row free";
+    row.innerHTML=`<div>${time}</div><div class="shortText">Libre 1h</div>`;
+
+    row.onclick=()=>switchToOneHour(time,paddock);
 
 }else{
 
-row.innerHTML=`<div>${time}</div><div class="reservedText">réservé</div>`
+    row.innerHTML=`<div>${time}</div><div class="reservedText">réservé</div>`
 
 }
 
@@ -1154,6 +1200,33 @@ row.innerHTML=`<div>${time}</div><div class="reservedText">réservé</div>`
 container.appendChild(row)
 
 })
+
+}
+
+function switchToOneHour(time, paddock){
+
+    const date = selectedDate;
+
+    durationSelect.value = "60";
+    updatePaddocks();
+
+    paddockSelect.value = paddock;
+    selectedDate = date;
+
+    showStep("stepPlanning");
+    generate();
+
+    setTimeout(()=>{
+
+        document.querySelectorAll("#planning .row.free").forEach(r=>{
+
+            if(r.firstElementChild.innerText===time){
+                r.click();
+            }
+
+        });
+
+    },0);
 
 }
 
@@ -1267,6 +1340,35 @@ return
 }
 
 }
+
+// ← ICI
+
+let slotStart = parseInt(selected.time.split(":")[0]) +
+                parseInt(selected.time.split(":")[1]) / 60;
+
+let slotEnd = slotStart + (selected.duration / 60);
+
+const conflit = reservations.some(r => {
+
+    if(r.date !== selected.date) return false;
+    if(r.paddock !== selected.paddock) return false;
+
+    let [h,m] = r.time.split(":").map(Number);
+
+    let resStart = h + m/60;
+    let resEnd = resStart + (r.duration/60);
+
+    return slotStart < resEnd && slotEnd > resStart;
+
+});
+
+if(conflit){
+    alert("Ce créneau vient d'être réservé par un autre utilisateur.");
+    generate();
+    return;
+}
+
+// Puis seulement ici :
 
 const doc = await db.collection("reservations").add({
 
