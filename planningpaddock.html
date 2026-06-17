@@ -1081,21 +1081,23 @@ let [rh,rm]=r.time.split(":").map(Number)
 let resStart=rh+(rm/60)
 let resEnd=resStart+(r.duration/60)
 
-let slotStart=hour+(minutes/60)
+let slotStart = hour + (minutes / 60)
+let slotEnd = slotStart + (duration / 60)
 
-if(slotStart>=resStart && slotStart<resEnd){
+// Les deux créneaux se chevauchent ?
+if(slotStart < resEnd && slotEnd > resStart){
 
-conflict=true
-reserverName=r.name
+    conflict = true
+    reserverName = r.name
 
-if(myReservations.includes(r.id)){
-mine=true
-docId=r.id
-}
+    if(myReservations.includes(r.id)){
+        mine = true
+        docId = r.id
+    }
 
-if(adminMode){
-docId=r.id
-}
+    if(adminMode){
+        docId = r.id
+    }
 
 }
 
