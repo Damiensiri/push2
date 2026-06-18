@@ -235,6 +235,41 @@ return demandes
 
 let myReservations = JSON.parse(localStorage.getItem("myReservations") || "[]")
 let myMises = JSON.parse(localStorage.getItem("myMises") || "[]")
+let myReservationDates = JSON.parse(localStorage.getItem("myReservationDates") || "{}")
+
+function keepRecentPast(items,getDate){
+
+const pastIndexes=items.map((item,index)=>({
+index:index,
+date:getDate(item)
+})).filter(entry=>entry.date && entry.date<new Date())
+
+pastIndexes.sort((a,b)=>b.date-a.date)
+
+const keptPast=new Set(pastIndexes.slice(0,4).map(entry=>entry.index))
+
+return items.filter((item,index)=>{
+const date=getDate(item)
+return !date || date>=new Date() || keptPast.has(index)
+})
+
+}
+
+myMises=keepRecentPast(myMises,mise=>{
+if(!mise.date) return null
+const date=new Date(mise.date+"T00:00")
+return isNaN(date.getTime()) ? null : date
+})
+
+myReservations=keepRecentPast(myReservations,id=>{
+const stored=myReservationDates[id]
+if(!stored || !stored.date) return null
+const date=new Date(stored.date+"T"+(stored.time || "00:00"))
+return isNaN(date.getTime()) ? null : date
+})
+
+localStorage.setItem("myMises",JSON.stringify(myMises))
+localStorage.setItem("myReservations",JSON.stringify(myReservations))
 
 /* ===== LOAD ===== */
 
@@ -250,12 +285,44 @@ let count=0
 
 /* ===== RESERVATIONS ===== */
 
+let reservationData=[]
+
 for(const id of myReservations){
 
 const doc=await db.collection("reservations").doc(id).get()
 if(!doc.exists) continue
 
 const data=doc.data()
+
+myReservationDates[id]={
+date:data.date,
+time:data.time
+}
+
+reservationData.push({id:id,data:data})
+
+}
+
+reservationData=keepRecentPast(reservationData,item=>{
+const date=new Date(item.data.date+"T"+(item.data.time || "00:00"))
+return isNaN(date.getTime()) ? null : date
+})
+
+myReservations=reservationData.map(item=>item.id)
+
+const keptReservationDates={}
+myReservations.forEach(id=>{
+keptReservationDates[id]=myReservationDates[id]
+})
+myReservationDates=keptReservationDates
+
+localStorage.setItem("myReservations",JSON.stringify(myReservations))
+localStorage.setItem("myReservationDates",JSON.stringify(myReservationDates))
+
+for(const item of reservationData){
+
+const id=item.id
+const data=item.data
 let old=isPast(data.date,data.time)
 
 let card=document.createElement("div")
@@ -335,7 +402,9 @@ avenir.innerHTML='<div class="empty">Aucune réservation à venir</div>'
 async function cancelReservation(id){
 await db.collection("reservations").doc(id).delete()
 myReservations=myReservations.filter(r=>r!==id)
+delete myReservationDates[id]
 localStorage.setItem("myReservations",JSON.stringify(myReservations))
+localStorage.setItem("myReservationDates",JSON.stringify(myReservationDates))
 load()
 }
 
