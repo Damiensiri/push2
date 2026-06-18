@@ -358,6 +358,17 @@ background:#f4f4f4;
 border-radius:12px;
 }
 
+.restrictionMessage{
+padding:14px;
+font-size:13px;
+font-weight:600;
+line-height:1.45;
+color:#9a6700;
+background:#fff3cd;
+border:1px solid #f1d37a;
+border-radius:12px;
+}
+
 /* DARK MODE */
 
 @media(prefers-color-scheme:dark){
@@ -400,6 +411,12 @@ box-shadow:0 4px 14px rgba(0,0,0,0.16);
 .mineText,
 .fullMessage{
 background:#252a33;
+}
+
+.restrictionMessage{
+color:#ffd166;
+background:#2f2a1c;
+border-color:#5a4a1f;
 }
 
 .sheetNew{
@@ -655,6 +672,7 @@ document.getElementById("confirmSheet").classList.remove("show")
 
 let reservations=[]
 let horaires={}
+let restrictions={}
 let selectedDate=null
 let selected=null
 
@@ -952,6 +970,18 @@ generate()
 
 })
 
+db.collection("restrictions").onSnapshot(snapshot=>{
+
+restrictions = {}
+
+snapshot.forEach(doc=>{
+restrictions[doc.id] = doc.data()
+})
+
+generate()
+
+})
+
 }
 
 function buildDays(){
@@ -1006,12 +1036,22 @@ container.appendChild(btn)
 function generate(){
 
 const paddock=paddockSelect.value
-const duration=parseInt(durationSelect.value)
+const requestedDuration=parseInt(durationSelect.value)
 
-if(!paddock || !selectedDate || !duration)return
+if(!paddock || !selectedDate || !requestedDuration)return
 
 const container=document.getElementById("planning")
 container.innerHTML=""
+
+const ninetyBlocked=isNinetyBlocked(paddock,selectedDate,requestedDuration)
+const duration=ninetyBlocked ? 60 : requestedDuration
+
+if(ninetyBlocked){
+selected=null
+hideStep("stepDetails")
+hideStep("stepButton")
+container.innerHTML='<div class="restrictionMessage">⚠️ 1h30 indisponible pour cette date. Les créneaux affichés sont en 1h.</div>'
+}
 
 const parts=selectedDate.split("-")
 const d=new Date(parts[0],parts[1]-1,parts[2])
@@ -1203,6 +1243,21 @@ container.appendChild(row)
 
 }
 
+function isNinetyBlocked(paddock,date,duration){
+
+if(duration!==90) return false
+
+const restriction=restrictions[date]
+
+if(!restriction) return false
+
+if(paddock==="grande" && restriction.blockGrande90) return true
+if(paddock==="beudot" && restriction.blockBeudot90) return true
+
+return false
+
+}
+
 function switchToOneHour(time, paddock){
 
     const date = selectedDate;
@@ -1329,6 +1384,14 @@ return
 
 if(!selected){
 alert("Choisissez un créneau")
+return
+}
+
+if(isNinetyBlocked(selected.paddock,selected.date,selected.duration)){
+selected=null
+generate()
+hideStep("stepDetails")
+hideStep("stepButton")
 return
 }
 
