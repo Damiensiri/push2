@@ -349,6 +349,28 @@ background:#f4f4f4;
 .reservedText{color:#e74c3c;}
 .mineText{color:#2980b9;}
 
+.closedBlockText{
+display:inline-flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+min-width:112px;
+min-height:38px;
+padding:5px 10px;
+border-radius:10px;
+background:#fff3e6;
+color:#d35400;
+font-size:12px;
+font-weight:700;
+line-height:1.25;
+text-align:center;
+}
+
+.closedBlockTime{
+font-size:10px;
+font-weight:600;
+}
+
 .fullMessage{
 text-align:center;
 padding:22px 12px;
@@ -417,6 +439,11 @@ background:#252a33;
 color:#ffd166;
 background:#2f2a1c;
 border-color:#5a4a1f;
+}
+
+.closedBlockText{
+background:#38291f;
+color:#ffb36b;
 }
 
 .sheetNew{
@@ -1128,6 +1155,7 @@ let conflict=false
 let mine=false
 let docId=null
 let reserverName=""
+let conflictReservation=null
 
 reservations.forEach(r=>{
 
@@ -1146,6 +1174,7 @@ if(slotStart < resEnd && slotEnd > resStart){
 
     conflict = true
     reserverName = r.name
+    conflictReservation = r
 
     if(myReservations.includes(r.id)){
         mine = true
@@ -1231,7 +1260,22 @@ if(adminMode){
 
 }else{
 
+    if(conflictReservation && String(conflictReservation.name || "").toLowerCase().startsWith("blocage")){
+
+        let [bh,bm] = conflictReservation.time.split(":").map(Number)
+        let endMinutes = (bh*60)+bm+conflictReservation.duration
+        let endHour = Math.floor(endMinutes/60)%24
+        let endMinute = endMinutes%60
+        let startLabel = String(bh).padStart(2,"0")+"h"+String(bm).padStart(2,"0")
+        let endLabel = String(endHour).padStart(2,"0")+"h"+String(endMinute).padStart(2,"0")
+
+        row.innerHTML=`<div>${time}</div><div class="closedBlockText"><span>🚫 Fermé</span><span class="closedBlockTime">${startLabel} → ${endLabel}</span></div>`
+
+    }else{
+
     row.innerHTML=`<div>${time}</div><div class="reservedText">réservé</div>`
+
+    }
 
 }
 
