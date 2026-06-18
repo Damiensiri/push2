@@ -74,6 +74,26 @@ margin:0 0 15px;
 font-size:20px;
 }
 
+.blocks-tabs{
+display:flex;
+gap:8px;
+margin-bottom:15px;
+}
+
+.blocks-tabs button{
+width:auto;
+flex:1;
+margin:0;
+padding:10px;
+background:#ddd;
+color:#333;
+}
+
+.blocks-tabs button.active{
+background:#181E3B;
+color:white;
+}
+
 .block-item{
 padding:14px;
 margin-top:10px;
@@ -152,7 +172,16 @@ Créer les blocages
 
 <h2>Blocages existants</h2>
 
+<div class="blocks-tabs">
+<button id="currentBlocksTab" class="active" onclick="showBlocksTab('current')">À venir</button>
+<button id="historyBlocksTab" onclick="showBlocksTab('history')">Historique</button>
+</div>
+
 <div id="blocksList">
+<p class="blocks-empty">Chargement...</p>
+</div>
+
+<div id="blocksHistory" style="display:none">
 <p class="blocks-empty">Chargement...</p>
 </div>
 
@@ -252,12 +281,12 @@ return String(endHour).padStart(2,"0")+":"+String(endMinute).padStart(2,"0")
 
 }
 
-function renderBlocks(blocks){
+function renderBlockList(blocks,listId,emptyMessage){
 
-const list=document.getElementById("blocksList")
+const list=document.getElementById(listId)
 
 if(blocks.length===0){
-list.innerHTML='<p class="blocks-empty">Aucun blocage enregistré.</p>'
+list.innerHTML='<p class="blocks-empty">'+emptyMessage+'</p>'
 return
 }
 
@@ -290,6 +319,42 @@ list.innerHTML=html
 
 }
 
+let blocksCache=[]
+
+function blockEndDate(block){
+
+const [year,month,day]=block.date.split("-").map(Number)
+const [hour,minute]=block.time.split(":").map(Number)
+const end=new Date(year,month-1,day,hour,minute)
+
+end.setMinutes(end.getMinutes()+block.duration)
+
+return end
+
+}
+
+function renderBlocks(){
+
+const now=new Date()
+const currentBlocks=blocksCache.filter(block=>blockEndDate(block)>now)
+const historyBlocks=blocksCache.filter(block=>blockEndDate(block)<=now)
+
+renderBlockList(currentBlocks,"blocksList","Aucun blocage à venir.")
+renderBlockList(historyBlocks,"blocksHistory","Aucun blocage dans l’historique.")
+
+}
+
+function showBlocksTab(tab){
+
+const history=tab==="history"
+
+document.getElementById("blocksList").style.display=history?"none":"block"
+document.getElementById("blocksHistory").style.display=history?"block":"none"
+document.getElementById("currentBlocksTab").classList.toggle("active",!history)
+document.getElementById("historyBlocksTab").classList.toggle("active",history)
+
+}
+
 async function deleteBlock(id){
 
 if(!confirm("Supprimer ce blocage ?")) return
@@ -310,9 +375,12 @@ blocks.push({id:doc.id,...data})
 }
 })
 
-renderBlocks(blocks)
+blocksCache=blocks
+renderBlocks()
 
 })
+
+setInterval(renderBlocks,60000)
 
 </script>
 
