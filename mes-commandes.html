@@ -165,16 +165,17 @@ items+=`
 })
 
 /* MATCH PAR ID */
-let statut="En attente"
+let statut = "En attente"
+let commentaire = ""
 
 let found = sheetData.find(s=>{
 return String(s["ID"]) === String(order.id)
 })
 
-if(found && found["Statut"]){
-statut = found["Statut"]
+if(found){
+statut = found["Statut"] || "En attente"
+commentaire = found["Commentaire"] || ""
 }
-
 /* COULEUR */
 let color="#aaa"
 if(statut==="Validée") color="#2ecc71"
@@ -196,6 +197,12 @@ Total : ${order.total} €
 <div class="status" style="color:${color}">
 Statut : ${statut}
 </div>
+
+${commentaire ? `
+<div style="margin-top:10px;font-size:14px;opacity:.9">
+<strong>Info :</strong> ${commentaire}
+</div>
+` : ""}
 
 </div>
 `
