@@ -106,6 +106,65 @@ font-weight:600;
 cursor:pointer;
 }
 
+.card-number-form{
+display:flex;
+gap:10px;
+margin-top:12px;
+}
+
+.card-number-form input{
+min-width:0;
+flex:1;
+padding:12px;
+border:1px solid #d8d8d8;
+border-radius:10px;
+background:white;
+color:#222;
+font:inherit;
+font-size:16px;
+box-sizing:border-box;
+}
+
+.card-number-form button{
+width:auto;
+margin-top:0;
+background:#2980b9;
+}
+
+.progress{
+height:11px;
+margin:12px 0 8px;
+border-radius:999px;
+background:#e5e7eb;
+overflow:hidden;
+}
+
+.progress-bar{
+height:100%;
+border-radius:inherit;
+transition:width 0.5s ease;
+}
+
+.progress-green{background:linear-gradient(90deg,#27ae60,#2ecc71)}
+.progress-orange{background:linear-gradient(90deg,#e67e22,#f39c12)}
+.progress-red{background:linear-gradient(90deg,#c0392b,#e74c3c)}
+
+.card-complete{
+color:#e74c3c;
+font-weight:700;
+}
+
+.card-message{
+color:#e74c3c;
+font-weight:600;
+line-height:1.5;
+}
+
+.card-loading{
+color:#888;
+font-weight:600;
+}
+
 .empty{
 text-align:center;
 color:#888;
@@ -125,6 +184,15 @@ font-weight:600;
 @media(prefers-color-scheme:dark){
 body{background:#0f1115;color:white}
 .card{background:#1c1f26}
+.section-title{color:#aaa}
+
+.card-number-form input{
+background:#12141a;
+border-color:#3a3f49;
+color:white;
+}
+
+.progress{background:#343943}
 
 #backBtn{
 background:#1c1f26;
@@ -145,12 +213,14 @@ filter:brightness(0) invert(1);
 
 <header>
 <div id="backBtn" onclick="goBack()">
-<img src="image/back.svg">
+<img src="image/back.svg" alt="Retour">
 </div>
 <h1>Mes réservations</h1>
 </header>
 
 <div class="container">
+
+<div id="paddockCard"></div>
 
 <div id="avenir"></div>
 
@@ -205,9 +275,10 @@ const dateTime=new Date(dateStr+"T"+timeStr)
 return dateTime < new Date()
 }
 
-/* ===== GOOGLE SHEET ===== */
+/* ===== GOOGLE SHEETS ===== */
 
 const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRxfmZEcNesum_QBxIe2-tEihtnRSEaVC1x8Y_S3N5MEHcV4tJY3X-7i9NdTBQTBRuzDHHW9NViYrrh/pub?gid=1049919550&single=true&output=csv"
+const sheetCartesURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRxfmZEcNesum_QBxIe2-tEihtnRSEaVC1x8Y_S3N5MEHcV4tJY3X-7i9NdTBQTBRuzDHHW9NViYrrh/pub?gid=1776451835&single=true&output=csv"
 
 async function loadSheet(){
 const res=await fetch(sheetURL)
@@ -231,49 +302,168 @@ commentaire:c[5]
 return demandes
 }
 
+function parseCSV(text){
+const rows=[]
+let row=[]
+let value=""
+let quoted=false
+
+for(let i=0;i<text.length;i++){
+const char=text[i]
+
+if(char==='"'){
+if(quoted && text[i+1]==='"'){
+value+='"'
+i++
+}else{
+quoted=!quoted
+}
+}else if(char==="," && !quoted){
+row.push(value)
+value=""
+}else if((char==="\n" || char==="\r") && !quoted){
+if(char==="\r" && text[i+1]==="\n") i++
+row.push(value)
+if(row.some(cell=>cell.trim()!=="")) rows.push(row)
+row=[]
+value=""
+}else{
+value+=char
+}
+}
+
+row.push(value)
+if(row.some(cell=>cell.trim()!=="")) rows.push(row)
+return rows
+}
+
+function normalizeHeader(value){
+return value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+}
+
+function normalizeCardNumber(value){
+return String(value || "").trim().replace(/^'+/,"").toUpperCase()
+}
+
+function escapeHTML(value){
+return String(value ?? "").replace(/[&<>'"]/g,char=>({
+"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"
+})[char])
+}
+
+async function loadCardsSheet(){
+const res=await fetch(sheetCartesURL,{cache:"no-store"})
+if(!res.ok) throw new Error("Impossible de charger les cartes")
+
+const rows=parseCSV(await res.text())
+if(rows.length===0) return []
+
+const headers=rows[0].map(normalizeHeader)
+return rows.slice(1).map(row=>Object.fromEntries(
+headers.map((header,index)=>[header,(row[index] || "").trim()])
+))
+}
+
+/* ===== CARTE DE MISES ===== */
+
+function showCardNumberForm(message=""){
+const paddockCard=document.getElementById("paddockCard")
+paddockCard.innerHTML=`
+<div class="card">
+<h3>🐴 Ma carte de mises au paddock</h3>
+${message ? `<p class="card-message">${escapeHTML(message)}</p>` : `<p>Entrez votre numéro de carte pour consulter vos mises.</p>`}
+<form class="card-number-form" id="cardNumberForm">
+<input id="cardNumberInput" type="text" inputmode="text" autocomplete="off" placeholder="Numéro de carte" aria-label="Numéro de carte" required>
+<button type="submit">Enregistrer</button>
+</form>
+</div>`
+
+document.getElementById("cardNumberForm").addEventListener("submit",event=>{
+event.preventDefault()
+const number=normalizeCardNumber(document.getElementById("cardNumberInput").value)
+if(!number) return
+localStorage.setItem("paddockCardNumber",number)
+loadPaddockCard()
+})
+}
+
+function changePaddockCard(){
+localStorage.removeItem("paddockCardNumber")
+showCardNumberForm()
+}
+
+async function loadPaddockCard(){
+const paddockCard=document.getElementById("paddockCard")
+const savedNumber=normalizeCardNumber(localStorage.getItem("paddockCardNumber"))
+
+if(!savedNumber){
+showCardNumberForm()
+return
+}
+
+paddockCard.innerHTML=`
+<div class="card">
+<h3>🐴 Ma carte de mises au paddock</h3>
+<p class="card-loading">Actualisation de la carte...</p>
+</div>`
+
+try{
+const cards=await loadCardsSheet()
+const card=cards.find(item=>normalizeCardNumber(item.numero)===savedNumber)
+
+if(!card){
+paddockCard.innerHTML=`
+<div class="card">
+<h3>🐴 Ma carte de mises au paddock</h3>
+<p><strong>Numéro :</strong> ${escapeHTML(savedNumber)}</p>
+<p class="card-message">Carte introuvable. Vérifiez votre numéro ou contactez l’accueil.</p>
+<button type="button" onclick="changePaddockCard()">Changer de carte</button>
+</div>`
+return
+}
+
+const remaining=Math.max(0,Number(String(card.restant).replace(",",".")) || 0)
+const total=Math.max(0,Number(String(card.total).replace(",",".")) || 0)
+const progress=total > 0 ? Math.min(100,Math.max(0,(remaining / total) * 100)) : 0
+const lastUse=card.derniere_mise || "Aucune mise enregistrée"
+const progressColor=remaining >= 5 ? "progress-green" : remaining >= 2 ? "progress-orange" : "progress-red"
+const remainingDisplay=remaining === 0
+? '<span class="card-complete">Carte complète</span>'
+: `${escapeHTML(card.restant || "0")} / ${escapeHTML(card.total || "0")}`
+
+paddockCard.innerHTML=`
+<div class="card">
+<h3>🐴 Ma carte de mises au paddock</h3>
+<p><strong>Numéro :</strong> ${escapeHTML(card.numero || savedNumber)}</p>
+<p><strong>Mises restantes :</strong> ${remainingDisplay}</p>
+<div class="progress" role="progressbar" aria-label="Mises restantes" aria-valuemin="0" aria-valuemax="${escapeHTML(total)}" aria-valuenow="${escapeHTML(remaining)}">
+<div class="progress-bar ${progressColor}" style="width:${progress}%"></div>
+</div>
+<p><strong>Dernière mise :</strong> ${escapeHTML(lastUse)}</p>
+<button type="button" onclick="changePaddockCard()">Changer de carte</button>
+</div>`
+}catch(error){
+console.error(error)
+paddockCard.innerHTML=`
+<div class="card">
+<h3>🐴 Ma carte de mises au paddock</h3>
+<p class="card-message">Impossible d’actualiser la carte pour le moment.</p>
+<button type="button" onclick="loadPaddockCard()">Réessayer</button>
+<button type="button" onclick="changePaddockCard()">Changer de carte</button>
+</div>`
+}
+}
+
 /* ===== LOCAL STORAGE ===== */
 
 let myReservations = JSON.parse(localStorage.getItem("myReservations") || "[]")
 let myMises = JSON.parse(localStorage.getItem("myMises") || "[]")
-let myReservationDates = JSON.parse(localStorage.getItem("myReservationDates") || "{}")
-
-function keepRecentPast(items,getDate){
-
-const pastIndexes=items.map((item,index)=>({
-index:index,
-date:getDate(item)
-})).filter(entry=>entry.date && entry.date<new Date())
-
-pastIndexes.sort((a,b)=>b.date-a.date)
-
-const keptPast=new Set(pastIndexes.slice(0,4).map(entry=>entry.index))
-
-return items.filter((item,index)=>{
-const date=getDate(item)
-return !date || date>=new Date() || keptPast.has(index)
-})
-
-}
-
-myMises=keepRecentPast(myMises,mise=>{
-if(!mise.date) return null
-const date=new Date(mise.date+"T00:00")
-return isNaN(date.getTime()) ? null : date
-})
-
-myReservations=keepRecentPast(myReservations,id=>{
-const stored=myReservationDates[id]
-if(!stored || !stored.date) return null
-const date=new Date(stored.date+"T"+(stored.time || "00:00"))
-return isNaN(date.getTime()) ? null : date
-})
-
-localStorage.setItem("myMises",JSON.stringify(myMises))
-localStorage.setItem("myReservations",JSON.stringify(myReservations))
 
 /* ===== LOAD ===== */
 
 async function load(){
+
+loadPaddockCard()
 
 const avenir=document.getElementById("avenir")
 const historique=document.getElementById("historique")
@@ -285,44 +475,12 @@ let count=0
 
 /* ===== RESERVATIONS ===== */
 
-let reservationData=[]
-
 for(const id of myReservations){
 
 const doc=await db.collection("reservations").doc(id).get()
 if(!doc.exists) continue
 
 const data=doc.data()
-
-myReservationDates[id]={
-date:data.date,
-time:data.time
-}
-
-reservationData.push({id:id,data:data})
-
-}
-
-reservationData=keepRecentPast(reservationData,item=>{
-const date=new Date(item.data.date+"T"+(item.data.time || "00:00"))
-return isNaN(date.getTime()) ? null : date
-})
-
-myReservations=reservationData.map(item=>item.id)
-
-const keptReservationDates={}
-myReservations.forEach(id=>{
-keptReservationDates[id]=myReservationDates[id]
-})
-myReservationDates=keptReservationDates
-
-localStorage.setItem("myReservations",JSON.stringify(myReservations))
-localStorage.setItem("myReservationDates",JSON.stringify(myReservationDates))
-
-for(const item of reservationData){
-
-const id=item.id
-const data=item.data
 let old=isPast(data.date,data.time)
 
 let card=document.createElement("div")
@@ -402,9 +560,7 @@ avenir.innerHTML='<div class="empty">Aucune réservation à venir</div>'
 async function cancelReservation(id){
 await db.collection("reservations").doc(id).delete()
 myReservations=myReservations.filter(r=>r!==id)
-delete myReservationDates[id]
 localStorage.setItem("myReservations",JSON.stringify(myReservations))
-localStorage.setItem("myReservationDates",JSON.stringify(myReservationDates))
 load()
 }
 
