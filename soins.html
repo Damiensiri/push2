@@ -485,17 +485,32 @@ alert("Veuillez remplir Nom, Prénom et Email")
 return
 }
 
-let total=cart.reduce((a,b)=>a+(b.price*b.qty),0)
+let commande=""
+let total=0
 
-emailjs.send("service_mkpsbdf","template_ftv15rb",{nom,prenom,email,total})
+cart.forEach(item=>{
+
+let lineTotal=item.price*item.qty
+
+commande += `${item.name} x${item.qty} = ${lineTotal} €\n`
+
+total += lineTotal
+
+})
+
+emailjs.send("service_mkpsbdf","template_ftv15rb",{
+nom,
+prenom,
+email,
+commande,
+total
+})
 .then(()=>{
 
 let orderId = Date.now()
 let dateISO = new Date().toISOString()
 
-let commandeText = cart.map(i =>
-`${i.name} x${i.qty} (${i.price}€)`
-).join(" | ")
+let commandeText = commande
 
 /* 🔥 AJOUT ICI (LOCAL STORAGE) */
 let orders = JSON.parse(localStorage.getItem("orders") || "[]")
