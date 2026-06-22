@@ -76,12 +76,13 @@
     }
 
     body {
+      position: relative;
       min-height: 100%;
       margin: 0;
       overflow-x: hidden;
       font-family: var(--font-main);
       color: var(--text-main);
-      background: #67baff;
+      background: transparent;
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
@@ -178,7 +179,7 @@
     .weather-stage {
       position: fixed;
       inset: 0;
-      z-index: -3;
+      z-index: 0;
       overflow: hidden;
       pointer-events: none;
       background:
@@ -413,6 +414,7 @@
 
     .app-shell {
       position: relative;
+      z-index: 1;
       width: min(100%, 520px);
       min-height: 100svh;
       margin: 0 auto;
@@ -1325,11 +1327,8 @@
         <h2 class="city-name" id="cityName">Brienne-le-Château</h2>
         <div class="hero-meta">
           <span id="localTime">Europe/Paris</span>
-          <span>•</span>
-          <span id="coordinates">48.391, 4.527</span>
         </div>
         <p class="description" id="description">Chargement de la météo locale</p>
-        <p class="feels" id="summaryLine">Synchronisation avec Open-Meteo</p>
         <p class="app-error" id="errorBox"></p>
       </div>
     </section>
@@ -1429,13 +1428,13 @@
             </svg>
             Prévisions horaires
           </p>
-          <span class="updated">12 prochaines heures</span>
+          <span class="updated">24 prochaines heures</span>
         </div>
         <div class="hourly-strip" id="hourlyForecast" aria-live="polite"></div>
       </article>
     </section>
 
-    <p class="footer-note">Données météorologiques fourni par Open-Meteo</p>
+    <p class="footer-note">Données météorologiques fourni par Open-météo</p>
   </main>
 
   <script src="./vigilance-data.js"></script>
@@ -1492,8 +1491,8 @@
 
     function cacheElements() {
       const ids = [
-        "app", "temperature", "heroIcon", "cityName", "description", "summaryLine",
-        "localTime", "coordinates", "updatedAt", "windSpeed",
+        "app", "temperature", "heroIcon", "cityName", "description",
+        "localTime", "updatedAt", "windSpeed",
         "windGust", "rainChance", "rainAmount",
         "dailyForecast", "hourlyForecast", "errorBox", "cloudField", "rainField",
         "snowField", "starField", "backButton", "vigilanceCard", "vigilanceBadge",
@@ -1706,9 +1705,7 @@
       elements.cityName.textContent = WEATHER_CONFIG.city;
       elements.temperature.textContent = roundNumber(current.temperature_2m);
       elements.description.textContent = getWeatherDescription(weatherCode, isDay);
-      elements.summaryLine.textContent = buildSummaryLine(current.temperature_2m, current.wind_speed_10m, rainProbability);
       elements.localTime.textContent = formatLocalTime(current.time);
-      elements.coordinates.textContent = WEATHER_CONFIG.latitude.toFixed(3) + ", " + WEATHER_CONFIG.longitude.toFixed(3);
       elements.updatedAt.textContent = "Mis à jour " + formatShortTime(current.time);
       elements.windSpeed.textContent = roundNumber(current.wind_speed_10m);
       elements.windGust.textContent = roundNumber(current.wind_gusts_10m);
@@ -1727,7 +1724,6 @@
       renderWeatherIcon(elements.heroIcon, "sun");
       elements.temperature.textContent = "—";
       elements.description.textContent = "Connexion météo indisponible";
-      elements.summaryLine.textContent = "Vérifiez la connexion réseau puis rechargez la page.";
       elements.updatedAt.textContent = "Hors ligne";
       elements.windSpeed.textContent = "—";
       elements.windGust.textContent = "—";
@@ -1815,7 +1811,7 @@
       }
 
       const start = Math.max(0, startIndex);
-      const end = Math.min(hourly.time.length, start + 12);
+      const end = Math.min(hourly.time.length, start + 24);
 
       for (let i = start; i < end; i += 1) {
         const tile = document.createElement("div");
@@ -1862,11 +1858,6 @@
       if (!isDay && [0, 1].includes(code)) return "Nuit claire";
       if (!isDay && code === 2) return "Nuit peu nuageuse";
       return WEATHER_LABELS.get(code) || "Conditions météo variables";
-    }
-
-    function buildSummaryLine(temp, wind, rainProbability) {
-      const rain = rainProbability === null ? 0 : roundNumber(rainProbability);
-      return "Ressenti visuel " + roundNumber(temp) + "°, vent " + roundNumber(wind) + " km/h, pluie " + rain + "%.";
     }
 
     function findCurrentHourIndex(times, currentTime) {
