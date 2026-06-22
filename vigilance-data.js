@@ -2,8 +2,8 @@ window.METEOALARM_VIGILANCE = {
   "department": "Aube",
   "level": "red",
   "label": "Rouge",
-  "phenomenon": "Canicule · Orages",
-  "period": "Du 22 juin à 16:04 au 24 juin à 00:00",
+  "phenomenon": "Canicule",
+  "period": "Du 23 juin à 00:00 au 24 juin à 00:00",
   "updatedAt": "22 juin à 16:05",
   "source": "MeteoAlarm / EUMETNET",
   "sourceUrl": "https://meteoalarm.org"
