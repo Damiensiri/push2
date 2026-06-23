@@ -3,8 +3,8 @@ window.METEOALARM_VIGILANCE = {
   "level": "red",
   "label": "Rouge",
   "phenomenon": "Canicule",
-  "period": "Du 23 juin à 10:00 au 25 juin à 00:00",
-  "updatedAt": "23 juin à 10:00",
+  "period": "Du 23 juin à 16:01 au 25 juin à 00:00",
+  "updatedAt": "23 juin à 16:01",
   "source": "MeteoAlarm / EUMETNET",
   "sourceUrl": "https://meteoalarm.org"
 };
