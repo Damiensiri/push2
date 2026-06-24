@@ -1841,21 +1841,6 @@ duration:selected.duration
 
 let email = document.getElementById("email").value.trim()
 
-// 👉 toujours envoyer à toi
-emailjs.send("service_mkpsbdf","template_0qhjhhg",{
-title: "📥 Nouvelle réservation paddock",
-message: `
-📍 <strong>Paddock :</strong> ${selected.paddock}<br>
-📅 <strong>Jour :</strong> ${selected.date}<br>
-⏰ <strong>Heure :</strong> ${selected.time}<br><br>
-
-👤 <strong>Client :</strong> ${name}<br>
-📧 <strong>Email :</strong> ${email || "Non renseigné"}
-`,
-prenom: name,
-email: "damiensiri.pro@hotmail.fr"
-})
-
 // 👉 envoi client uniquement si email
 if(email && email.includes("@")){
 
