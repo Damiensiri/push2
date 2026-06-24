@@ -648,20 +648,9 @@ const ics=[
 
 const filename=`reservation-${dateStr}.ics`
 
-if(isIOSCalendarTarget() && typeof File !== "undefined" && navigator.share){
-const file=new File([ics],filename,{type:"text/calendar"})
-if(!navigator.canShare || navigator.canShare({files:[file]})){
-try{
-await navigator.share({
-title:title || "Réservation",
-text:"Ajouter cette réservation à votre agenda",
-files:[file]
-})
+if(isIOSCalendarTarget()){
+window.location.href=`data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`
 return
-}catch(error){
-if(error && error.name==="AbortError") return
-}
-}
 }
 
 const blob=new Blob([ics],{type:"text/calendar;charset=utf-8"})
