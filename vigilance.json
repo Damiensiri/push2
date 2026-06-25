@@ -3,8 +3,8 @@
   "level": "red",
   "label": "Rouge",
   "phenomenon": "Canicule",
-  "period": "Du 25 juin à 06:05 au 27 juin à 00:00",
-  "updatedAt": "25 juin à 06:05",
+  "period": "Du 25 juin à 10:00 au 27 juin à 00:00",
+  "updatedAt": "25 juin à 10:01",
   "source": "MeteoAlarm / EUMETNET",
   "sourceUrl": "https://meteoalarm.org"
 }
