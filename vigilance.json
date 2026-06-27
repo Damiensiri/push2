@@ -1,10 +1,10 @@
 {
   "department": "Aube",
-  "level": "red",
-  "label": "Rouge",
+  "level": "orange",
+  "label": "Orange",
   "phenomenon": "Canicule · Orages",
-  "period": "Du 27 juin à 00:00 au 29 juin à 00:00",
-  "updatedAt": "27 juin à 22:13",
+  "period": "Du 28 juin à 00:09 au 29 juin à 00:00",
+  "updatedAt": "28 juin à 00:09",
   "source": "MeteoAlarm / EUMETNET",
   "sourceUrl": "https://meteoalarm.org"
 }
