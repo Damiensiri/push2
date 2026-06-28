@@ -3,8 +3,8 @@ window.METEOALARM_VIGILANCE = {
   "level": "yellow",
   "label": "Jaune",
   "phenomenon": "Canicule · Orages",
-  "period": "Du 28 juin à 22:00 au 30 juin à 00:00",
-  "updatedAt": "28 juin à 22:01",
+  "period": "Du 29 juin à 00:30 au 30 juin à 00:00",
+  "updatedAt": "29 juin à 00:30",
   "source": "MeteoAlarm / EUMETNET",
   "sourceUrl": "https://meteoalarm.org"
 };
