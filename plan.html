@@ -364,7 +364,7 @@ background:rgba(38,43,52,0.92);
 </style>
 
 <style>
-/* Proposition visuelle uniquement : identité solaire premium. */
+/* Identité visuelle solaire premium. */
 @property --sky-top{syntax:"<color>";inherits:true;initial-value:#5fc6ff;}
 @property --sky-mid{syntax:"<color>";inherits:true;initial-value:#6ab9ff;}
 @property --sky-bottom{syntax:"<color>";inherits:true;initial-value:#d9f6ff;}
@@ -640,13 +640,16 @@ header h1{color:var(--text-strong);}
 #reserveBox{background:linear-gradient(135deg,#f4a329,#c96d00);}
 }
 </style>
+<link rel="stylesheet" href="app-shell.css">
 </head>
 
-<body>
+<body class="fullscreen-standard">
+
+<div class="ambient-stage" aria-hidden="true"></div>
 
 <div class="page" id="page">
 
-<header>
+<header class="plan-header">
 <div id="backBtn" onclick="goBack()">
 <img src="image/back.svg">
 </div>

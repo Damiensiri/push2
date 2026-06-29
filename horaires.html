@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="safe-area-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -155,7 +155,7 @@ header h1{
 </style>
 
 <style>
-/* Proposition visuelle uniquement : identité solaire premium. */
+/* Identité visuelle solaire premium. */
 @property --sky-top{syntax:"<color>";inherits:true;initial-value:#287fbd;}
 @property --sky-mid{syntax:"<color>";inherits:true;initial-value:#3f9fdd;}
 @property --sky-bottom{syntax:"<color>";inherits:true;initial-value:#8dcced;}
@@ -377,11 +377,14 @@ header h1{
   }
 }
 </style>
+<link rel="stylesheet" href="app-shell.css">
 </head>
 
-<body>
+<body class="fullscreen-standard safe-area-extended">
 
-<header>
+<div class="ambient-stage" aria-hidden="true"></div>
+
+<header class="plan-header">
   <div id="backBtn" onclick="goBack()">
     <img src="image/back.svg">
   </div>

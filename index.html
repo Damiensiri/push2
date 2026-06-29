@@ -3,7 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <title>Ecurie Damien Siri</title>
 
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ecurie DS">
-<meta name="theme-color" content="#6fb7ff">
+<meta name="theme-color" content="#287fbd">
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
@@ -117,18 +117,20 @@ html{
   width:100%;
   min-height:100%;
   background:#2f8fce;
+  scrollbar-width:none;
 }
 
 body{
   position:relative;
   min-height:100%;
   margin:0;
-  overflow:hidden;
+  overflow-x:hidden;
   font-family:var(--font-main);
   color:var(--text-main);
   background:transparent;
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
+  scrollbar-width:none;
   transition:
     --sky-top 2.8s ease,
     --sky-mid 2.8s ease,
@@ -136,6 +138,13 @@ body{
     --solar-x 60s linear,
     --solar-y 60s linear,
     --solar-opacity 2.8s ease;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar{
+  width:0;
+  height:0;
+  display:none;
 }
 
 body[data-day-phase="night"]{
@@ -186,11 +195,24 @@ body[data-day-phase="dusk"]{
   --solar-opacity:.30;
 }
 
-body::before{
-  content:"";
+.ambient-stage{
   position:fixed;
   inset:0;
   z-index:0;
+  overflow:hidden;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 22% 12%,rgba(255,225,151,.22),transparent 32%),
+    radial-gradient(circle at 84% 20%,rgba(115,224,255,.16),transparent 34%),
+    radial-gradient(ellipse at 48% 88%,rgba(255,255,255,.10),transparent 38%),
+    linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 48%,var(--sky-bottom) 100%);
+  transform:translateZ(0);
+}
+
+.ambient-stage::before{
+  content:"";
+  position:absolute;
+  inset:-4%;
   pointer-events:none;
   background:
     radial-gradient(circle at 22% 12%,rgba(255,225,151,.22),transparent 32%),
@@ -201,11 +223,10 @@ body::before{
   animation:ambientBreath 18s ease-in-out infinite alternate;
 }
 
-body::after{
+.ambient-stage::after{
   content:"";
-  position:fixed;
+  position:absolute;
   inset:-24%;
-  z-index:0;
   pointer-events:none;
   opacity:var(--solar-opacity);
   mix-blend-mode:screen;
@@ -219,24 +240,18 @@ body::after{
 }
 
 .app{
-  position:fixed;
-  top:0;
-  left:50%;
+  position:relative;
   z-index:1;
   width:min(100%,520px);
-  height:100%;
-  transform:translateX(-50%);
+  min-height:100svh;
+  margin:0 auto;
 }
 
 .scroll{
-  position:absolute;
-  top:calc(70px + var(--safe-top));
-  left:0;
+  position:relative;
   width:100%;
-  height:calc(100% - 70px - var(--safe-top));
-  overflow-y:auto;
-  -webkit-overflow-scrolling:touch;
-  overscroll-behavior-y:contain;
+  min-height:100%;
+  padding-top:calc(70px + var(--safe-top));
   scrollbar-width:none;
   box-sizing:border-box;
 }
@@ -659,6 +674,8 @@ header h1{
 
 <body>
 
+<div class="ambient-stage" aria-hidden="true"></div>
+
 <header>
 
 <div class="header-left">
@@ -1029,6 +1046,7 @@ setInterval(updateBell,60000);
     document.body.style.setProperty("--solar-y",(62-47*solarHeight).toFixed(2)+"%");
     document.body.dataset.sunrise=Math.round(times.sunrise);
     document.body.dataset.sunset=Math.round(times.sunset);
+    document.documentElement.style.backgroundColor=themeColors[phase]||themeColors.day;
 
     const themeMeta=document.querySelector('meta[name="theme-color"]');
     if(themeMeta)themeMeta.setAttribute("content",themeColors[phase]||themeColors.day);

@@ -166,7 +166,7 @@ margin-bottom:18px;
 </style>
 
 <style>
-/* Proposition visuelle uniquement : identité solaire premium validée. */
+/* Identité visuelle solaire premium. */
 @property --sky-top{syntax:"<color>";inherits:true;initial-value:#287fbd;}
 @property --sky-mid{syntax:"<color>";inherits:true;initial-value:#3f9fdd;}
 @property --sky-bottom{syntax:"<color>";inherits:true;initial-value:#8dcced;}
@@ -482,13 +482,16 @@ header h1{
   }
 }
 </style>
+<link rel="stylesheet" href="app-shell.css">
 </head>
 
-<body>
+<body class="fullscreen-standard">
+
+<div class="ambient-stage" aria-hidden="true"></div>
 
 <div class="page" id="page">
 
-<header>
+<header class="plan-header">
 <div id="backBtn" onclick="goBack()">
 <img src="image/back.svg">
 </div>

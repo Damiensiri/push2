@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="safe-area-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -582,7 +582,7 @@ padding-right:8px;
 
 }
 
-/* Proposition visuelle uniquement : identité solaire premium validée. */
+/* Identité visuelle solaire premium. */
 @property --sky-top{syntax:"<color>";inherits:true;initial-value:#287fbd;}
 @property --sky-mid{syntax:"<color>";inherits:true;initial-value:#3f9fdd;}
 @property --sky-bottom{syntax:"<color>";inherits:true;initial-value:#8dcced;}
@@ -917,17 +917,20 @@ transition-duration:1ms!important;
 }
 }
 </style>
+<link rel="stylesheet" href="app-shell.css">
 </head>
 
-<body>
+<body class="fullscreen-standard safe-area-extended">
+
+<div class="ambient-stage" aria-hidden="true"></div>
 
 <div class="page">
 
-<header>
+<header class="plan-header">
 <div id="backBtn" onclick="location.href='index.html'">
 <img src="image/back.svg">
 </div>
-<h1 id="title">PADDOCK</h1>
+<h1 id="title">RÉSERVATION</h1>
 </header>
 
 <div class="card">
@@ -1057,14 +1060,14 @@ const pass=prompt("Mot de passe admin")
 
 if(pass==="0359140"){
 adminMode=true
-title.innerHTML="PADDOCK 🔧"
+title.innerHTML="RÉSERVATION 🔧"
 generate()
 }
 
 }else{
 
 adminMode=false
-title.innerHTML="PADDOCK"
+title.innerHTML="RÉSERVATION"
 generate()
 
 }

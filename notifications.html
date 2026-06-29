@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="safe-area-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -199,7 +199,7 @@ body{
 </style>
 
 <style>
-/* Proposition visuelle uniquement : relookage sans modification du JS métier. */
+/* Identité visuelle solaire premium. */
 @property --sky-top{syntax:"<color>";inherits:true;initial-value:#287fbd;}
 @property --sky-mid{syntax:"<color>";inherits:true;initial-value:#3f9fdd;}
 @property --sky-bottom{syntax:"<color>";inherits:true;initial-value:#8dcced;}
@@ -458,11 +458,14 @@ body::after{
   }
 }
 </style>
+<link rel="stylesheet" href="app-shell.css">
 </head>
 
-<body>
+<body class="fullscreen-standard safe-area-extended">
 
-<header class="sub-header">
+<div class="ambient-stage" aria-hidden="true"></div>
+
+<header class="sub-header plan-header">
   <button class="back-btn" onclick="goHome()">
     <img src="image/back.svg">
   </button>
@@ -483,7 +486,7 @@ body::after{
 
 <script>
 
-/* ⚠️ JS STRICTEMENT IDENTIQUE – aucune modification */
+/* Chargement des notifications. */
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
@@ -560,6 +563,9 @@ async function loadNotifications(){
         `;
         card.onclick=()=>{
           marquerLu(n.id);
+          try{
+            sessionStorage.setItem("alert_detail_cache",JSON.stringify(n));
+          }catch(e){}
           window.location.href="detail.html?id="+n.id;
         };
         container.appendChild(card);

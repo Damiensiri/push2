@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="safe-area-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -175,7 +175,7 @@ header h1{
 </style>
 
 <style>
-/* Proposition visuelle uniquement : identité solaire premium. */
+/* Identité visuelle solaire premium. */
 @property --sky-top{syntax:"<color>";inherits:true;initial-value:#287fbd;}
 @property --sky-mid{syntax:"<color>";inherits:true;initial-value:#3f9fdd;}
 @property --sky-bottom{syntax:"<color>";inherits:true;initial-value:#8dcced;}
@@ -422,11 +422,14 @@ header h1{
   }
 }
 </style>
+<link rel="stylesheet" href="app-shell.css">
 </head>
 
-<body>
+<body class="fullscreen-standard safe-area-extended">
 
-<header>
+<div class="ambient-stage" aria-hidden="true"></div>
+
+<header class="plan-header">
   <div id="backBtn" onclick="goBack()">
     <img src="image/back.svg">
   </div>
@@ -446,7 +449,7 @@ header h1{
 
 <script>
 
-/* ===== JS STRICTEMENT INCHANGÉ ===== */
+/* Chargement du détail de l’alerte. */
 
 const API_URL="https://script.googleusercontent.com/macros/echo?user_content_key=AY5xjrRY09nECq5kqJEPaFCkMRnR4qbM-Z9y5KOMgVdlakJAA_L1FlwHMDN84Nstw8qXhqpt9QHGCeU6Sr6aLk3y7hSeA-1vr_eBBQYFwVL111h-CJZc8JxRQKvcu3XE7Gg-OXbXE8Vkp1PlAMHAkhJduQw6bxUswIvR7b1rA8txQ2Rtyl25eNxQWvtBet3bytcH6RpMKvJdyZcSioOtKa5sYL4uRI4FOoFrfUzX5P_pjpK-cAN8Bdf6otVcK4myQl66GohjWiPVOyCuofXOq8M4lQkmsxucwQ&lib=MfQh9XKIUpdlMRcOJ4l9JImAGFOlNCMp3";
 
@@ -489,10 +492,22 @@ async function loadDetail(){
 
   try{
 
-    const res=await fetch(API_URL);
-    const data=await res.json();
+    let cachedNotif=null;
+    try{
+      const cached=JSON.parse(sessionStorage.getItem("alert_detail_cache")||"null");
+      if(cached&&String(cached.id)===String(id)) cachedNotif=cached;
+    }catch(e){}
 
-    const notif=data.find(n=>String(n.id)===String(id));
+    let data=[];
+    try{
+      const res=await fetch(API_URL);
+      data=await res.json();
+    }catch(fetchError){
+      if(cachedNotif) data=[cachedNotif];
+      else throw fetchError;
+    }
+
+    const notif=data.find(n=>String(n.id)===String(id))||cachedNotif;
 
     if(!notif){
       document.getElementById("titre").innerText="Notification introuvable";
