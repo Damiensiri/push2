@@ -7,7 +7,13 @@
 
 <title>Ecurie Damien Siri</title>
 
-<link rel="manifest" href="manifest.json">
+<script>
+const APP_VERSION="20260629-1";
+</script>
+<link rel="manifest" id="app-manifest">
+<script>
+document.getElementById("app-manifest").href=`manifest.json?v=${APP_VERSION}`;
+</script>
 
 <link rel="apple-touch-icon" href="image/icon-192x192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -742,7 +748,12 @@ ECURIE DAMIEN SIRI
 
 <script>
 
-function go(url){window.location.href=url;}
+function withAppVersion(url){
+const separator=url.includes("?")?"&":"?";
+return `${url}${separator}v=${encodeURIComponent(APP_VERSION)}`;
+}
+
+function go(url){window.location.href=withAppVersion(url);}
 function openExternal(url){window.open(url,"_blank");}
 
 const STATUTS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=statuts";
@@ -859,7 +870,7 @@ load();
 setInterval(load,10000);
 
 ["paddocks.html","travail.html","plan.html","horaires.html"].forEach(p=>{
-fetch(p,{cache:"force-cache"}).catch(()=>{});
+fetch(withAppVersion(p),{cache:"reload"}).catch(()=>{});
 });
 
 </script>
