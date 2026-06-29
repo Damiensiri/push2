@@ -1,6 +1,6 @@
 importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
 
-const APP_VERSION="20260629-4";
+const APP_VERSION="20260629-5";
 const APP_ENTRY=`/index.html?v=${APP_VERSION}`;
 
 self.addEventListener("install",()=>{
