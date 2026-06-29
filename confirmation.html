@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" class="safe-area-root">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -314,19 +314,22 @@ button:active{
 }
 
 </style>
+<link rel="stylesheet" href="app-shell.css">
 </head>
 
-<body>
+<body class="fullscreen-standard safe-area-extended">
+
+<div class="ambient-stage" aria-hidden="true"></div>
 
 <div class="page" id="page">
 
-<header>
+<header class="plan-header">
 
 <div id="backBtn" onclick="goBack()">
 <img src="image/back.svg">
 </div>
 
-Commande envoyée
+<h1>Commande envoyée</h1>
 
 </header>
 
