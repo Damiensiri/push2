@@ -8,11 +8,19 @@
 <title>Ecurie Damien Siri</title>
 
 <script>
-const APP_VERSION="20260629-3";
+const APP_VERSION="20260629-4";
 </script>
 <link rel="manifest" id="app-manifest">
 <script>
 document.getElementById("app-manifest").href=`manifest.json?v=${APP_VERSION}`;
+
+if("serviceWorker" in navigator){
+window.addEventListener("load",()=>{
+navigator.serviceWorker.getRegistration("/").then(registration=>{
+if(registration)registration.update();
+}).catch(()=>{});
+});
+}
 </script>
 
 <link rel="apple-touch-icon" href="image/icon-192x192.png">
