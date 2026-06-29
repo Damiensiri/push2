@@ -1409,6 +1409,23 @@ container.appendChild(btn)
 
 }
 
+function timeToDecimal(value){
+
+const [hours,minutes]=String(value || "").split(":").map(Number)
+
+if(!Number.isFinite(hours) || !Number.isFinite(minutes)) return NaN
+
+return hours+(minutes/60)
+
+}
+
+function fitsBeforeClosing(start,duration,closingTime){
+
+return Number.isFinite(closingTime) &&
+       start+(duration/60)<=closingTime
+
+}
+
 function generate(){
 
 const paddock=paddockSelect.value
@@ -1445,8 +1462,13 @@ return
 
 const config=horaires[paddock][jour]
 
-let start=parseInt(config.open.split(":")[0])
-let end=parseInt(config.close.split(":")[0])
+let start=timeToDecimal(config.open)
+let end=timeToDecimal(config.close)
+
+if(!Number.isFinite(start) || !Number.isFinite(end)){
+container.innerHTML='<div class="fullMessage">Horaires indisponibles</div>'
+return
+}
 
 let slots=[]
 let current=start
@@ -1498,7 +1520,7 @@ if(diff<10) return
 
 }
 
-if(hour+(minutes/60)+(duration/60) > end) return
+if(!fitsBeforeClosing(hour+(minutes/60),duration,end)) return
 
 let conflict=false
 let mine=false
@@ -1808,6 +1830,28 @@ let slotStart = parseInt(selected.time.split(":")[0]) +
                 parseInt(selected.time.split(":")[1]) / 60;
 
 let slotEnd = slotStart + (selected.duration / 60);
+
+const selectedDateParts=selected.date.split("-");
+const selectedDayDate=new Date(
+    selectedDateParts[0],
+    selectedDateParts[1]-1,
+    selectedDateParts[2]
+);
+const selectedDayNames=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+const selectedDay=selectedDayNames[selectedDayDate.getDay()];
+const selectedHours=horaires[selected.paddock] && horaires[selected.paddock][selectedDay];
+const selectedClosingTime=selectedHours && !selectedHours.closed
+    ? timeToDecimal(selectedHours.close)
+    : NaN;
+
+if(!fitsBeforeClosing(slotStart,selected.duration,selectedClosingTime)){
+    alert("Ce créneau ne permet pas de terminer avant la fermeture du paddock.");
+    selected=null;
+    generate();
+    hideStep("stepDetails");
+    hideStep("stepButton");
+    return;
+}
 
 const conflit = reservations.some(r => {
 
