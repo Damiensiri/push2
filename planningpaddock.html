@@ -1409,20 +1409,33 @@ container.appendChild(btn)
 
 }
 
-function timeToDecimal(value){
+function timeToMinutes(value){
 
 const [hours,minutes]=String(value || "").split(":").map(Number)
 
-if(!Number.isFinite(hours) || !Number.isFinite(minutes)) return NaN
+if(!Number.isInteger(hours) || !Number.isInteger(minutes)) return NaN
+if(hours<0 || hours>23 || minutes<0 || minutes>59) return NaN
 
-return hours+(minutes/60)
+return (hours*60)+minutes
 
 }
 
-function fitsBeforeClosing(start,duration,closingTime){
+function minutesToTime(total){
 
-return Number.isFinite(closingTime) &&
-       start+(duration/60)<=closingTime
+const hours=Math.floor(total/60)
+const minutes=total%60
+
+return String(hours).padStart(2,"0")+":"+
+       String(minutes).padStart(2,"0")
+
+}
+
+function fitsBeforeClosing(startMinutes,durationMinutes,closingMinutes){
+
+return Number.isFinite(startMinutes) &&
+       Number.isFinite(durationMinutes) &&
+       Number.isFinite(closingMinutes) &&
+       startMinutes+durationMinutes<=closingMinutes
 
 }
 
@@ -1462,50 +1475,48 @@ return
 
 const config=horaires[paddock][jour]
 
-let start=timeToDecimal(config.open)
-let end=timeToDecimal(config.close)
+let startMinutes=timeToMinutes(config.open)
+let closeMinutes=timeToMinutes(config.close)
 
-if(!Number.isFinite(start) || !Number.isFinite(end)){
+if(!Number.isFinite(startMinutes) || !Number.isFinite(closeMinutes)){
 container.innerHTML='<div class="fullMessage">Horaires indisponibles</div>'
 return
 }
 
 let slots=[]
-let current=start
+let current=startMinutes
 
-while(current < end){
+while(current < closeMinutes){
 
-let hour=Math.floor(current)
-let minutes=current%1===0 ? "00" : "30"
-
-let time=String(hour).padStart(2,"0")+":"+minutes
-
-slots.push(time)
+if(fitsBeforeClosing(current,duration,closeMinutes)){
+slots.push(minutesToTime(current))
+}
 
 let reservation=reservations.find(r=>{
 
 if(r.date!==selectedDate) return false
 if(r.paddock!==paddock) return false
 
-let [rh,rm]=r.time.split(":").map(Number)
-
-let resStart=rh+(rm/60)
-
-return resStart===current
+return timeToMinutes(r.time)===current
 
 })
 
 if(reservation){
-current += reservation.duration/60
+const reservationDuration=Number(reservation.duration)
+current += Number.isFinite(reservationDuration) && reservationDuration>0
+    ? reservationDuration
+    : 60
 }else{
-current += 1
+current += 60
 }
 
 }
 
 slots.forEach(time=>{
 
-let [hour,minutes]=time.split(":").map(Number)
+let slotStartMinutes=timeToMinutes(time)
+let hour=Math.floor(slotStartMinutes/60)
+let minutes=slotStartMinutes%60
 
 const now=new Date()
 const today=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0")
@@ -1520,7 +1531,7 @@ if(diff<10) return
 
 }
 
-if(!fitsBeforeClosing(hour+(minutes/60),duration,end)) return
+if(!fitsBeforeClosing(slotStartMinutes,duration,closeMinutes)) return
 
 let conflict=false
 let mine=false
@@ -1532,16 +1543,12 @@ reservations.forEach(r=>{
 
 if(r.date===selectedDate && r.paddock===paddock){
 
-let [rh,rm]=r.time.split(":").map(Number)
-
-let resStart=rh+(rm/60)
-let resEnd=resStart+(r.duration/60)
-
-let slotStart = hour + (minutes / 60)
-let slotEnd = slotStart + (duration / 60)
+let resStart=timeToMinutes(r.time)
+let resEnd=resStart+Number(r.duration)
+let slotEnd=slotStartMinutes+duration
 
 // Les deux créneaux se chevauchent ?
-if(slotStart < resEnd && slotEnd > resStart){
+if(slotStartMinutes < resEnd && slotEnd > resStart){
 
     conflict = true
     reserverName = r.name
@@ -1565,22 +1572,19 @@ let oneHourPossible = false
 
 if(conflict && duration === 90){
 
-    let slotStart = hour + (minutes / 60)
-    let slotEnd = slotStart + 1
+    let slotEnd = slotStartMinutes + 60
 
     oneHourPossible = !reservations.some(r=>{
 
         if(r.date!==selectedDate) return false
         if(r.paddock!==paddock) return false
 
-        let [rh,rm]=r.time.split(":").map(Number)
+        let resStart = timeToMinutes(r.time)
+        let resEnd = resStart + Number(r.duration)
 
-        let resStart = rh + (rm/60)
-        let resEnd = resStart + (r.duration/60)
+        return slotStartMinutes < resEnd && slotEnd > resStart
 
-        return slotStart < resEnd && slotEnd > resStart
-
-    })
+    }) && fitsBeforeClosing(slotStartMinutes,60,closeMinutes)
 
 }
 
@@ -1826,10 +1830,8 @@ return
 
 // ← ICI
 
-let slotStart = parseInt(selected.time.split(":")[0]) +
-                parseInt(selected.time.split(":")[1]) / 60;
-
-let slotEnd = slotStart + (selected.duration / 60);
+let slotStartMinutes=timeToMinutes(selected.time);
+let slotEndMinutes=slotStartMinutes+Number(selected.duration);
 
 const selectedDateParts=selected.date.split("-");
 const selectedDayDate=new Date(
@@ -1841,10 +1843,10 @@ const selectedDayNames=["dimanche","lundi","mardi","mercredi","jeudi","vendredi"
 const selectedDay=selectedDayNames[selectedDayDate.getDay()];
 const selectedHours=horaires[selected.paddock] && horaires[selected.paddock][selectedDay];
 const selectedClosingTime=selectedHours && !selectedHours.closed
-    ? timeToDecimal(selectedHours.close)
+    ? timeToMinutes(selectedHours.close)
     : NaN;
 
-if(!fitsBeforeClosing(slotStart,selected.duration,selectedClosingTime)){
+if(!fitsBeforeClosing(slotStartMinutes,Number(selected.duration),selectedClosingTime)){
     alert("Ce créneau ne permet pas de terminer avant la fermeture du paddock.");
     selected=null;
     generate();
@@ -1858,12 +1860,10 @@ const conflit = reservations.some(r => {
     if(r.date !== selected.date) return false;
     if(r.paddock !== selected.paddock) return false;
 
-    let [h,m] = r.time.split(":").map(Number);
+    let resStart = timeToMinutes(r.time);
+    let resEnd = resStart + Number(r.duration);
 
-    let resStart = h + m/60;
-    let resEnd = resStart + (r.duration/60);
-
-    return slotStart < resEnd && slotEnd > resStart;
+    return slotStartMinutes < resEnd && slotEndMinutes > resStart;
 
 });
 
