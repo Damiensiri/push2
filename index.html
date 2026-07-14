@@ -8,7 +8,7 @@
 <title>Ecurie Damien Siri</title>
 
 <script>
-const APP_VERSION="20260714-163000";
+const APP_VERSION="20260714-190000";
 const APP_BASE_URL=new URL("./",window.location.href);
 const IS_BETA=window.location.hostname==="damiensiri.github.io" &&
               APP_BASE_URL.pathname==="/push2-beta/";
@@ -71,19 +71,19 @@ cancelButton:"Plus tard"
 }
 </script>
 
-<script src="assets/js/app-config.js?v=20260714-163000"></script>
-<script src="assets/js/app-layout.js?v=20260714-163000"></script>
-<script src="assets/js/profile-store.js?v=20260714-163000" defer></script>
-<script src="assets/js/pages/index-profile.js?v=20260714-163000" defer></script>
-<script src="assets/js/pages/index-install-prompt.js?v=20260714-163000" defer></script>
+<script src="assets/js/app-config.js?v=20260714-190000"></script>
+<script src="assets/js/app-layout.js?v=20260714-190000"></script>
+<script src="assets/js/profile-store.js?v=20260714-190000" defer></script>
+<script src="assets/js/pages/index-profile.js?v=20260714-190000" defer></script>
+<script src="assets/js/pages/index-install-prompt.js?v=20260714-190000" defer></script>
 
-<link rel="stylesheet" href="assets/css/app.css?v=20260714-163000">
-<link rel="stylesheet" href="assets/css/themes/summer.css?v=20260714-163000">
-<link rel="stylesheet" href="assets/css/themes/autumn.css?v=20260714-163000">
-<link rel="stylesheet" href="assets/css/themes/christmas.css?v=20260714-163000">
-<link rel="stylesheet" href="assets/css/themes/winter.css?v=20260714-163000">
-<link rel="stylesheet" href="assets/css/themes/spring.css?v=20260714-163000">
-<link rel="stylesheet" href="assets/css/pages/index.css?v=20260714-163000">
+<link rel="stylesheet" href="assets/css/app.css?v=20260714-190000">
+<link rel="stylesheet" href="assets/css/themes/summer.css?v=20260714-190000">
+<link rel="stylesheet" href="assets/css/themes/autumn.css?v=20260714-190000">
+<link rel="stylesheet" href="assets/css/themes/christmas.css?v=20260714-190000">
+<link rel="stylesheet" href="assets/css/themes/winter.css?v=20260714-190000">
+<link rel="stylesheet" href="assets/css/themes/spring.css?v=20260714-190000">
+<link rel="stylesheet" href="assets/css/pages/index.css?v=20260714-190000">
 </head>
 
 <!-- REMPLACE UNIQUEMENT ÇA -->
@@ -209,9 +209,9 @@ return `${url}${separator}v=${encodeURIComponent(APP_VERSION)}`;
 function go(url){window.location.href=withAppVersion(url);}
 function openExternal(url){window.open(url,"_blank");}
 
-const STATUTS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=statuts";
-const HORAIRES_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=horaires";
-const EXCEPTIONS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=exceptions";
+const STATUTS_URL="https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/statuses";
+const HORAIRES_URL="https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/schedules";
+const EXCEPTIONS_URL="https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/exceptions";
 
 function formatTime(val){
 
@@ -326,6 +326,7 @@ status.textContent=`Écuries fermées ${open} – ${close}`;
 
 load();
 setInterval(load,10000);
+window.addEventListener("pwa-data-changed",load);
 
 ["paddocks.html","travail.html","plan.html","horaires.html"].forEach(p=>{
 fetch(withAppVersion(p),{cache:"reload"}).catch(()=>{});
@@ -416,6 +417,8 @@ updateBell();
 setInterval(updateBell,60000);
 
 </script>
+
+<script src="assets/js/status-realtime.js?v=20260714-190000"></script>
 
 </body>
 </html>

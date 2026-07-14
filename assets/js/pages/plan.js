@@ -1,4 +1,4 @@
-const SHEET_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=statuts";
+const SHEET_URL="https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/statuses";
 const FRESHNESS=60000;
 const CACHE_KEY="statuts";
 const CACHE_CONFIRMED_AT_KEY="statuts_confirmed_at";
@@ -43,7 +43,7 @@ panelIconImg.src=PADDOCK_ICONS[espace]||"image/paddock.svg";
 }
 
 function loadData(){
-fetch(SHEET_URL+"&t="+Date.now(),{cache:"no-store"})
+fetch(SHEET_URL+"?t="+Date.now(),{cache:"no-store"})
 .then(r=>{
 if(!r.ok) throw new Error("Réponse réseau invalide");
 return r.json();
@@ -237,3 +237,5 @@ closePanel.onclick=()=>panel.classList.remove("active");
 function goReserve(){
 location.href="planningpaddock.html";
 }
+
+window.addEventListener("pwa-data-changed",loadData);

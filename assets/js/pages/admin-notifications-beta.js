@@ -19,9 +19,37 @@
     cancel:document.getElementById("cancelEditBtn"),
     formStatus:document.getElementById("formStatus"),
     refresh:document.getElementById("refreshBtn"),
-    list:document.getElementById("alertsList")
+    list:document.getElementById("alertsList"),
+    spacePills:document.getElementById("spacePills"),
+    spaceListStatus:document.getElementById("spaceListStatus"),
+    spaceEditor:document.getElementById("spaceEditor"),
+    spaceEditorTitle:document.getElementById("spaceEditorTitle"),
+    closeSpaceEditor:document.getElementById("closeSpaceEditorBtn"),
+    spaceSelect:document.getElementById("spaceSelect"),
+    spaceSpecial:document.getElementById("spaceSpecial"),
+    spaceInfo:document.getElementById("spaceInfo"),
+    saveSpace:document.getElementById("saveSpaceBtn"),
+    spaceMessage:document.getElementById("spaceStatusMessage"),
+    spaceSchedules:document.getElementById("spaceSchedules"),
+    saveSpaceSchedules:document.getElementById("saveSpaceSchedulesBtn"),
+    spaceSchedulesStatus:document.getElementById("spaceSchedulesStatus"),
+    generalSchedules:document.getElementById("generalSchedules"),
+    saveGeneralSchedules:document.getElementById("saveGeneralSchedulesBtn"),
+    generalSchedulesStatus:document.getElementById("generalSchedulesStatus"),
+    exceptionDate:document.getElementById("exceptionDate"),
+    exceptionMessage:document.getElementById("exceptionMessage"),
+    saveException:document.getElementById("saveExceptionBtn"),
+    exceptionStatus:document.getElementById("exceptionStatus"),
+    exceptionsList:document.getElementById("exceptionsList"),
+    homeAlertMessage:document.getElementById("homeAlertMessage"),
+    homeAlertUrgent:document.getElementById("homeAlertUrgent"),
+    saveHomeAlert:document.getElementById("saveHomeAlertBtn"),
+    homeAlertStatus:document.getElementById("homeAlertStatus")
   };
   let alerts=[];
+  let operations={spaces:[],spaceSchedules:[],generalSchedules:[],exceptions:[],homeAlert:{}};
+  let publicStatuses=[];
+  const days=["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 
   const storedUrl=localStorage.getItem("notifications_prod_api_url")||
     "https://ecurie-notifications-prod.damiensiri-pro.workers.dev";
@@ -77,6 +105,242 @@
     }catch(error){
       setStatus(elements.connectionStatus,error.message,"error");
     }
+  }
+
+  async function loadAll(){
+    setStatus(elements.connectionStatus,"Chargement…");
+    try{
+      const config=settings();
+      localStorage.setItem("notifications_prod_api_url",config.base);
+      [alerts,operations,publicStatuses]=await Promise.all([
+        api("/api/admin/notifications"),
+        api("/api/admin/operations"),
+        fetch(config.base+"/api/statuses",{cache:"no-store"}).then(response=>response.json())
+      ]);
+      localStorage.setItem("notifications_prod_admin_token",config.token);
+      render();
+      renderOperations();
+      setStatus(elements.connectionStatus,"Administration connectée.","success");
+      toggleSettings(false);
+    }catch(error){
+      setStatus(elements.connectionStatus,error.message,"error");
+      toggleSettings(true);
+    }
+  }
+
+  function renderOperations(){
+    const selected=elements.spaceSelect.value||operations.spaces[0]?.slug||"";
+    elements.spaceSelect.replaceChildren(...operations.spaces.map(space=>{
+      const option=document.createElement("option");
+      option.value=space.slug;
+      option.textContent=space.label;
+      return option;
+    }));
+    if(operations.spaces.some(space=>space.slug===selected))elements.spaceSelect.value=selected;
+    renderSpacePills();
+    renderSelectedSpace();
+    renderScheduleInputs(elements.generalSchedules,operations.generalSchedules);
+    renderExceptions();
+    elements.homeAlertMessage.value=operations.homeAlert?.message||"";
+    elements.homeAlertUrgent.checked=operations.homeAlert?.urgent==="oui";
+  }
+
+  function renderSpacePills(){
+    elements.spacePills.replaceChildren();
+    const jsDay=new Date().getDay();
+    const day=jsDay===0?7:jsDay;
+    operations.spaces.forEach(space=>{
+      const current=publicStatuses.find(item=>item.espace===space.slug)||{};
+      const schedule=operations.spaceSchedules.find(item=>item.space_slug===space.slug&&Number(item.day)===day);
+      const pill=document.createElement("article");
+      pill.className="space-pill";
+
+      const summary=document.createElement("div");
+      summary.className="space-summary";
+      const name=document.createElement("strong");
+      name.textContent=space.label;
+      const detail=document.createElement("span");
+      const statusLabel={ouvert:"Ouvert",prevision:"Prévision",ferme:"Fermé","hors-service":"Hors service"}[current.statut_auto||space.manual_status]||"—";
+      const hours=schedule?`${schedule.opens_at}–${schedule.closes_at}`:"—";
+      detail.textContent=`${statusLabel} / ${hours}${space.info?"  💬":""}`;
+      summary.append(name,detail);
+
+      const open=document.createElement("button");
+      open.type="button";
+      open.className="space-chevron";
+      open.textContent="›";
+      open.setAttribute("aria-label",`Modifier ${space.label}`);
+      open.addEventListener("click",()=>openSpaceEditor(space.slug));
+
+      const head=document.createElement("div");
+      head.className="space-pill-head";
+      head.append(summary,open);
+      pill.appendChild(head);
+
+      const statuses=document.createElement("div");
+      statuses.className="quick-actions status-actions";
+      [
+        ["ouvert","Auto"],["prevision","Prévision"],["ferme","Fermé"],["hors-service","HS"]
+      ].forEach(([value,label])=>{
+        const button=document.createElement("button");
+        button.type="button";
+        button.textContent=label;
+        button.classList.toggle("selected",space.manual_status===value);
+        button.addEventListener("click",()=>quickSaveSpace(space,{manualStatus:value}));
+        statuses.appendChild(button);
+      });
+      pill.appendChild(statuses);
+
+      if(space.slug==="carriere"||space.slug==="manege"){
+        const options=document.createElement("div");
+        options.className="quick-options";
+        options.append(
+          quickToggle(space,"Liberté","liberte"),
+          quickToggle(space,"Longe","longe")
+        );
+        pill.appendChild(options);
+      }
+      elements.spacePills.appendChild(pill);
+    });
+  }
+
+  function quickToggle(space,label,field){
+    const wrapper=document.createElement("div");
+    wrapper.className="quick-toggle";
+    const name=document.createElement("span");
+    name.textContent=label;
+    wrapper.appendChild(name);
+    ["oui","non"].forEach(value=>{
+      const button=document.createElement("button");
+      button.type="button";
+      button.textContent=value.toUpperCase();
+      button.classList.toggle("selected",space[field]===value);
+      button.addEventListener("click",()=>quickSaveSpace(space,{[field]:value}));
+      wrapper.appendChild(button);
+    });
+    return wrapper;
+  }
+
+  async function quickSaveSpace(space,changes){
+    setStatus(elements.spaceListStatus,`Mise à jour de ${space.label}…`);
+    try{
+      await api(`/api/admin/spaces/${space.slug}`,{
+        method:"PUT",
+        body:JSON.stringify({
+          manualStatus:changes.manualStatus??space.manual_status,
+          liberte:changes.liberte??space.liberte,
+          longe:changes.longe??space.longe,
+          specialHours:space.special_hours,
+          info:space.info
+        })
+      });
+      await refreshOperations();
+      setStatus(elements.spaceListStatus,`${space.label} mis à jour.`,"success");
+    }catch(error){setStatus(elements.spaceListStatus,error.message,"error");}
+  }
+
+  function openSpaceEditor(slug){
+    elements.spaceSelect.value=slug;
+    renderSelectedSpace();
+    const space=operations.spaces.find(item=>item.slug===slug);
+    elements.spaceEditorTitle.textContent=`Modifier ${space?.label||"l’espace"}`;
+    elements.spaceEditor.hidden=false;
+    elements.spaceEditor.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+
+  function renderSelectedSpace(){
+    const slug=elements.spaceSelect.value;
+    const space=operations.spaces.find(item=>item.slug===slug);
+    if(!space)return;
+    elements.spaceSpecial.value=space.special_hours||"";
+    elements.spaceInfo.value=space.info||"";
+    renderScheduleInputs(elements.spaceSchedules,
+      operations.spaceSchedules.filter(item=>item.space_slug===slug));
+    setStatus(elements.spaceMessage,"");
+    setStatus(elements.spaceSchedulesStatus,"");
+  }
+
+  function renderScheduleInputs(container,rows){
+    container.replaceChildren();
+    days.forEach((label,index)=>{
+      const day=index+1;
+      const row=rows.find(item=>Number(item.day)===day)||{};
+      const wrapper=document.createElement("div");
+      wrapper.className="schedule-row";
+      const name=document.createElement("strong");
+      name.textContent=label;
+      const open=document.createElement("input");
+      open.type="time";
+      open.value=row.opens_at||"08:00";
+      open.dataset.day=String(day);
+      open.dataset.kind="open";
+      open.setAttribute("aria-label",`Ouverture ${label}`);
+      const close=document.createElement("input");
+      close.type="time";
+      close.value=row.closes_at||"21:00";
+      close.dataset.day=String(day);
+      close.dataset.kind="close";
+      close.setAttribute("aria-label",`Fermeture ${label}`);
+      wrapper.append(name,open,close);
+      container.appendChild(wrapper);
+    });
+  }
+
+  function readScheduleInputs(container){
+    return days.map((_,index)=>{
+      const day=index+1;
+      return{
+        day,
+        opensAt:container.querySelector(`[data-day="${day}"][data-kind="open"]`).value,
+        closesAt:container.querySelector(`[data-day="${day}"][data-kind="close"]`).value
+      };
+    });
+  }
+
+  function renderExceptions(){
+    elements.exceptionsList.replaceChildren();
+    if(!operations.exceptions.length){
+      const empty=document.createElement("p");
+      empty.className="empty";
+      empty.textContent="Aucune exception enregistrée.";
+      elements.exceptionsList.appendChild(empty);
+      return;
+    }
+    operations.exceptions.forEach(item=>{
+      const row=document.createElement("article");
+      row.className="exception-item";
+      const text=document.createElement("div");
+      const title=document.createElement("strong");
+      title.textContent=item.date;
+      const message=document.createElement("p");
+      message.textContent=item.message;
+      text.append(title,message);
+      const remove=document.createElement("button");
+      remove.type="button";
+      remove.className="danger compact";
+      remove.textContent="Supprimer";
+      remove.addEventListener("click",()=>deleteException(item));
+      row.append(text,remove);
+      elements.exceptionsList.appendChild(row);
+    });
+  }
+
+  async function refreshOperations(){
+    const config=settings();
+    [operations,publicStatuses]=await Promise.all([
+      api("/api/admin/operations"),
+      fetch(config.base+"/api/statuses",{cache:"no-store"}).then(response=>response.json())
+    ]);
+    renderOperations();
+  }
+
+  async function deleteException(item){
+    if(!window.confirm(`Supprimer l’exception du ${item.date} ?`))return;
+    try{
+      await api(`/api/admin/exceptions/${item.id}`,{method:"DELETE"});
+      await refreshOperations();
+      setStatus(elements.exceptionStatus,"Exception supprimée.","success");
+    }catch(error){setStatus(elements.exceptionStatus,error.message,"error");}
   }
 
   function render(){
@@ -196,7 +460,7 @@
         sent:"Alerte enregistrée et push envoyé.",
         "already-sent":"Alerte enregistrée. Le push avait déjà été envoyé.",
         "not-requested":"Alerte enregistrée sans push.",
-        "disabled-in-beta":"Alerte enregistrée. Le push de production n’est pas encore activé.",
+        "disabled-in-beta":"Alerte enregistrée. Le push de production n’est pas activé.",
         failed:`Alerte enregistrée, mais le push a échoué${result.push?.error?" : "+result.push.error:"."}`
       };
       const pushFailed=result.push?.status==="failed";
@@ -210,7 +474,7 @@
     }
   });
 
-  elements.connect.addEventListener("click",loadAlerts);
+  elements.connect.addEventListener("click",loadAll);
   elements.settingsButton.addEventListener("click",()=>toggleSettings());
   elements.forgetToken.addEventListener("click",()=>{
     localStorage.removeItem("notifications_prod_admin_token");
@@ -219,6 +483,90 @@
   });
   elements.refresh.addEventListener("click",loadAlerts);
   elements.cancel.addEventListener("click",resetForm);
+
+  document.querySelectorAll("[data-section-button]").forEach(button=>{
+    button.addEventListener("click",()=>{
+      document.querySelectorAll("[data-section-button]").forEach(item=>item.classList.toggle("active",item===button));
+      document.querySelectorAll("[data-admin-section]").forEach(section=>{
+        section.hidden=section.dataset.adminSection!==button.dataset.sectionButton;
+      });
+    });
+  });
+
+  elements.spaceSelect.addEventListener("change",renderSelectedSpace);
+  elements.closeSpaceEditor.addEventListener("click",()=>{
+    elements.spaceEditor.hidden=true;
+  });
+  elements.saveSpace.addEventListener("click",async()=>{
+    const slug=elements.spaceSelect.value;
+    const space=operations.spaces.find(item=>item.slug===slug);
+    if(!space)return;
+    setStatus(elements.spaceMessage,"Enregistrement…");
+    try{
+      await api(`/api/admin/spaces/${slug}`,{
+        method:"PUT",
+        body:JSON.stringify({
+          manualStatus:space.manual_status,
+          liberte:space.liberte,
+          longe:space.longe,
+          specialHours:elements.spaceSpecial.value,
+          info:elements.spaceInfo.value
+        })
+      });
+      await refreshOperations();
+      elements.spaceSelect.value=slug;
+      renderSelectedSpace();
+      setStatus(elements.spaceMessage,"Informations enregistrées.","success");
+    }catch(error){setStatus(elements.spaceMessage,error.message,"error");}
+  });
+
+  elements.saveSpaceSchedules.addEventListener("click",async()=>{
+    const slug=elements.spaceSelect.value;
+    setStatus(elements.spaceSchedulesStatus,"Enregistrement…");
+    try{
+      await api(`/api/admin/spaces/${slug}/schedules`,{
+        method:"PUT",body:JSON.stringify({schedules:readScheduleInputs(elements.spaceSchedules)})
+      });
+      await refreshOperations();
+      elements.spaceSelect.value=slug;
+      renderSelectedSpace();
+      setStatus(elements.spaceSchedulesStatus,"Horaires enregistrés.","success");
+    }catch(error){setStatus(elements.spaceSchedulesStatus,error.message,"error");}
+  });
+
+  elements.saveGeneralSchedules.addEventListener("click",async()=>{
+    setStatus(elements.generalSchedulesStatus,"Enregistrement…");
+    try{
+      await api("/api/admin/general-schedules",{
+        method:"PUT",body:JSON.stringify({schedules:readScheduleInputs(elements.generalSchedules)})
+      });
+      await refreshOperations();
+      setStatus(elements.generalSchedulesStatus,"Horaires des écuries enregistrés.","success");
+    }catch(error){setStatus(elements.generalSchedulesStatus,error.message,"error");}
+  });
+
+  elements.saveException.addEventListener("click",async()=>{
+    setStatus(elements.exceptionStatus,"Enregistrement…");
+    try{
+      await api("/api/admin/exceptions",{
+        method:"POST",body:JSON.stringify({date:elements.exceptionDate.value,message:elements.exceptionMessage.value})
+      });
+      elements.exceptionMessage.value="";
+      await refreshOperations();
+      setStatus(elements.exceptionStatus,"Exception enregistrée.","success");
+    }catch(error){setStatus(elements.exceptionStatus,error.message,"error");}
+  });
+
+  elements.saveHomeAlert.addEventListener("click",async()=>{
+    setStatus(elements.homeAlertStatus,"Enregistrement…");
+    try{
+      await api("/api/admin/home-alert",{
+        method:"PUT",body:JSON.stringify({message:elements.homeAlertMessage.value,urgent:elements.homeAlertUrgent.checked})
+      });
+      await refreshOperations();
+      setStatus(elements.homeAlertStatus,"Alerte d’accueil enregistrée.","success");
+    }catch(error){setStatus(elements.homeAlertStatus,error.message,"error");}
+  });
 
   document.querySelectorAll("[data-format]").forEach(button=>{
     button.addEventListener("click",()=>applyFormat(button.dataset.format));
@@ -257,7 +605,7 @@
   }
 
   if(storedToken){
-    loadAlerts();
+    loadAll();
   }else{
     toggleSettings(true);
   }

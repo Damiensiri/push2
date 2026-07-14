@@ -1,7 +1,7 @@
 /* ===== CONFIG ===== */
 
-const SHEET_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=horaires";
-const EXCEPTIONS_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=exceptions";
+const SHEET_URL="https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/schedules";
+const EXCEPTIONS_URL="https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/exceptions";
 
 const REFRESH=60000;
 const FRESHNESS=60000;
@@ -36,15 +36,34 @@ function formatTime(val){
 
 }
 
-function applyExceptions(data){
+function currentWeekDates(date=new Date()){
+  const parts={};
+  new Intl.DateTimeFormat("en-CA",{
+    timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"
+  }).formatToParts(date).forEach(part=>{
+    if(part.type!=="literal") parts[part.type]=part.value;
+  });
+  const current=new Date(Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day),12));
+  const currentDay=current.getUTCDay()||7;
+  const monday=new Date(current);
+  monday.setUTCDate(current.getUTCDate()-(currentDay-1));
+  const names=["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+  const dates={};
+  names.forEach((name,index)=>{
+    const day=new Date(monday);
+    day.setUTCDate(monday.getUTCDate()+index);
+    dates[day.toISOString().slice(0,10)]=name;
+  });
+  return dates;
+}
+
+function applyExceptions(data,date=new Date()){
   exceptions={};
+  const weekDates=currentWeekDates(date);
 
   data.forEach(row=>{
-    if(row.date){
-      const d=new Date(row.date);
-      const jour=d.toLocaleDateString("fr-FR",{weekday:"long"}).toLowerCase();
-      exceptions[jour]=row.message;
-    }
+    const jour=weekDates[String(row.date||"")];
+    if(jour) exceptions[jour]=row.message;
   });
 }
 
@@ -123,7 +142,7 @@ function cacheIsFresh(){
 }
 
 function fetchJson(url){
-  return fetch(url+"&t="+Date.now(),{cache:"no-store"}).then(response=>{
+  return fetch(url+"?t="+Date.now(),{cache:"no-store"}).then(response=>{
     if(!response.ok) throw new Error("Réponse réseau invalide");
     return response.json();
   });
@@ -197,3 +216,5 @@ document.addEventListener("visibilitychange",()=>{
 window.addEventListener("online",()=>{
   if(syncPending) loadHoraires();
 });
+
+window.addEventListener("pwa-data-changed",loadHoraires);

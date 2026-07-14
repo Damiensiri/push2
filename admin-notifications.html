@@ -3,23 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Administration des alertes</title>
+<title>Administration</title>
 <meta name="theme-color" content="#102b45">
-<link rel="stylesheet" href="assets/css/pages/admin-notifications-beta.css?v=20260714-163000">
+<link rel="stylesheet" href="assets/css/pages/admin-notifications-beta.css?v=20260714-190000">
 </head>
 <body>
 <main class="admin-shell">
   <header class="admin-header">
     <div>
       <span class="environment">PRODUCTION · PUSH ACTIF</span>
-      <h1>Alertes</h1>
-      <p>Administration mobile des notifications.</p>
+      <h1>Administration</h1>
+      <p>Notifications, espaces et horaires de la PWA.</p>
     </div>
     <div class="header-actions">
       <button id="settingsBtn" class="icon-button" type="button" aria-label="Ouvrir les paramètres" aria-expanded="false">⚙︎</button>
       <a href="index.html">Retour</a>
     </div>
   </header>
+
+  <nav class="admin-tabs" aria-label="Sections d’administration">
+    <button type="button" data-section-button="spaces" class="active">Espaces</button>
+    <button type="button" data-section-button="notifications">Notifications</button>
+    <button type="button" data-section-button="general">Écuries</button>
+    <button type="button" data-section-button="exceptions">Exceptions</button>
+    <button type="button" data-section-button="home-alert">Alerte accueil</button>
+  </nav>
 
   <section id="settingsPanel" class="panel connection-panel" aria-labelledby="connectionTitle" hidden>
     <h2 id="connectionTitle">Connexion au backend de production</h2>
@@ -34,6 +42,7 @@
     <p id="connectionStatus" class="status" role="status"></p>
   </section>
 
+  <div data-admin-section="notifications" hidden>
   <section class="panel" aria-labelledby="formTitle">
     <div class="panel-heading">
       <h2 id="formTitle">Nouvelle alerte</h2>
@@ -85,8 +94,82 @@
       </div>
     </div>
   </section>
+  </div>
+
+  <section class="admin-section" data-admin-section="spaces">
+    <div class="panel spaces-overview">
+      <h2>Espaces</h2>
+      <p class="section-help">Touchez un statut pour le changer immédiatement. Le chevron ouvre tous les réglages.</p>
+      <div id="spacePills" class="space-pills"></div>
+      <p id="spaceListStatus" class="status" role="status"></p>
+    </div>
+    <div id="spaceEditor" hidden>
+    <div class="panel">
+      <div class="panel-heading">
+        <h2 id="spaceEditorTitle">Modifier l’espace</h2>
+        <button id="closeSpaceEditorBtn" class="secondary" type="button">Fermer</button>
+      </div>
+      <select id="spaceSelect" hidden aria-label="Espace sélectionné"></select>
+      <label>Horaire spécial
+        <input id="spaceSpecial" maxlength="120" placeholder="Ex. 🌡️ Prévu 19h">
+      </label>
+      <label>Information
+        <textarea id="spaceInfo" maxlength="500" rows="3" placeholder="Information affichée sur cet espace"></textarea>
+      </label>
+      <button id="saveSpaceBtn" type="button">Enregistrer les informations</button>
+      <p id="spaceStatusMessage" class="status" role="status"></p>
+    </div>
+    <div class="panel">
+      <h2>Horaires propres à cet espace</h2>
+      <p class="section-help">Ces horaires sont indépendants des horaires généraux des écuries.</p>
+      <div id="spaceSchedules" class="schedule-grid"></div>
+      <button id="saveSpaceSchedulesBtn" type="button">Enregistrer les horaires</button>
+      <p id="spaceSchedulesStatus" class="status" role="status"></p>
+    </div>
+    </div>
+  </section>
+
+  <section class="admin-section" data-admin-section="general" hidden>
+    <div class="panel">
+      <h2>Horaires généraux des écuries</h2>
+      <p class="section-help">Utilisés uniquement par le bandeau de l’index et la page Horaires.</p>
+      <div id="generalSchedules" class="schedule-grid"></div>
+      <button id="saveGeneralSchedulesBtn" type="button">Enregistrer les horaires des écuries</button>
+      <p id="generalSchedulesStatus" class="status" role="status"></p>
+    </div>
+  </section>
+
+  <section class="admin-section" data-admin-section="exceptions" hidden>
+    <div class="panel">
+      <h2>Exception de date</h2>
+      <label>Date
+        <input id="exceptionDate" type="date">
+      </label>
+      <label>Texte affiché dans le bandeau
+        <textarea id="exceptionMessage" maxlength="500" rows="3"></textarea>
+      </label>
+      <button id="saveExceptionBtn" type="button">Enregistrer l’exception</button>
+      <p id="exceptionStatus" class="status" role="status"></p>
+    </div>
+    <div class="panel">
+      <h2>Exceptions enregistrées</h2>
+      <div id="exceptionsList" class="exceptions-list"></div>
+    </div>
+  </section>
+
+  <section class="admin-section" data-admin-section="home-alert" hidden>
+    <div class="panel">
+      <h2>Alerte affichée sur l’index</h2>
+      <label>Texte de l’alerte
+        <textarea id="homeAlertMessage" maxlength="500" rows="4" placeholder="Laisser vide pour masquer le bandeau"></textarea>
+      </label>
+      <label class="check"><input id="homeAlertUrgent" type="checkbox"> Alerte urgente</label>
+      <button id="saveHomeAlertBtn" type="button">Enregistrer l’alerte d’accueil</button>
+      <p id="homeAlertStatus" class="status" role="status"></p>
+    </div>
+  </section>
 </main>
-<script src="assets/js/notification-format.js?v=20260714-163000"></script>
-<script src="assets/js/pages/admin-notifications-beta.js?v=20260714-163000"></script>
+<script src="assets/js/notification-format.js?v=20260714-190000"></script>
+<script src="assets/js/pages/admin-notifications-beta.js?v=20260714-190000"></script>
 </body>
 </html>

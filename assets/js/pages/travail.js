@@ -1,4 +1,4 @@
-const API_URL="https://script.google.com/macros/s/AKfycbzWEB8PPqSQ4rinnTbh4414U3QPX836XtPOPBmKr0Bw2W4mRFWAl7Chv6WKHOjrcWoZew/exec?sheet=statuts"
+const API_URL="https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/statuses"
 const REFRESH=10000
 const FRESHNESS=60000
 const CACHE_KEY="statuts"
@@ -133,7 +133,7 @@ return false
 
 function loadData(){
 
-fetch(API_URL+"&t="+Date.now(),{cache:"no-store"})
+fetch(API_URL+"?t="+Date.now(),{cache:"no-store"})
 .then(r=>{
 if(!r.ok) throw new Error("Réponse réseau invalide")
 return r.json()
@@ -196,3 +196,5 @@ window.addEventListener("online",()=>{
 if(syncPending) loadData()
 
 })
+
+window.addEventListener("pwa-data-changed",loadData)
