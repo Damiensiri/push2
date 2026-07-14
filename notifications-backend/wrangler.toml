@@ -1,0 +1,14 @@
+name = "ecurie-notifications-prod"
+main = "src/worker.js"
+compatibility_date = "2026-07-14"
+
+[vars]
+ENVIRONMENT = "production"
+PUSH_ENABLED = "false"
+ONESIGNAL_APP_ID = "85a477ff-3d8d-4975-960d-c7e69100a0ff"
+ALLOWED_ORIGIN = "https://app.damiensiri.com,http://127.0.0.1:8000"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ecurie-notifications-prod"
+database_id = "2bc15667-ca81-484a-9b49-e0cfa3926466"

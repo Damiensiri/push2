@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Administration des alertes</title>
+<meta name="theme-color" content="#102b45">
+<link rel="stylesheet" href="assets/css/pages/admin-notifications-beta.css?v=20260714-150000">
+</head>
+<body>
+<main class="admin-shell">
+  <header class="admin-header">
+    <div>
+      <span class="environment">PRODUCTION · PUSH EN ATTENTE</span>
+      <h1>Alertes</h1>
+      <p>Administration mobile des notifications.</p>
+    </div>
+    <div class="header-actions">
+      <button id="settingsBtn" class="icon-button" type="button" aria-label="Ouvrir les paramètres" aria-expanded="false">⚙︎</button>
+      <a href="index.html">Retour</a>
+    </div>
+  </header>
+
+  <section id="settingsPanel" class="panel connection-panel" aria-labelledby="connectionTitle" hidden>
+    <h2 id="connectionTitle">Connexion au backend de production</h2>
+    <label>Adresse de l’API
+      <input id="apiUrl" type="url" inputmode="url" placeholder="https://…workers.dev">
+    </label>
+    <label>Jeton d’administration
+      <input id="adminToken" type="password" autocomplete="current-password" placeholder="Jeton mémorisé uniquement sur cet appareil">
+    </label>
+    <button id="connectBtn" type="button">Se connecter</button>
+    <button id="forgetTokenBtn" class="secondary forget-button" type="button">Oublier le jeton</button>
+    <p id="connectionStatus" class="status" role="status"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="formTitle">
+    <div class="panel-heading">
+      <h2 id="formTitle">Nouvelle alerte</h2>
+      <button id="cancelEditBtn" class="secondary" type="button" hidden>Annuler</button>
+    </div>
+    <form id="alertForm">
+      <input id="editingId" type="hidden">
+      <label>Catégorie
+        <select id="categorie" required>
+          <option value="">Choisir une catégorie</option>
+          <option value="Espaces de travail">Espaces de travail</option>
+          <option value="Paddocks">Paddocks</option>
+          <option value="Informations">Informations</option>
+          <option value="Mise à jour">Mise à jour</option>
+        </select>
+      </label>
+      <label>Titre
+        <input id="titre" maxlength="160" required placeholder="Titre visible dans la liste">
+      </label>
+      <label>Message
+        <span class="format-toolbar" aria-label="Mise en forme du message">
+          <button type="button" data-format="bold" aria-label="Mettre en gras"><strong>G</strong></button>
+          <button type="button" data-format="underline" aria-label="Souligner"><u>S</u></button>
+          <button type="button" data-format="link" aria-label="Ajouter un lien">Lien</button>
+        </span>
+        <textarea id="message" maxlength="5000" rows="7" required placeholder="Message complet"></textarea>
+      </label>
+      <div class="switches single-option">
+        <label class="check"><input id="epingle" type="checkbox"> Épingler l’alerte</label>
+      </div>
+      <p class="safety-note">Le push est réservé aux appareils abonnés à l’application OneSignal de production.</p>
+      <div class="form-actions">
+        <button id="publishBtn" type="submit" name="delivery" value="publish">Publier</button>
+        <button id="sendBtn" class="send" type="submit" name="delivery" value="send">Envoyer</button>
+      </div>
+      <p class="action-help"><strong>Publier</strong> : visible dans la PWA sans push. <strong>Envoyer</strong> : visible dans la PWA avec push.</p>
+      <p id="formStatus" class="status" role="status"></p>
+    </form>
+  </section>
+
+  <section class="panel" aria-labelledby="listTitle">
+    <div class="panel-heading">
+      <h2 id="listTitle">Alertes enregistrées</h2>
+      <button id="refreshBtn" class="secondary" type="button">Actualiser</button>
+    </div>
+    <div class="alerts-scroll">
+      <div id="alertsList" class="alerts-list">
+      <p class="empty">Connectez le backend pour afficher les alertes.</p>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="assets/js/notification-format.js?v=20260714-150000"></script>
+<script src="assets/js/pages/admin-notifications-beta.js?v=20260714-150000"></script>
+</body>
+</html>
