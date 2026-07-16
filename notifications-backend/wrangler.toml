@@ -6,7 +6,7 @@ compatibility_date = "2026-07-14"
 ENVIRONMENT = "production"
 PUSH_ENABLED = "true"
 ONESIGNAL_APP_ID = "85a477ff-3d8d-4975-960d-c7e69100a0ff"
-ALLOWED_ORIGIN = "https://app.damiensiri.com,https://damiensiri.github.io,http://127.0.0.1:8000"
+ALLOWED_ORIGIN = "https://app.damiensiri.com,https://damiensiri.github.io,https://backstage.damiensiri.com,https://ecurie-paddock.web.app,http://127.0.0.1:8000"
 
 [[d1_databases]]
 binding = "DB"
