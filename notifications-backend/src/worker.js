@@ -51,6 +51,26 @@ export default{
         return json(result.results,200,{...cors,"cache-control":"public, max-age=15"});
       }
 
+      if(request.method==="GET"&&url.pathname==="/api/paddocks/display"){
+        const displayDate=String(url.searchParams.get("date")||"");
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(displayDate))return json({error:"Date invalide"},400,cors);
+        const [reservationResult,hoursResult]=await Promise.all([
+          env.DB.prepare(`SELECT id,name,paddock,date,time,duration FROM paddock_reservations
+            WHERE date=? ORDER BY time,paddock,id`).bind(displayDate).all(),
+          env.DB.prepare("SELECT paddock,schedule_json FROM paddock_hours").all()
+        ]);
+        const horaires={};
+        for(const row of hoursResult.results)horaires[row.paddock]=JSON.parse(row.schedule_json);
+        return json({
+          date:displayDate,
+          reservations:reservationResult.results.map(row=>({
+            id:String(row.id),name:row.name,paddock:row.paddock,date:row.date,
+            time:row.time,duration:Number(row.duration)
+          })),
+          horaires
+        },200,cors);
+      }
+
       if(request.method==="GET"&&url.pathname==="/api/realtime"){
         if(request.headers.get("upgrade")!=="websocket")return json({error:"WebSocket requis"},426,cors);
         return realtimeStub(env).fetch(request);
