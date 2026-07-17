@@ -19,7 +19,7 @@ car il contient également d’autres projets.
 
 La bêta est accessible à l’adresse :
 
-`https://damiensiri.github.io/push2-beta/`
+`https://app.damiensiri.com/`
 
 Le dépôt `push2-beta` ne doit pas contenir de fichier `CNAME`. Les chemins de
 la PWA doivent rester compatibles avec le sous-dossier `/push2-beta/` ainsi

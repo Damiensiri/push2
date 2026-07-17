@@ -10,16 +10,16 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
-<script src="assets/js/app-config.js?v=20260714-195000"></script>
-<script src="assets/js/app-layout.js?v=20260714-195000"></script>
+<script src="assets/js/app-config.js?v=20260714-194000"></script>
+<script src="assets/js/app-layout.js?v=20260716-8"></script>
 
-<link rel="stylesheet" href="assets/css/app.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/themes/summer.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/themes/autumn.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/themes/christmas.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/themes/winter.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/themes/spring.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/pages/mesreservations.css?v=20260714-195000">
+<link rel="stylesheet" href="assets/css/app.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/themes/summer.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/themes/autumn.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/themes/christmas.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/themes/winter.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/themes/spring.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/pages/mesreservations.css?v=20260714-194000">
 </head>
 
 <body class="app-page mesreservations-page">
@@ -51,9 +51,6 @@ Voir l’historique ▼
 
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script>
 
 /* ===== ANIMATION ===== */
@@ -71,20 +68,6 @@ p.classList.add("exit")
 setTimeout(()=>{location.href="index.html"},300)
 }
 
-/* ===== FIREBASE ===== */
-
-const firebaseConfig={
-apiKey:"AIzaSy...",
-authDomain:"ecurie-paddock.firebaseapp.com",
-projectId:"ecurie-paddock",
-storageBucket:"ecurie-paddock.firebasestorage.app",
-messagingSenderId:"501153278739",
-appId:"1:501153278739:web:824b4344c381f2a94548e6"
-}
-
-firebase.initializeApp(firebaseConfig)
-const db=firebase.firestore()
-
 /* ===== DATE CHECK ===== */
 
 function isPast(dateStr, timeStr="00:00"){
@@ -101,6 +84,10 @@ const start=getReservationDateTime(dateStr,timeStr)
 const end=new Date(start)
 end.setMinutes(end.getMinutes()+(Number(duration)||0))
 return end
+}
+
+function isReservationPast(dateStr,timeStr,duration){
+return getReservationEndDateTime(dateStr,timeStr,duration) <= new Date()
 }
 
 function formatDateFR(dateStr){
@@ -220,74 +207,20 @@ reservation.description
 )
 }
 
-/* ===== GOOGLE SHEETS ===== */
+/* ===== DONNÉES PRODUCTION ===== */
 
-const sheetURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRxfmZEcNesum_QBxIe2-tEihtnRSEaVC1x8Y_S3N5MEHcV4tJY3X-7i9NdTBQTBRuzDHHW9NViYrrh/pub?gid=1049919550&single=true&output=csv"
-const sheetCartesURL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRxfmZEcNesum_QBxIe2-tEihtnRSEaVC1x8Y_S3N5MEHcV4tJY3X-7i9NdTBQTBRuzDHHW9NViYrrh/pub?gid=1776451835&single=true&output=csv"
+const PADDOCK_API="https://ecurie-notifications-prod.damiensiri-pro.workers.dev"
+const PADDOCK_TOKEN_KEY="ecurie_prod_session"
 
-async function loadSheet(){
-const res=await fetch(sheetURL)
-const text=await res.text()
-const rows=text.split("\n").slice(1)
-rows.reverse()
-
-let demandes=[]
-
-rows.forEach(r=>{
-const c=r.split(",")
-demandes.push({
-nom:c[1],
-date:c[2],
-email:c[3],
-statut:c[4],
-commentaire:c[5]
+async function paddockApi(path,options={}){
+const token=localStorage.getItem(PADDOCK_TOKEN_KEY)||""
+const response=await fetch(PADDOCK_API+path,{
+...options,
+headers:{authorization:"Bearer "+token,...(options.body?{"content-type":"application/json"}:{})}
 })
-})
-
-return demandes
-}
-
-function parseCSV(text){
-const rows=[]
-let row=[]
-let value=""
-let quoted=false
-
-for(let i=0;i<text.length;i++){
-const char=text[i]
-
-if(char==='"'){
-if(quoted && text[i+1]==='"'){
-value+='"'
-i++
-}else{
-quoted=!quoted
-}
-}else if(char==="," && !quoted){
-row.push(value)
-value=""
-}else if((char==="\n" || char==="\r") && !quoted){
-if(char==="\r" && text[i+1]==="\n") i++
-row.push(value)
-if(row.some(cell=>cell.trim()!=="")) rows.push(row)
-row=[]
-value=""
-}else{
-value+=char
-}
-}
-
-row.push(value)
-if(row.some(cell=>cell.trim()!=="")) rows.push(row)
-return rows
-}
-
-function normalizeHeader(value){
-return value.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")
-}
-
-function normalizeCardNumber(value){
-return String(value || "").trim().replace(/^'+/,"").toUpperCase()
+const data=await response.json().catch(()=>({}))
+if(!response.ok)throw new Error(data.error||"Service paddock indisponible")
+return data
 }
 
 function escapeHTML(value){
@@ -296,32 +229,11 @@ return String(value ?? "").replace(/[&<>'"]/g,char=>({
 })[char])
 }
 
-async function loadCardsSheet(){
-const res=await fetch(sheetCartesURL,{cache:"no-store"})
-if(!res.ok) throw new Error("Impossible de charger les cartes")
-
-const rows=parseCSV(await res.text())
-if(rows.length===0) return []
-
-const headers=rows[0].map(normalizeHeader)
-return rows.slice(1).map(row=>Object.fromEntries(
-headers.map((header,index)=>[header,(row[index] || "").trim()])
-))
-}
-
 /* ===== CARTE DE MISES ===== */
 
 async function loadPaddockCard(){
 const paddockCard=document.getElementById("paddockCard")
-const savedNumber=normalizeCardNumber(localStorage.getItem("paddockCardNumber"))
-
-if(!savedNumber){
 paddockCard.hidden=true
-paddockCard.innerHTML=""
-return
-}
-
-paddockCard.hidden=false
 paddockCard.innerHTML=`
 <div class="card">
 <h3>🐴 Ma carte de mises au paddock</h3>
@@ -329,40 +241,50 @@ paddockCard.innerHTML=`
 </div>`
 
 try{
-const cards=await loadCardsSheet()
-const card=cards.find(item=>normalizeCardNumber(item.numero)===savedNumber)
+const account=await paddockApi("/api/paddocks/card")
+const card=account.card
+const invoiceUsages=(account.usages||[]).filter(item=>item.mode==="invoice")
+
+if(!card&&!invoiceUsages.length){
+paddockCard.innerHTML=""
+return
+}
+
+paddockCard.hidden=false
 
 if(!card){
 paddockCard.innerHTML=`
 <div class="card">
 <h3>🐴 Ma carte de mises au paddock</h3>
-<p><strong>Numéro :</strong> ${escapeHTML(savedNumber)}</p>
-<p class="card-message">Carte introuvable. Vérifiez votre numéro ou contactez l’accueil.</p>
+<p class="card-message">Aucune carte active.</p>
+${invoiceUsages.length?`<p><strong>À facturer :</strong> ${invoiceUsages.map(item=>`🌿 ${formatDateFR(item.date)}`).join(" · ")}</p>`:""}
 </div>`
 return
 }
 
-const remaining=Math.max(0,Number(String(card.restant).replace(",",".")) || 0)
-const total=Math.max(0,Number(String(card.total).replace(",",".")) || 0)
+const remaining=Math.max(0,Number(card.remaining)||0)
+const total=Math.max(0,Number(card.total)||0)
 const progress=total > 0 ? Math.min(100,Math.max(0,(remaining / total) * 100)) : 0
-const lastUse=card.derniere_mise || "Aucune mise enregistrée"
+const lastCardUse=(account.usages||[]).find(item=>item.mode==="card")
+const lastUse=lastCardUse?formatDateFR(lastCardUse.date):"Aucune mise enregistrée"
 const progressColor=remaining >= 5 ? "progress-green" : remaining >= 2 ? "progress-orange" : "progress-red"
 const remainingDisplay=remaining === 0
 ? '<span class="card-complete">Carte complète</span>'
-: `${escapeHTML(card.restant || "0")} / ${escapeHTML(card.total || "0")}`
+: `${escapeHTML(remaining)} / ${escapeHTML(total)}`
 
 paddockCard.innerHTML=`
 <div class="card">
 <h3>🐴 Ma carte de mises au paddock</h3>
-<p><strong>Numéro :</strong> ${escapeHTML(card.numero || savedNumber)}</p>
 <p><strong>Mises restantes :</strong> ${remainingDisplay}</p>
 <div class="progress" role="progressbar" aria-label="Mises restantes" aria-valuemin="0" aria-valuemax="${escapeHTML(total)}" aria-valuenow="${escapeHTML(remaining)}">
 <div class="progress-bar ${progressColor}" style="width:${progress}%"></div>
 </div>
 <p><strong>Dernière mise :</strong> ${escapeHTML(lastUse)}</p>
+${invoiceUsages.length?`<p><strong>À facturer :</strong> ${invoiceUsages.map(item=>`🌿 ${formatDateFR(item.date)}`).join(" · ")}</p>`:""}
 </div>`
 }catch(error){
 console.error(error)
+paddockCard.hidden=false
 paddockCard.innerHTML=`
 <div class="card">
 <h3>🐴 Ma carte de mises au paddock</h3>
@@ -374,15 +296,11 @@ paddockCard.innerHTML=`
 
 /* ===== LOCAL STORAGE ===== */
 
-let myReservations = JSON.parse(localStorage.getItem("myReservations") || "[]")
-let myMises = JSON.parse(localStorage.getItem("myMises") || "[]")
 let calendarReservations = {}
 
 /* ===== LOAD ===== */
 
 async function load(){
-
-loadPaddockCard()
 
 const avenir=document.getElementById("avenir")
 const historique=document.getElementById("historique")
@@ -393,15 +311,38 @@ historique.innerHTML=""
 let count=0
 calendarReservations={}
 
+let reservationData=[]
+let paddockRequests=[]
+try{
+const [reservationResponse,requestResponse]=await Promise.all([
+paddockApi("/api/paddocks/reservations"),
+paddockApi("/api/paddocks/requests")
+])
+reservationData=reservationResponse.reservations||[]
+paddockRequests=requestResponse.requests||[]
+}catch(error){
+console.warn("Chargement des réservations impossible",error)
+avenir.innerHTML='<div class="empty">Impossible de charger vos réservations.</div>'
+return
+}
+
+loadPaddockCard()
+
+reservationData.sort((a,b)=>{
+const aEnd=getReservationEndDateTime(a.date,a.time,a.duration)
+const bEnd=getReservationEndDateTime(b.date,b.time,b.duration)
+const aPast=aEnd<=new Date()
+const bPast=bEnd<=new Date()
+if(aPast!==bPast) return aPast?1:-1
+if(aPast) return bEnd-aEnd
+return getReservationDateTime(a.date,a.time)-getReservationDateTime(b.date,b.time)
+})
+
 /* ===== RESERVATIONS ===== */
 
-for(const id of myReservations){
-
-const doc=await db.collection("reservations").doc(id).get()
-if(!doc.exists) continue
-
-const data=doc.data()
-let old=isPast(data.date,data.time)
+for(const data of reservationData){
+const id=data.id
+let old=isReservationPast(data.date,data.time,data.duration)
 
 calendarReservations[id]={
 title:`Réservation ${data.paddock || ""}`,
@@ -433,22 +374,12 @@ count++
 
 /* ===== DEMANDES ===== */
 
-const sheetData=await loadSheet()
-
-for(let i=myMises.length-1;i>=0;i--){
-
-const mise=myMises[i]
+for(const mise of paddockRequests){
 let old=isPast(mise.date)
 
-let statut="En attente"
-let commentaire=""
-
-const match=sheetData.find(d=>d.nom===mise.name && d.date===mise.date)
-
-if(match){
-statut=match.statut || "En attente"
-commentaire=match.commentaire || ""
-}
+const statusLabels={pending:"En attente",accepted:"Accepté",refused:"Refusé",completed:"Réalisé",cancelled:"Annulé"}
+const statut=statusLabels[mise.status]||"En attente"
+const commentaire=mise.comment||""
 
 let statusClass="status-attente"
 if(statut==="Accepté") statusClass="status-accepte"
@@ -487,9 +418,12 @@ avenir.innerHTML='<div class="empty">Aucune réservation à venir</div>'
 /* ===== ANNULATION ===== */
 
 async function cancelReservation(id){
-await db.collection("reservations").doc(id).delete()
-myReservations=myReservations.filter(r=>r!==id)
-localStorage.setItem("myReservations",JSON.stringify(myReservations))
+try{
+await paddockApi("/api/paddocks/reservations/"+encodeURIComponent(id),{method:"DELETE"})
+}catch(error){
+alert(error.message)
+return
+}
 load()
 }
 
@@ -510,13 +444,22 @@ document.getElementById("toggleHistory").innerText="Voir l’historique ▼"
 
 load()
 
-setInterval(()=>{load()},120000)
+setInterval(()=>{
+if(!document.hidden) load()
+},60000)
 
 document.addEventListener("visibilitychange",()=>{
 if(!document.hidden) load()
 })
 
+window.addEventListener("pwa-data-changed",event=>{
+const type=event.detail?.type
+if(type==="paddocks"||type==="paddock-requests"||type==="all")load()
+else if(type==="paddock-accounts")loadPaddockCard()
+})
+
 </script>
+<script src="assets/js/status-realtime.js?v=20260716-3"></script>
 
 </body>
 </html>

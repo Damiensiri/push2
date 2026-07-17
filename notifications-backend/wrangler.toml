@@ -6,12 +6,21 @@ compatibility_date = "2026-07-14"
 ENVIRONMENT = "production"
 PUSH_ENABLED = "true"
 ONESIGNAL_APP_ID = "85a477ff-3d8d-4975-960d-c7e69100a0ff"
+ADMIN_ONESIGNAL_APP_ID = "104b740c-3a7b-4e39-87b2-847d00f300fb"
+MAILER_ENDPOINT = "https://script.google.com/macros/s/AKfycbygbKTIyyymQN7hD3WV_Tu_47GrZFZ0ZEA5dQLHMBvb1QLyKU4Xh5kRU1Y2Q9FziNEC/exec"
 ALLOWED_ORIGIN = "https://app.damiensiri.com,https://damiensiri.github.io,https://backstage.damiensiri.com,https://ecurie-paddock.web.app,http://127.0.0.1:8000"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "ecurie-notifications-prod"
 database_id = "2bc15667-ca81-484a-9b49-e0cfa3926466"
+
+[[r2_buckets]]
+binding = "PRODUCT_IMAGES"
+bucket_name = "ecurie-products-prod"
+
+[triggers]
+crons = ["* * * * *"]
 
 [[durable_objects.bindings]]
 name = "REALTIME_HUB"

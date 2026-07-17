@@ -87,6 +87,14 @@
   gap:16px;
 }
 
+.account-card [hidden]{display:none!important}
+.account-help,.account-warning{margin:0;color:rgba(255,255,255,.72);font-size:12px;line-height:1.55}
+.account-warning{padding:10px 12px;border:1px solid rgba(255,211,99,.38);border-radius:14px;background:rgba(255,190,40,.13);color:#fff0bf}
+.account-logout{width:100%;margin-top:2px}
+.account-password-button{width:100%}
+.account-summary{display:flex;align-items:center;gap:14px}.account-summary h2{margin:4px 0 0;color:#fff;font-size:20px}.account-details{display:grid;gap:8px;margin:0}.account-details div{display:flex;justify-content:space-between;gap:16px;padding:11px 0;border-bottom:1px solid rgba(255,255,255,.12)}.account-details dt{color:rgba(255,255,255,.62);font-size:12px}.account-details dd{margin:0;color:#fff;font-size:12px;font-weight:700;text-align:right;overflow-wrap:anywhere}
+.account-photo{flex:0 0 76px;width:76px;height:76px}.account-photo svg{width:38px;height:38px}.account-photo-actions{justify-content:flex-start}.account-photo-actions .profile-photo__button,.account-photo-actions .profile-secondary{flex:1}
+
 .profile-field{
   display:grid;
   gap:7px;
@@ -148,6 +156,38 @@
 .profile-card-actions .profile-primary{
   margin-top:0;
 }
+
+.profile-paddock-card{
+  display:grid;
+  gap:14px;
+}
+
+.profile-card-message,
+.profile-card-balance{
+  margin:0;
+  color:rgba(255,255,255,.88);
+  font-size:15px;
+  line-height:1.5;
+}
+
+.profile-card-progress{
+  height:10px;
+  margin-top:12px;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(255,255,255,.18);
+}
+
+.profile-card-progress>div{
+  height:100%;
+  border-radius:inherit;
+  transition:width .25s ease;
+}
+
+.profile-progress-green{background:#42dc88}
+.profile-progress-orange{background:#ffad32}
+.profile-progress-red{background:#ff6b6b}
+.profile-card-complete{color:#ffcf70;font-weight:800}
 
 .profile-danger{
   width:100%;

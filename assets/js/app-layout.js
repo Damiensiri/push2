@@ -1,4 +1,77 @@
 (function initializeAppLayout(){
+  const authPage=location.pathname.split("/").pop()==="connexion.html";
+  const authToken=localStorage.getItem("ecurie_prod_session")||"";
+  if(!authPage){
+    document.documentElement.style.visibility="hidden";
+    if(!authToken){
+      location.replace("connexion.html");
+      return;
+    }
+    fetch("https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/auth/me",{
+      headers:{authorization:"Bearer "+authToken},cache:"no-store"
+    }).then(async response=>{
+      if(!response.ok)throw new Error("Session invalide");
+      const data=await response.json();
+      document.documentElement.style.visibility="";
+      initializePushIdentity(data.user);
+    }).catch(()=>{
+      localStorage.removeItem("ecurie_prod_session");
+      location.replace("connexion.html");
+    });
+  }else if(authToken){
+    document.documentElement.style.visibility="hidden";
+  }
+
+  function initializePushIdentity(user){
+    if(!user?.id)return;
+    const endpoint="https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/push/subscription";
+    const installationKey="ecurie_prod_push_installation";
+    let installationId=localStorage.getItem(installationKey)||"";
+    if(!installationId){installationId=crypto.randomUUID();localStorage.setItem(installationKey,installationId);}
+    async function saveSubscription(subscriptionId,method="PUT"){
+      if(!subscriptionId)return;
+      const token=localStorage.getItem("ecurie_prod_session")||"";
+      if(!token)return;
+      const response=await fetch(endpoint,{method,headers:{authorization:"Bearer "+token,"content-type":"application/json"},
+        body:JSON.stringify({subscriptionId,installationId}),cache:"no-store"});
+      if(!response.ok)throw new Error("Enregistrement push refusé");
+    }
+    window.OneSignalDeferred=window.OneSignalDeferred||[];
+    window.EcuriePushIdentity={
+      logout(){return new Promise(resolve=>{
+        let finished=false;
+        const finish=()=>{if(!finished){finished=true;resolve();}};
+        setTimeout(finish,2000);
+        window.OneSignalDeferred.push(async OneSignal=>{
+          try{
+            const subscriptionId=OneSignal.User.PushSubscription.id;
+            if(subscriptionId)await saveSubscription(subscriptionId,"DELETE");
+            await OneSignal.logout();
+          }catch(error){}finally{finish();}
+        });
+      });}
+    };
+    window.OneSignalDeferred.push(async OneSignal=>{
+      try{
+        await OneSignal.init({appId:"85a477ff-3d8d-4975-960d-c7e69100a0ff",notifyButton:{enable:false},welcomeNotification:{disable:true},
+          serviceWorkerPath:"OneSignalSDKWorker.js",serviceWorkerParam:{scope:"/"},
+          promptOptions:{slidedown:{prompts:[{type:"push",autoPrompt:true,text:{actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",acceptButton:"Autoriser",cancelButton:"Plus tard"}}]}}});
+        await OneSignal.login(`prod-user-${user.id}`);
+        const registerCurrent=async()=>{
+          const subscriptionId=OneSignal.User.PushSubscription.id;
+          if(subscriptionId)await saveSubscription(subscriptionId);
+        };
+        await registerCurrent();
+        OneSignal.User.PushSubscription.addEventListener("change",event=>{
+          const subscriptionId=event?.current?.id||OneSignal.User.PushSubscription.id;
+          if(subscriptionId)saveSubscription(subscriptionId).catch(()=>{});
+        });
+      }catch(error){console.warn("Identification push indisponible",error);}
+    });
+    if(!document.querySelector('script[data-onesignal-production]')){
+      const script=document.createElement("script");script.src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js";script.defer=true;script.dataset.onesignalProduction="";document.head.appendChild(script);
+    }
+  }
   const config=window.APP_CONFIG || {};
   const themes=Array.isArray(config.themes)?config.themes:["summer"];
   const themeStorageKey="ecurie-active-theme-v1";

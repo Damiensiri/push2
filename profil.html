@@ -10,16 +10,16 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
-<script src="assets/js/app-config.js?v=20260714-195000"></script>
-<script src="assets/js/app-layout.js?v=20260714-195000"></script>
+<script src="assets/js/app-config.js?v=20260714-194000"></script>
+<script src="assets/js/app-layout.js?v=20260716-8"></script>
 
-<link rel="stylesheet" href="assets/css/app.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/themes/summer.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/themes/autumn.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/themes/christmas.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/themes/winter.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/themes/spring.css?v=20260714-195000">
-<link rel="stylesheet" href="assets/css/pages/profil.css?v=20260714-195000">
+<link rel="stylesheet" href="assets/css/app.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/themes/summer.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/themes/autumn.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/themes/christmas.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/themes/winter.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/themes/spring.css?v=20260714-194000">
+<link rel="stylesheet" href="assets/css/pages/profil.css?v=20260714-194000">
 </head>
 
 <body class="app-page">
@@ -35,71 +35,48 @@
 <h1>MON PROFIL</h1>
 </header>
 
-<section class="profile-card profile-photo" aria-labelledby="photoTitle">
-<div class="profile-section-title" id="photoTitle">Photo de profil</div>
-<div class="profile-photo__preview">
+<section class="profile-card profile-form account-card" aria-labelledby="accountTitle">
+<div class="account-summary">
+<div class="profile-photo__preview account-photo">
 <img id="profilePhotoPreview" alt="Photo de profil" hidden>
 <svg id="profilePhotoFallback" viewBox="0 0 24 24" fill="none" aria-hidden="true">
 <circle cx="12" cy="8" r="3.2"/>
 <path d="M5.5 20c.6-4 2.8-6 6.5-6s5.9 2 6.5 6"/>
 </svg>
 </div>
-<div class="profile-photo__actions">
-<label class="profile-photo__button">
-Choisir une photo
-<input id="profilePhotoInput" type="file" accept="image/*">
-</label>
+<div><div class="profile-section-title" id="accountTitle">Compte connecté</div>
+<h2 id="accountIdentity">Chargement…</h2></div>
+</div>
+<div class="profile-photo__actions account-photo-actions">
+<label class="profile-photo__button">Changer la photo<input id="profilePhotoInput" type="file" accept="image/*"></label>
 <button class="profile-secondary" id="removePhoto" type="button" hidden>Supprimer</button>
+</div>
+<p id="profilePhotoStatus" class="profile-save-status" aria-live="polite"></p>
+<dl class="account-details"><div><dt>Adresse email</dt><dd id="accountEmailDisplay">—</dd></div></dl>
+<button id="openEmailChange" class="profile-secondary account-password-button" type="button">Changer mon adresse email</button>
+<form id="accountEmailForm" class="profile-form" hidden>
+<div class="profile-field"><label for="newEmail">Nouvelle adresse email</label><input id="newEmail" type="email" maxlength="160" autocomplete="email" required></div>
+<div class="profile-field"><label for="emailCurrentPassword">Mot de passe actuel</label><input id="emailCurrentPassword" type="password" autocomplete="current-password" required></div>
+<button class="profile-primary" type="submit">Enregistrer la nouvelle adresse</button>
+</form>
+<button id="openPasswordChange" class="profile-secondary account-password-button" type="button">Changer mon mot de passe</button>
+<form id="accountPasswordForm" class="profile-form" hidden>
+<p id="accountPasswordHelp" class="account-warning">Choisissez un nouveau mot de passe.</p>
+<div class="profile-field"><label for="currentPassword">Mot de passe actuel</label><input id="currentPassword" type="password" autocomplete="current-password" required></div>
+<div class="profile-field"><label for="newPassword">Nouveau mot de passe</label><input id="newPassword" type="password" minlength="12" maxlength="200" autocomplete="new-password" required></div>
+<button class="profile-primary" type="submit">Enregistrer le nouveau mot de passe</button>
+</form>
+<button id="accountLogout" class="profile-secondary account-logout" type="button">Se déconnecter</button>
+<p id="accountStatus" class="profile-save-status" aria-live="polite"></p>
+</section>
+
+<section class="profile-card profile-paddock-card" aria-labelledby="profileCardTitle">
+<div class="profile-section-title">Carte paddock</div>
+<div id="profileCardContent" aria-live="polite">
+<p class="profile-card-message">Actualisation de la carte…</p>
 </div>
 </section>
 
-<form class="profile-card profile-form" id="profileForm">
-<div class="profile-field">
-<label for="profileFirstName">Prénom</label>
-<input id="profileFirstName" type="text" autocomplete="given-name" maxlength="60" placeholder="Votre prénom">
-</div>
-
-<div class="profile-field">
-<label for="profileLastName">Nom</label>
-<input id="profileLastName" type="text" autocomplete="family-name" maxlength="80" placeholder="Votre nom">
-</div>
-
-<div class="profile-field">
-<label for="profileEmail">Adresse mail</label>
-<input id="profileEmail" type="email" inputmode="email" autocomplete="email" maxlength="160" placeholder="votre@email.fr">
-</div>
-
-<button class="profile-primary" type="submit">Enregistrer mon profil</button>
-<p class="profile-save-status" id="profileSaveStatus" aria-live="polite"></p>
-</form>
-
-<form class="profile-card profile-form" id="profileCardForm">
-<div class="profile-section-title">Carte paddock</div>
-<div class="profile-field">
-<label for="profileCardNumber">Numéro de carte paddock</label>
-<input id="profileCardNumber" type="text" autocomplete="off" maxlength="80" placeholder="Numéro de carte" required>
-</div>
-
-<div class="profile-card-actions">
-<button class="profile-primary" type="submit">Enregistrer la carte</button>
-<button class="profile-danger" id="removeCard" type="button">Supprimer la carte</button>
-</div>
-<p class="profile-save-status" id="profileCardStatus" aria-live="polite"></p>
-</form>
-
-<button class="profile-danger profile-reset-standalone" id="openReset" type="button">Réinitialiser mon profil</button>
-
-</div>
-
-<div class="profile-dialog" id="resetDialog" role="dialog" aria-modal="true" aria-labelledby="resetTitle" hidden>
-<div class="profile-dialog__card">
-<h2 id="resetTitle">Réinitialiser le profil ?</h2>
-<p>La photo, le prénom, le nom, l’adresse mail et le numéro de carte seront supprimés de cet appareil.</p>
-<div class="profile-dialog__actions">
-<button class="profile-secondary" id="cancelReset" type="button">Annuler</button>
-<button class="profile-danger" id="confirmReset" type="button">Réinitialiser</button>
-</div>
-</div>
 </div>
 
 <div class="profile-dialog profile-crop-dialog" id="cropDialog" role="dialog" aria-modal="true" aria-labelledby="cropTitle" hidden>
@@ -120,8 +97,9 @@ Zoom
 </div>
 </div>
 
-<script src="assets/js/profile-store.js?v=20260714-195000"></script>
-<script src="assets/js/pages/profil.js?v=20260714-195000"></script>
+<script src="assets/js/profile-store.js?v=20260714-194000"></script>
+<script src="assets/js/pages/profil.js?v=20260716-3"></script>
+<script src="assets/js/account.js?v=20260716-6"></script>
 
 </body>
 </html>

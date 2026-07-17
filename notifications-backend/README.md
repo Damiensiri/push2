@@ -1,12 +1,12 @@
-# Backend notifications — production
+# Backend notifications — bêta
 
 Ce dossier prépare le remplacement de Google Sheet / Apps Script par Cloudflare
-Workers + D1. Les trois pages publiques l’utilisent avec l’application OneSignal
-de production afin de conserver les abonnements existants.
+Workers + D1. Les trois pages bêta l’utilisent et une application OneSignal
+séparée permet les essais de push sans toucher aux abonnés de production.
 
-## Garanties de production
+## Garanties de la phase bêta
 
-- `PUSH_ENABLED` est activé uniquement après validation du backend et des données.
+- `PUSH_ENABLED` est activé uniquement avec l’application et la clé OneSignal bêta.
 - Aucune clé OneSignal ne doit être ajoutée au dépôt.
 - L’API publique conserve les neuf champs attendus, avec `expire: ""`.
 - L’ID est généré atomiquement par SQLite/D1.
@@ -21,11 +21,35 @@ de production afin de conserver les abonnements existants.
 - `POST /api/admin/notifications`
 - `PATCH /api/admin/notifications/:id`
 
+### Migration totale — comptes bêta
+
+Les comptes sont stockés uniquement dans la base D1 `ecurie-notifications-beta`.
+Le Backstage les crée avec un mot de passe temporaire ; l’utilisateur se
+connecte ensuite depuis `profil.html` et doit choisir son propre mot de passe.
+
+- `POST /api/auth/login`
+- `GET /api/auth/me`
+- `PATCH /api/auth/me`
+- `POST /api/auth/logout`
+- `GET /api/admin/users`
+- `POST /api/admin/users`
+- `PATCH /api/admin/users/:id`
+
+Les mots de passe utilisent PBKDF2-SHA-256 avec sel individuel et 100 000
+itérations. Seule l’empreinte SHA-256 des jetons de session est conservée dans
+D1. Désactiver un compte ou réinitialiser son mot de passe révoque ses sessions.
+
+La migration distante, après validation explicite, sera :
+
+```bash
+npx wrangler d1 execute ecurie-notifications-beta --remote --file migrations/0001_users.sql
+```
+
 ## Déploiement ultérieur
 
 Le déploiement nécessite un compte Cloudflare et ne doit être exécuté qu’après
 validation. Le `database_id` factice de `wrangler.toml` devra être remplacé par
-celui de la base de production au moment du déploiement.
+celui de la base bêta au moment du déploiement.
 
 Les secrets `ADMIN_TOKEN` et `ONESIGNAL_REST_API_KEY` sont créés avec Wrangler
 et ne doivent jamais être écrits dans un fichier versionné.
@@ -33,7 +57,7 @@ et ne doivent jamais être écrits dans un fichier versionné.
 ## Test local
 
 ```bash
-npx wrangler d1 execute ecurie-notifications-prod --local --file schema.sql
+npx wrangler d1 execute ecurie-notifications-beta --local --file schema.sql
 npx wrangler dev
 ```
 
@@ -46,7 +70,7 @@ Sauvegarder la réponse JSON actuelle, puis produire un fichier SQL D1 :
 
 ```bash
 node scripts/json-to-seed.mjs export-appscript.json > /tmp/notifications-seed.sql
-npx wrangler d1 execute ecurie-notifications-prod --local --file /tmp/notifications-seed.sql
+npx wrangler d1 execute ecurie-notifications-beta --local --file /tmp/notifications-seed.sql
 ```
 
 L’import conserve les IDs historiques afin de préserver les états lus déjà

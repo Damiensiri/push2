@@ -1,21 +1,9 @@
 (function initializeProfilePage(){
-const form=document.getElementById("profileForm");
-const cardForm=document.getElementById("profileCardForm");
-const firstName=document.getElementById("profileFirstName");
-const lastName=document.getElementById("profileLastName");
-const email=document.getElementById("profileEmail");
-const cardNumber=document.getElementById("profileCardNumber");
 const photoInput=document.getElementById("profilePhotoInput");
 const photoPreview=document.getElementById("profilePhotoPreview");
 const photoFallback=document.getElementById("profilePhotoFallback");
 const removePhoto=document.getElementById("removePhoto");
-const saveStatus=document.getElementById("profileSaveStatus");
-const cardStatus=document.getElementById("profileCardStatus");
-const removeCard=document.getElementById("removeCard");
-const resetDialog=document.getElementById("resetDialog");
-const openReset=document.getElementById("openReset");
-const cancelReset=document.getElementById("cancelReset");
-const confirmReset=document.getElementById("confirmReset");
+const photoStatus=document.getElementById("profilePhotoStatus");
 const cropDialog=document.getElementById("cropDialog");
 const cropCanvas=document.getElementById("cropCanvas");
 const cropZoom=document.getElementById("cropZoom");
@@ -119,23 +107,31 @@ else reject(new Error("Compression impossible"));
 
 async function loadProfile(){
 const profile=await ProfileStore.get();
-firstName.value=profile.firstName;
-lastName.value=profile.lastName;
-email.value=profile.email;
-cardNumber.value=profile.cardNumber;
 setPreview(profile.photo);
+}
+
+async function savePhoto(photo){
+if(photo&&window.BetaAccountPhoto)await window.BetaAccountPhoto.save(photo);
+if(!photo&&window.BetaAccountPhoto)await window.BetaAccountPhoto.remove();
+const profile=await ProfileStore.get();
+await ProfileStore.saveProfile({
+firstName:profile.firstName,
+lastName:profile.lastName,
+email:profile.email,
+photo
+});
 }
 
 photoInput.addEventListener("change",async()=>{
 const file=photoInput.files?.[0];
 if(!file)return;
 
-saveStatus.textContent="Préparation de la photo…";
+photoStatus.textContent="Préparation de la photo…";
 try{
 await openCropper(file);
-saveStatus.textContent="";
+photoStatus.textContent="";
 }catch(e){
-saveStatus.textContent="Cette photo ne peut pas être utilisée.";
+photoStatus.textContent="Cette photo ne peut pas être utilisée.";
 }
 photoInput.value="";
 });
@@ -179,7 +175,7 @@ drawCrop();
 
 cancelCrop.addEventListener("click",()=>{
 closeCropper();
-saveStatus.textContent="";
+photoStatus.textContent="";
 });
 
 confirmCrop.addEventListener("click",async()=>{
@@ -187,11 +183,13 @@ if(!cropImage)return;
 confirmCrop.disabled=true;
 try{
 drawCrop();
-setPreview(await cropToBlob());
+const croppedPhoto=await cropToBlob();
+setPreview(croppedPhoto);
+await savePhoto(croppedPhoto);
 closeCropper();
-saveStatus.textContent="Photo prête à être enregistrée.";
+photoStatus.textContent="Photo de profil enregistrée dans votre compte.";
 }catch(e){
-saveStatus.textContent="Cette photo ne peut pas être utilisée.";
+photoStatus.textContent="Cette photo ne peut pas être utilisée.";
 }finally{
 confirmCrop.disabled=false;
 }
@@ -200,78 +198,25 @@ confirmCrop.disabled=false;
 cropDialog.addEventListener("click",event=>{
 if(event.target===cropDialog){
 closeCropper();
-saveStatus.textContent="";
+photoStatus.textContent="";
 }
 });
 
-removePhoto.addEventListener("click",()=>{
+removePhoto.addEventListener("click",async()=>{
 setPreview(null);
-saveStatus.textContent="La photo sera supprimée à l’enregistrement.";
-});
-
-form.addEventListener("submit",async event=>{
-event.preventDefault();
-if(!form.reportValidity())return;
-
-saveStatus.textContent="Enregistrement…";
 try{
-await ProfileStore.saveProfile({
-firstName:firstName.value,
-lastName:lastName.value,
-email:email.value,
-photo:photoBlob
-});
-saveStatus.textContent="Profil enregistré sur cet appareil.";
+await savePhoto(null);
+photoStatus.textContent="Photo supprimée de votre compte.";
 }catch(e){
-saveStatus.textContent="Impossible d’enregistrer le profil.";
+photoStatus.textContent="Impossible de supprimer la photo.";
 }
-});
-
-cardForm.addEventListener("submit",event=>{
-event.preventDefault();
-if(!cardForm.reportValidity())return;
-
-cardStatus.textContent="Enregistrement…";
-try{
-const savedNumber=ProfileStore.saveCardNumber(cardNumber.value);
-cardNumber.value=savedNumber;
-cardStatus.textContent="Carte paddock enregistrée sur cet appareil.";
-}catch(e){
-cardStatus.textContent="Impossible d’enregistrer la carte.";
-}
-});
-
-removeCard.addEventListener("click",()=>{
-ProfileStore.removeCardNumber();
-cardForm.reset();
-cardStatus.textContent="Carte paddock supprimée de cet appareil.";
-});
-
-openReset.addEventListener("click",()=>{
-resetDialog.hidden=false;
-});
-
-cancelReset.addEventListener("click",()=>{
-resetDialog.hidden=true;
-});
-
-confirmReset.addEventListener("click",async()=>{
-await ProfileStore.reset();
-form.reset();
-cardForm.reset();
-setPreview(null);
-resetDialog.hidden=true;
-saveStatus.textContent="Profil réinitialisé sur cet appareil.";
-cardStatus.textContent="";
-});
-
-resetDialog.addEventListener("click",event=>{
-if(event.target===resetDialog)resetDialog.hidden=true;
 });
 
 window.addEventListener("beforeunload",()=>{
 if(photoUrl)URL.revokeObjectURL(photoUrl);
 });
+
+window.addEventListener("profile:account-synced",loadProfile);
 
 loadProfile();
 })();

@@ -388,7 +388,7 @@
       badges.append(
         badge(alert.active==="oui"?"Publiée":"Inactive",alert.active==="oui"?"active":"inactive"),
         badge(alert.epingle==="oui"?"Épinglée":"Non épinglée"),
-        badge(alert.push_sent_at?"Push envoyé":alert.push_requested?"Push en attente":"Sans push")
+        badge(alert.push_sent_at?"Push envoyé":alert.push_requested?"Push en attente (production)":"Sans push")
       );
 
       const edit=document.createElement("button");
@@ -472,7 +472,7 @@
         sent:"Alerte enregistrée et push envoyé.",
         "already-sent":"Alerte enregistrée. Le push avait déjà été envoyé.",
         "not-requested":"Alerte enregistrée sans push.",
-        "disabled-in-beta":"Alerte enregistrée. Le push de production n’est pas activé.",
+        "disabled":"Alerte enregistrée. Le push production n’est pas encore activé.",
         failed:`Alerte enregistrée, mais le push a échoué${result.push?.error?" : "+result.push.error:"."}`
       };
       const pushFailed=result.push?.status==="failed";

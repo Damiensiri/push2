@@ -2,8 +2,46 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   compatibleAlert,validateAlert,parisNow,isPushEnabled,sendRequestedPush,plainTextMessage,
-  calculateStatus,publicSpace,publicSchedule,validateSpace,validateSchedules,timeToMinutes
+  calculateStatus,publicSpace,publicSchedule,validateSpace,validateSchedules,timeToMinutes,
+  normalizeEmail,validatePassword,validateNewUser,hashPassword,verifyPassword,validatePaddockBooking,
+  reservationLocalMinute,duePaddockReminderTypes
 } from "../src/worker.js";
+
+test("les comptes utilisateurs normalisent et valident l’identité",()=>{
+  assert.equal(normalizeEmail("  Test@Example.COM "),"test@example.com");
+  assert.equal(validatePassword("trop-court"),"Le mot de passe doit contenir au moins 12 caractères");
+  assert.equal(validateNewUser({email:"invalide",firstName:"A",lastName:"B"}).error,"Adresse email invalide");
+  assert.deepEqual(validateNewUser({
+    email:" Test@Example.COM ",firstName:" Alice ",lastName:" Martin ",role:"client"
+  }),{email:"test@example.com",firstName:"Alice",lastName:"Martin",cardNumber:"",role:"client"});
+});
+
+test("les créneaux paddock sont validés côté Worker",()=>{
+  assert.deepEqual(validatePaddockBooking({paddock:"grande",date:"2026-07-17",time:"09:30",duration:90}),{
+    paddock:"grande",date:"2026-07-17",time:"09:30",duration:90,startMinutes:570
+  });
+  assert.equal(validatePaddockBooking({paddock:"inconnu",date:"2026-07-17",time:"09:30",duration:90}).error,"Paddock invalide");
+  assert.equal(validatePaddockBooking({paddock:"grande",date:"2026-07-17",time:"09:30",duration:45}).error,"Durée invalide");
+  assert.equal(validatePaddockBooking({paddock:"maison",date:"2026-07-17",time:"09:30",duration:90}).error,
+    "Les réservations de 1 h 30 sont réservées à Grande voie et Beudot");
+});
+
+test("les rappels paddock sont calculés une seule fois aux bons instants",()=>{
+  const reservation={date:"2026-07-17",time:"15:00",duration:90};
+  const start=reservationLocalMinute(reservation.date,reservation.time);
+  assert.deepEqual(duePaddockReminderTypes(reservation,start-60),["start_1h"]);
+  assert.deepEqual(duePaddockReminderTypes(reservation,start+85),["end_5m"]);
+  assert.deepEqual(duePaddockReminderTypes(reservation,start),[]);
+});
+
+test("les mots de passe sont salés et vérifiables",async()=>{
+  const encoded=await hashPassword("mot-de-passe-beta-solide");
+  const user={password_hash:encoded.hash,password_salt:encoded.salt,password_iterations:encoded.iterations};
+  assert.equal(await verifyPassword("mot-de-passe-beta-solide",user),true);
+  assert.equal(await verifyPassword("autre-mot-de-passe",user),false);
+  const second=await hashPassword("mot-de-passe-beta-solide");
+  assert.notEqual(second.salt,encoded.salt);
+});
 
 test("le contrat public conserve les neuf champs historiques",()=>{
   const value=compatibleAlert({
