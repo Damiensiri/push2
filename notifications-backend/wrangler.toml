@@ -9,7 +9,7 @@ ONESIGNAL_APP_ID = "85a477ff-3d8d-4975-960d-c7e69100a0ff"
 ADMIN_ONESIGNAL_APP_ID = "104b740c-3a7b-4e39-87b2-847d00f300fb"
 MAILER_ENDPOINT = "https://script.google.com/macros/s/AKfycbygbKTIyyymQN7hD3WV_Tu_47GrZFZ0ZEA5dQLHMBvb1QLyKU4Xh5kRU1Y2Q9FziNEC/exec"
 ALLOWED_ORIGIN = "https://app.damiensiri.com,https://damiensiri.github.io,https://backstage.damiensiri.com,https://ecurie-paddock.web.app,http://127.0.0.1:8000"
-GOOGLE_CALENDAR_REDIRECT_URI = "https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/google-calendar/callback"
+GOOGLE_CALENDAR_ICAL_URL = "https://calendar.google.com/calendar/ical/calendrier.damiensiri%40gmail.com/public/basic.ics"
 
 [[d1_databases]]
 binding = "DB"
