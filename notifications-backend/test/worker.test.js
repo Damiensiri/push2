@@ -4,7 +4,8 @@ import {
   compatibleAlert,validateAlert,parisNow,isPushEnabled,sendRequestedPush,plainTextMessage,
   calculateStatus,publicSpace,publicSchedule,validateSpace,validateSchedules,timeToMinutes,findNextSpaceOpening,
   normalizeEmail,validatePassword,validateNewUser,hashPassword,verifyPassword,validatePaddockBooking,
-  reservationLocalMinute,duePaddockReminderTypes
+  reservationLocalMinute,duePaddockReminderTypes,validatePaddockRequestDate,
+  validStaffMonth,staffMonthRange,staffMinutes,validateStaffShift
 } from "../src/worker.js";
 
 test("les comptes utilisateurs normalisent et valident l’identité",()=>{
@@ -24,6 +25,41 @@ test("les créneaux paddock sont validés côté Worker",()=>{
   assert.equal(validatePaddockBooking({paddock:"grande",date:"2026-07-17",time:"09:30",duration:45}).error,"Durée invalide");
   assert.equal(validatePaddockBooking({paddock:"maison",date:"2026-07-17",time:"09:30",duration:90}).error,
     "Les réservations de 1 h 30 sont réservées à Grande voie et Beudot");
+});
+
+test("les demandes Liberté sont ouvertes du lundi au samedi avec délai la veille",()=>{
+  const fridayAt19=new Date("2026-07-17T17:00:00.000Z");
+  const fridayAt21=new Date("2026-07-17T19:00:00.000Z");
+  assert.equal(validatePaddockRequestDate("2026-07-18",{now:fridayAt19}),"");
+  assert.equal(validatePaddockRequestDate("2026-07-18",{now:fridayAt21}),"Demande possible uniquement jusqu’à 20h la veille");
+  assert.equal(validatePaddockRequestDate("2026-07-19",{now:fridayAt19}),"Demande impossible le dimanche");
+});
+
+test("le planning salariés construit automatiquement les semaines du mois",()=>{
+  assert.equal(validStaffMonth("2026-07"),"2026-07");
+  assert.equal(validStaffMonth("2026-13"),"");
+  assert.deepEqual(staffMonthRange("2026-07"),{start:"2026-06-29",end:"2026-08-02"});
+});
+
+test("les heures salariés sont calculées en minutes sans saisie incohérente",()=>{
+  assert.equal(staffMinutes("07:30","12:00"),270);
+  assert.equal(staffMinutes("14:00","17:45"),225);
+  assert.equal(staffMinutes("12:00","07:30"),null);
+  assert.equal(staffMinutes("",""),0);
+  assert.equal(validateStaffShift({
+    employeeId:1,date:"2026-07-01",status:"work",
+    morningStart:"07:30",morningEnd:"12:00",afternoonStart:"14:00",afternoonEnd:"17:45"
+  }).totalMinutes,495);
+  assert.equal(validateStaffShift({
+    employeeId:1,date:"2026-07-01",status:"work",morningStart:"07:30",morningEnd:""
+  }).error,"Les horaires de début et de fin doivent être complets et cohérents");
+});
+
+test("les exceptions Liberté ouvrent ou ferment une date",()=>{
+  const now=new Date("2026-07-17T10:00:00.000Z");
+  assert.equal(validatePaddockRequestDate("2026-07-19",{now,exception:{open:true,comment:"Ouverture concours"}}),"");
+  assert.equal(validatePaddockRequestDate("2026-07-20",{now,exception:{open:false,comment:"Fermeture exceptionnelle"}}),"Fermeture exceptionnelle");
+  assert.equal(validatePaddockRequestDate("2026-07-17",{now,allowToday:true,ignoreDeadline:true}),"");
 });
 
 test("les rappels paddock sont calculés une seule fois aux bons instants",()=>{
