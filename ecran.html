@@ -92,6 +92,31 @@
   line-height:1.35;
 }
 
+.alert.has{
+  border-color:rgba(255,210,128,.9);
+  color:#fff;
+  background:
+    radial-gradient(circle at 20% 0%,rgba(255,255,255,.25),transparent 42%),
+    linear-gradient(145deg,rgba(237,151,35,.96),rgba(190,95,22,.9));
+  box-shadow:0 10px 24px rgba(154,83,18,.28),inset 0 1px 0 rgba(255,255,255,.24);
+  font-size:.86rem;
+  font-weight:750;
+}
+
+.alert.has::before{
+  content:"⚠️";
+  margin-right:5px;
+}
+
+.alert.has.urgent{
+  border-color:rgba(255,130,140,.95);
+  color:#fff;
+  background:
+    radial-gradient(circle at 20% 0%,rgba(255,255,255,.22),transparent 42%),
+    linear-gradient(145deg,rgba(225,0,15,.9),rgba(155,0,18,.88));
+  box-shadow:0 10px 26px rgba(130,0,15,.34),inset 0 1px 0 rgba(255,255,255,.22);
+}
+
 @media(max-width:1000px){
   .card{
     padding:14px 14px 13px 21px;
