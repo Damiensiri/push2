@@ -5,7 +5,7 @@ const EXCEPTIONS_URL="https://ecurie-notifications-prod.damiensiri-pro.workers.d
 
 const REFRESH=60000;
 const FRESHNESS=60000;
-const CACHE_KEY="horaires_effectifs_v2";
+const CACHE_KEY="horaires_effectifs_v3";
 const EXCEPTIONS_CACHE_KEY="horaires_exceptions";
 const CACHE_CONFIRMED_AT_KEY="horaires_confirmed_at";
 
@@ -36,7 +36,7 @@ function formatTime(val){
 
 }
 
-function currentWeekDates(date=new Date()){
+function rollingDates(date=new Date()){
   const parts={};
   new Intl.DateTimeFormat("en-CA",{
     timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"
@@ -44,38 +44,21 @@ function currentWeekDates(date=new Date()){
     if(part.type!=="literal") parts[part.type]=part.value;
   });
   const current=new Date(Date.UTC(Number(parts.year),Number(parts.month)-1,Number(parts.day),12));
-  const currentDay=current.getUTCDay()||7;
-  const monday=new Date(current);
-  monday.setUTCDate(current.getUTCDate()-(currentDay-1));
   const names=["lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+  const todayIndex=(current.getUTCDay()+6)%7;
   const dates={};
   names.forEach((name,index)=>{
-    const day=new Date(monday);
-    day.setUTCDate(monday.getUTCDate()+index);
+    const day=new Date(current);
+    const offset=(index-todayIndex+7)%7;
+    day.setUTCDate(current.getUTCDate()+offset);
     dates[day.toISOString().slice(0,10)]=name;
   });
   return dates;
 }
 
-function orderedWeekDates(date=new Date()){
-  return Object.keys(currentWeekDates(date));
-}
-
-function schedulesForCurrentWeek(payload,date=new Date()){
-  if(Array.isArray(payload)) return payload;
-
-  const weekDates=currentWeekDates(date);
-  return Object.entries(weekDates)
-    .map(([iso,jour])=>{
-      const rows=Array.isArray(payload?.[iso])?payload[iso]:[];
-      const row=rows.find(item=>item.jour===jour);
-      return row||{jour,ouvert:"",ferme:""};
-    });
-}
-
 function applyExceptions(data,date=new Date()){
   exceptions={};
-  const weekDates=currentWeekDates(date);
+  const weekDates=rollingDates(date);
 
   data.forEach(row=>{
     const jour=weekDates[String(row.date||"")];
@@ -101,6 +84,10 @@ function renderHoraires(data){
 
     if(exceptions[row.jour]){
       contenu=exceptions[row.jour];
+    }else if(row.statut==="ferme"){
+      contenu="Fermé";
+    }else if(row.statut==="hors-service"){
+      contenu="Hors service";
     }else{
       contenu=`${formatTime(row.ouvert)} - ${formatTime(row.ferme)}`;
     }
@@ -169,8 +156,8 @@ function fetchJson(url){
 
 function loadHoraires(){
 
-const dates=orderedWeekDates();
-const schedulesUrl=`${SHEET_URL}?dates=${encodeURIComponent(dates.join(","))}`;
+const weekDates=rollingDates();
+const schedulesUrl=`${SHEET_URL}?dates=${encodeURIComponent(Object.keys(weekDates).join(","))}`;
 
 Promise.all([
 fetchJson(schedulesUrl),
@@ -186,7 +173,7 @@ fetchJson(EXCEPTIONS_URL)
     localStorage.setItem(CACHE_CONFIRMED_AT_KEY,String(Date.now()));
   }catch(e){}
 
-  renderHoraires(schedulesForCurrentWeek(horaires));
+  renderHoraires(resolveWeeklyHoraires(horaires,weekDates));
 
   if(syncPending) confirmSync();
 
@@ -197,6 +184,14 @@ fetchJson(EXCEPTIONS_URL)
 
 }
 
+function resolveWeeklyHoraires(payload,weekDates){
+  if(Array.isArray(payload))return payload;
+  return Object.entries(weekDates).map(([date,jour])=>{
+    const rows=payload?.[date]||[];
+    return rows.find(row=>row.jour===jour)||{jour,ouvert:"",ferme:""};
+  });
+}
+
 /* ===== CACHE INSTANT ===== */
 
 try{
@@ -204,7 +199,7 @@ try{
   if(cachedExceptions) applyExceptions(JSON.parse(cachedExceptions));
 
   const cachedHoraires=localStorage.getItem(CACHE_KEY);
-  if(cachedHoraires) renderHoraires(schedulesForCurrentWeek(JSON.parse(cachedHoraires)));
+  if(cachedHoraires) renderHoraires(resolveWeeklyHoraires(JSON.parse(cachedHoraires),rollingDates()));
 }catch(e){}
 
 if(!cacheIsFresh()) requireSync();
