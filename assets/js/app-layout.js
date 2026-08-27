@@ -6,8 +6,10 @@
   const hadServiceWorkerController=Boolean(navigator.serviceWorker?.controller);
   if("serviceWorker" in navigator){
     const reloadKey=`ecurie-pwa-controller-reload:${layoutVersion}`;
+    const openedAt=Date.now();
     if(hadServiceWorkerController){
       navigator.serviceWorker.addEventListener("controllerchange",()=>{
+        if(Date.now()-openedAt<4000)return;
         try{
           if(sessionStorage.getItem(reloadKey))return;
           sessionStorage.setItem(reloadKey,"1");
@@ -25,7 +27,7 @@
   const authPage=location.pathname.split("/").pop()==="connexion.html";
   const authToken=localStorage.getItem("ecurie_prod_session")||"";
   if(!authPage){
-    document.documentElement.style.visibility="hidden";
+    document.documentElement.classList.add("auth-checking");
     if(!authToken){
       location.replace("connexion.html");
       return;
@@ -35,14 +37,14 @@
     }).then(async response=>{
       if(!response.ok)throw new Error("Session invalide");
       const data=await response.json();
-      document.documentElement.style.visibility="";
+      document.documentElement.classList.remove("auth-checking");
       initializePushIdentity(data.user);
     }).catch(()=>{
       localStorage.removeItem("ecurie_prod_session");
       location.replace("connexion.html");
     });
   }else if(authToken){
-    document.documentElement.style.visibility="hidden";
+    document.documentElement.classList.add("auth-checking");
   }
 
   function initializePushIdentity(user){
@@ -109,7 +111,10 @@
   const configuredTheme=themes.includes(config.theme)?config.theme:"summer";
   let activeTheme=readStoredTheme()||seasonalFallbackTheme()||configuredTheme;
   let lastThemeConfigCheck=0;
+  let initialPaintSettled=false;
+  let settleTimer=null;
 
+  document.documentElement.classList.add("app-booting");
   document.documentElement.dataset.theme=activeTheme;
 
   function seasonalFallbackTheme(){
@@ -170,7 +175,7 @@
 
   function fadeCurrentStage(transitionDuration){
     const stage=document.querySelector(".ambient-stage");
-    if(!stage||!transitionDuration)return;
+    if(!stage||!transitionDuration||!initialPaintSettled)return;
 
     const style=getComputedStyle(stage);
     const fade=document.createElement("div");
@@ -213,7 +218,7 @@
     if(!themes.includes(themeName))return false;
 
     if(activeTheme!==themeName){
-      fadeCurrentStage(Number(settings.transitionDuration)||0);
+      fadeCurrentStage(initialPaintSettled ? Number(settings.transitionDuration)||0 : 0);
       activeTheme=themeName;
     }
 
@@ -445,7 +450,7 @@
       const previous=document.documentElement.dataset.daypart;
       const stage=document.querySelector(".ambient-stage");
 
-      if(previous && previous!==daypart && stage){
+      if(previous && previous!==daypart && stage && initialPaintSettled){
         fadeCurrentStage(transitionDuration||defaultTransition);
       }
 
@@ -505,7 +510,7 @@
       }
     }
 
-    syncThemeBackground(resumeTransition);
+    syncThemeBackground(0);
 
     document.addEventListener("visibilitychange",()=>{
       if(!document.hidden){
@@ -537,6 +542,23 @@
   window.addEventListener("DOMContentLoaded",()=>{
     document.body.dataset.theme=activeTheme;
     initializeThemeBackground();
-    syncRemoteTheme({transitionDuration:1000,force:true});
+    syncRemoteTheme({transitionDuration:0,force:true}).finally(scheduleInitialPaintSettled);
   });
+
+  function scheduleInitialPaintSettled(){
+    if(settleTimer)clearTimeout(settleTimer);
+    const settle=()=>{
+      settleTimer=setTimeout(()=>{
+        initialPaintSettled=true;
+        document.documentElement.classList.remove("app-booting");
+        document.documentElement.classList.add("app-ready");
+      },450);
+    };
+
+    if(document.readyState==="complete"){
+      settle();
+    }else{
+      window.addEventListener("load",settle,{once:true});
+    }
+  }
 })();
