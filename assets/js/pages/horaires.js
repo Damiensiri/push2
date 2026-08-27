@@ -57,6 +57,22 @@ function currentWeekDates(date=new Date()){
   return dates;
 }
 
+function orderedWeekDates(date=new Date()){
+  return Object.keys(currentWeekDates(date));
+}
+
+function schedulesForCurrentWeek(payload,date=new Date()){
+  if(Array.isArray(payload)) return payload;
+
+  const weekDates=currentWeekDates(date);
+  return Object.entries(weekDates)
+    .map(([iso,jour])=>{
+      const rows=Array.isArray(payload?.[iso])?payload[iso]:[];
+      const row=rows.find(item=>item.jour===jour);
+      return row||{jour,ouvert:"",ferme:""};
+    });
+}
+
 function applyExceptions(data,date=new Date()){
   exceptions={};
   const weekDates=currentWeekDates(date);
@@ -152,8 +168,11 @@ function fetchJson(url){
 
 function loadHoraires(){
 
+const dates=orderedWeekDates();
+const schedulesUrl=`${SHEET_URL}?dates=${encodeURIComponent(dates.join(","))}`;
+
 Promise.all([
-fetchJson(SHEET_URL),
+fetchJson(schedulesUrl),
 fetchJson(EXCEPTIONS_URL)
 ])
 .then(([horaires,exc])=>{
@@ -166,7 +185,7 @@ fetchJson(EXCEPTIONS_URL)
     localStorage.setItem(CACHE_CONFIRMED_AT_KEY,String(Date.now()));
   }catch(e){}
 
-  renderHoraires(horaires);
+  renderHoraires(schedulesForCurrentWeek(horaires));
 
   if(syncPending) confirmSync();
 
