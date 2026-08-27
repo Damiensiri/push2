@@ -5,7 +5,7 @@ const EXCEPTIONS_URL="https://ecurie-notifications-prod.damiensiri-pro.workers.d
 
 const REFRESH=60000;
 const FRESHNESS=60000;
-const CACHE_KEY="horaires";
+const CACHE_KEY="horaires_effectifs_v2";
 const EXCEPTIONS_CACHE_KEY="horaires_exceptions";
 const CACHE_CONFIRMED_AT_KEY="horaires_confirmed_at";
 
@@ -158,7 +158,8 @@ function cacheIsFresh(){
 }
 
 function fetchJson(url){
-  return fetch(url+"?t="+Date.now(),{cache:"no-store"}).then(response=>{
+  const separator=url.includes("?")?"&":"?";
+  return fetch(url+separator+"t="+Date.now(),{cache:"no-store"}).then(response=>{
     if(!response.ok) throw new Error("Réponse réseau invalide");
     return response.json();
   });
@@ -203,7 +204,7 @@ try{
   if(cachedExceptions) applyExceptions(JSON.parse(cachedExceptions));
 
   const cachedHoraires=localStorage.getItem(CACHE_KEY);
-  if(cachedHoraires) renderHoraires(JSON.parse(cachedHoraires));
+  if(cachedHoraires) renderHoraires(schedulesForCurrentWeek(JSON.parse(cachedHoraires)));
 }catch(e){}
 
 if(!cacheIsFresh()) requireSync();
