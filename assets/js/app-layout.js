@@ -51,6 +51,8 @@
     if(!user?.id)return;
     const endpoint="https://ecurie-notifications-prod.damiensiri-pro.workers.dev/api/push/subscription";
     const installationKey="ecurie_prod_push_installation";
+    const promptMemoryKey="ecurie_prod_push_prompt_last_seen";
+    const promptDelayMs=14*24*60*60*1000;
     let installationId=localStorage.getItem(installationKey)||"";
     if(!installationId){installationId=crypto.randomUUID();localStorage.setItem(installationKey,installationId);}
     async function saveSubscription(subscriptionId,method="PUT"){
@@ -80,13 +82,29 @@
       try{
         await OneSignal.init({appId:"85a477ff-3d8d-4975-960d-c7e69100a0ff",notifyButton:{enable:false},welcomeNotification:{disable:true},
           serviceWorkerPath:"OneSignalSDKWorker.js",serviceWorkerParam:{scope:"/"},
-          promptOptions:{slidedown:{prompts:[{type:"push",autoPrompt:true,text:{actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",acceptButton:"Autoriser",cancelButton:"Plus tard"}}]}}});
+          promptOptions:{slidedown:{prompts:[{type:"push",autoPrompt:false,text:{actionMessage:"Souhaitez-vous recevoir les notifications de l’écurie ?",acceptButton:"Autoriser",cancelButton:"Plus tard"}}]}}});
         await OneSignal.login(`prod-user-${user.id}`);
         const registerCurrent=async()=>{
           const subscriptionId=OneSignal.User.PushSubscription.id;
           if(subscriptionId)await saveSubscription(subscriptionId);
         };
         await registerCurrent();
+        const nativePermission=OneSignal.Notifications?.permissionNative||Notification?.permission||"default";
+        const pushOptedIn=Boolean(OneSignal.User.PushSubscription.optedIn||OneSignal.User.PushSubscription.id);
+        const lastPrompt=Number(localStorage.getItem(promptMemoryKey)||0);
+        if(nativePermission==="default"&&!pushOptedIn&&Date.now()-lastPrompt>promptDelayMs){
+          localStorage.setItem(promptMemoryKey,String(Date.now()));
+          setTimeout(()=>{
+            window.OneSignalDeferred.push(async PromptOneSignal=>{
+              try{
+                if(PromptOneSignal.Notifications?.permissionNative==="default"){
+                  if(PromptOneSignal.Slidedown?.promptPush)await PromptOneSignal.Slidedown.promptPush();
+                  else if(PromptOneSignal.Notifications?.requestPermission)await PromptOneSignal.Notifications.requestPermission();
+                }
+              }catch(error){}
+            });
+          },1200);
+        }
         OneSignal.User.PushSubscription.addEventListener("change",event=>{
           const subscriptionId=event?.current?.id||OneSignal.User.PushSubscription.id;
           if(subscriptionId)saveSubscription(subscriptionId).catch(()=>{});
