@@ -1774,12 +1774,13 @@ async function loadPublicStatuses(env,date=new Date(),dateOverride=""){
     env.DB.prepare("SELECT message,urgent FROM home_alert WHERE id=1").first()
   ]);
   const scheduleMap=new Map(schedulesResult.map(row=>[`${row.space_slug}:${row.day}`,row]));
-  const rows=spacesResult.results.map(space=>{
+  const rows=[];
+  for(const space of spacesResult.results){
     const schedule=scheduleMap.get(`${space.slug}:${effectiveDay}`)||null;
-    const nextOpening=findNextSpaceOpening(scheduleMap,space.slug,effectiveDay,paris.minutes);
+    const nextOpening=await findNextSpaceOpeningForDate(env,space.slug,effectiveDate,paris.minutes);
     const activity=activityOptions[space.slug]||null;
-    return publicSpace(schedule?{...space,...spaceProgramFields(schedule,space)}:space,schedule,paris.minutes,nextOpening,activity);
-  });
+    rows.push(publicSpace(schedule?{...space,...spaceProgramFields(schedule,space)}:space,schedule,paris.minutes,nextOpening,activity));
+  }
   rows.push({
     espace:"accueil",statut_manuel:"",statut_auto:"ferme",liberte:"",longe:"",info:"",
     alerte:alert?.message||"",horaire_special:"",horaire_affiche:"",urgent:alert?.urgent||"non"
@@ -1789,7 +1790,8 @@ async function loadPublicStatuses(env,date=new Date(),dateOverride=""){
 
 function publicSpace(space,schedule,minutes,nextOpening=null,activity=null){
   const normalHours=schedule?`${schedule.opens_at} - ${schedule.closes_at}`:"";
-  const status=calculateStatus(space.manual_status,schedule,minutes);
+  let status=calculateStatus(space.manual_status,schedule,minutes);
+  if(status==="prevision"&&!nextOpening&&space.manual_status!=="prevision")status="ferme";
   const hidesHours=status==="ferme"||status==="hors-service";
   const activityBlocked=["ferme","hors-service"].includes(status);
   const activityValue=field=>{
@@ -1803,7 +1805,7 @@ function publicSpace(space,schedule,minutes,nextOpening=null,activity=null){
   if(space.manual_status==="ouvert"&&status==="ouvert"&&schedule){
     const opens=timeToMinutes(schedule.opens_at),closes=timeToMinutes(schedule.closes_at);
     transition={type:"closing",time:schedule.closes_at,dayOffset:closes<=opens&&minutes>=opens?1:0};
-  }else if(space.manual_status==="ouvert"&&status==="prevision"&&nextOpening){
+  }else if(status==="prevision"&&nextOpening){
     transition={type:"opening",time:nextOpening.time,dayOffset:nextOpening.dayOffset};
   }
   return{
@@ -1837,12 +1839,34 @@ function effectiveActivityValue(activity,minutes){
 
 function findNextSpaceOpening(scheduleMap,slug,currentDay,minutes){
   const today=scheduleMap.get(`${slug}:${currentDay}`)||null;
-  const todayOpening=timeToMinutes(today?.opens_at);
+  const todayOpening=isOpenSchedule(today)?timeToMinutes(today?.opens_at):null;
   if(todayOpening!==null&&minutes<todayOpening)return{time:today.opens_at,dayOffset:0};
-  for(let dayOffset=1;dayOffset<=7;dayOffset++){
+  for(let dayOffset=1;dayOffset<=1;dayOffset++){
     const day=((currentDay-1+dayOffset)%7)+1;
     const schedule=scheduleMap.get(`${slug}:${day}`)||null;
-    if(timeToMinutes(schedule?.opens_at)!==null)return{time:schedule.opens_at,dayOffset};
+    if(isOpenSchedule(schedule)&&timeToMinutes(schedule?.opens_at)!==null)return{time:schedule.opens_at,dayOffset};
+  }
+  return null;
+}
+
+function isOpenSchedule(schedule){
+  if(!schedule)return false;
+  const status=String(schedule.exception_manual_status||schedule.program_manual_status||"ouvert").toLowerCase();
+  return status==="ouvert"&&hasValidTimeRange(schedule.opens_at,schedule.closes_at);
+}
+
+async function findNextSpaceOpeningForDate(env,slug,dateString,minutes){
+  const today=validIsoDate(dateString)||parisNow().date;
+  for(let dayOffset=0;dayOffset<=1;dayOffset++){
+    const date=addIsoDays(today,dayOffset);
+    const day=dayNumberFromIsoDate(date);
+    if(!day)continue;
+    const schedules=await loadEffectiveSpaceSchedules(env,date);
+    const schedule=schedules.find(row=>row.space_slug===slug&&Number(row.day)===day)||null;
+    if(!isOpenSchedule(schedule))continue;
+    const opens=timeToMinutes(schedule.opens_at);
+    if(dayOffset===0&&opens!==null&&minutes>=opens)continue;
+    return{time:schedule.opens_at,dayOffset};
   }
   return null;
 }
@@ -2062,8 +2086,8 @@ async function loadEffectivePaddockHoursByDate(env,daysAhead=14){
 function spaceProgramFields(schedule,space={}){
   const fields={};
   if(schedule.program_manual_status&&space.manual_status==="ouvert")fields.manual_status=schedule.program_manual_status;
-  if(schedule.program_special_hours!==undefined)fields.special_hours=schedule.program_special_hours;
-  if(schedule.program_info!==undefined)fields.info=schedule.program_info;
+  if(schedule.program_special_hours!==undefined&&!String(space.special_hours||"").trim())fields.special_hours=schedule.program_special_hours;
+  if(schedule.program_info!==undefined&&!String(space.info||"").trim())fields.info=schedule.program_info;
   if(schedule.program_liberte)fields.liberte=schedule.program_liberte;
   if(schedule.program_longe)fields.longe=schedule.program_longe;
   return fields;
@@ -3395,6 +3419,7 @@ export class RealtimeHub{
 export{
   compatibleAlert,validateAlert,validateScheduledNotification,parisNow,parisDateTime,isPushEnabled,sendRequestedPush,plainTextMessage,
   calculateStatus,publicSpace,publicSchedule,validateSpace,validateSchedules,timeToMinutes,effectiveActivityValue,parisClock,findNextSpaceOpening,
+  spaceProgramFields,
   normalizeEmail,validatePassword,validateNewUser,hashPassword,verifyPassword,publicUser,validatePaddockBooking,validatePaddockHours,
   parisLocalMinute,reservationLocalMinute,duePaddockReminderTypes,isValidPushSubscriptionId,isValidPushInstallationId,processPaddockPushReminders,
   processScheduledNotifications,validatePaddockRequestDate,validStaffMonth,staffMonthRange,staffMinutes,validateStaffShift,isStaffWeekStart,addIsoDays,
