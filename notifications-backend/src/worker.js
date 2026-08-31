@@ -3309,12 +3309,37 @@ function validatePaddockBooking(input){
 }
 
 async function paddockBookingPolicyError(env,booking){
+  const hours=await loadEffectivePaddockHours(env,booking.date);
+  const dayName=DAY_NAMES[dayNumberFromIsoDate(booking.date)];
+  const config=hours?.[booking.paddock]?.[dayName];
+  if(!config||config.closed)return"Ce paddock est fermé ce jour";
+  const openMinutes=timeToMinutes(config.open);
+  const closeMinutes=timeToMinutes(config.close);
+  if(openMinutes===null||closeMinutes===null)return"Les horaires du paddock sont indisponibles";
+  if(!fitsWithinRange(booking.startMinutes,booking.duration,openMinutes,closeMinutes)){
+    return"Ce créneau ne permet pas de terminer avant la fermeture du paddock";
+  }
+  if(normalizeClosedIntervals(config.closedIntervals).some(interval=>rangesOverlap(
+    booking.startMinutes,booking.startMinutes+booking.duration,timeToMinutes(interval.open),timeToMinutes(interval.close)
+  )))return"Ce paddock est fermé sur cette tranche horaire";
   if(booking.duration!==90)return"";
   const restriction=await env.DB.prepare(`SELECT block_grande_90,block_beudot_90
     FROM paddock_restrictions WHERE date=?`).bind(booking.date).first();
   if(booking.paddock==="grande"&&restriction?.block_grande_90)return"Les réservations de 1 h 30 sont indisponibles à Grande voie ce jour";
   if(booking.paddock==="beudot"&&restriction?.block_beudot_90)return"Les réservations de 1 h 30 sont indisponibles à Beudot ce jour";
   return"";
+}
+
+function fitsWithinRange(start,duration,open,close){
+  if(!Number.isFinite(start)||!Number.isFinite(duration)||open===null||close===null)return false;
+  if(close>open)return start>=open&&start+duration<=close;
+  return start>=open||start+duration<=close;
+}
+
+function rangesOverlap(start,end,blockedStart,blockedEnd){
+  if(blockedStart===null||blockedEnd===null||blockedStart===blockedEnd)return false;
+  if(blockedEnd>blockedStart)return start<blockedEnd&&end>blockedStart;
+  return start<blockedEnd||end>blockedStart;
 }
 
 function validatePaddockRequestDate(date,{now=new Date(),exception=null,ignoreDeadline=false,allowToday=false}={}){

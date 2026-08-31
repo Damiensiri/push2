@@ -11,16 +11,16 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
-<script src="assets/js/app-config.js?v=20260831-4"></script>
-<script src="assets/js/app-layout.js?v=20260831-4"></script>
+<script src="assets/js/app-config.js?v=20260831-5"></script>
+<script src="assets/js/app-layout.js?v=20260831-5"></script>
 
-<link rel="stylesheet" href="assets/css/app.css?v=20260831-4">
-<link rel="stylesheet" href="assets/css/themes/summer.css?v=20260831-4">
-<link rel="stylesheet" href="assets/css/themes/autumn.css?v=20260831-4">
-<link rel="stylesheet" href="assets/css/themes/christmas.css?v=20260831-4">
-<link rel="stylesheet" href="assets/css/themes/winter.css?v=20260831-4">
-<link rel="stylesheet" href="assets/css/themes/spring.css?v=20260831-4">
-<link rel="stylesheet" href="assets/css/pages/planningpaddock.css?v=20260831-4">
+<link rel="stylesheet" href="assets/css/app.css?v=20260831-5">
+<link rel="stylesheet" href="assets/css/themes/summer.css?v=20260831-5">
+<link rel="stylesheet" href="assets/css/themes/autumn.css?v=20260831-5">
+<link rel="stylesheet" href="assets/css/themes/christmas.css?v=20260831-5">
+<link rel="stylesheet" href="assets/css/themes/winter.css?v=20260831-5">
+<link rel="stylesheet" href="assets/css/themes/spring.css?v=20260831-5">
+<link rel="stylesheet" href="assets/css/pages/planningpaddock.css?v=20260831-5">
 </head>
 
 <body class="app-page planningpaddock-page">
@@ -126,7 +126,7 @@
 </div>
 </div>
 
-<script src="assets/js/app-mailer.js?v=20260831-4"></script>
+<script src="assets/js/app-mailer.js?v=20260831-5"></script>
 
 <script>
 
@@ -160,6 +160,7 @@ document.getElementById("confirmSheet").classList.remove("show")
 
 let reservations=[]
 let horaires={}
+let horairesParDate={}
 let restrictions={}
 let requestExceptions={}
 let selectedDate=null
@@ -418,11 +419,12 @@ durationSelect.addEventListener("change",updatePaddocks)
 async function loadDataRealtime(){
 try{
 const data=await paddockApi("/api/paddocks/planning")
-const nextSignature=JSON.stringify([data.reservations||[],data.horaires||{},data.restrictions||{},data.requestExceptions||{}])
+const nextSignature=JSON.stringify([data.reservations||[],data.horaires||{},data.horairesParDate||{},data.restrictions||{},data.requestExceptions||{}])
 const planningChanged=nextSignature!==lastPlanningSignature
 lastPlanningSignature=nextSignature
 reservations=data.reservations||[]
 horaires=data.horaires||{}
+horairesParDate=data.horairesParDate||{}
 restrictions=data.restrictions||{}
 requestExceptions=data.requestExceptions||{}
 currentViewer=data.viewer
@@ -534,6 +536,30 @@ return date.getFullYear()+"-"+
 
 }
 
+function dayNameFromDateKey(dateKey){
+const parts=String(dateKey||"").split("-")
+const date=parts.length===3?new Date(parts[0],parts[1]-1,parts[2]):new Date()
+return ["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"][date.getDay()]
+}
+
+function paddockHoursForDate(paddock,dateKey){
+const day=dayNameFromDateKey(dateKey)
+return horairesParDate?.[dateKey]?.[paddock]?.[day] || horaires?.[paddock]?.[day]
+}
+
+function rangeOverlaps(start,end,blockedStart,blockedEnd){
+if(!Number.isFinite(blockedStart) || !Number.isFinite(blockedEnd) || blockedStart===blockedEnd)return false
+if(blockedEnd>blockedStart)return start<blockedEnd && end>blockedStart
+return start<blockedEnd || end>blockedStart
+}
+
+function overlapsClosedInterval(config,start,duration){
+const end=start+duration
+return (config?.closedIntervals||[]).some(interval=>{
+return rangeOverlaps(start,end,timeToMinutes(interval.open),timeToMinutes(interval.close))
+})
+}
+
 function requestDateError(date,now=new Date()){
 const exception=requestExceptions[date]
 if(exception&&!exception.open)return exception.comment||"Les demandes sont exceptionnellement fermées pour cette date"
@@ -549,8 +575,7 @@ return""
 function firstFreeSlotToday(paddock,now){
 
 const today=localDateKey(now)
-const names=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"]
-const config=horaires[paddock] && horaires[paddock][names[now.getDay()]]
+const config=paddockHoursForDate(paddock,today)
 
 if(!config || config.closed){
 return {state:"closed",label:"Fermé"}
@@ -589,6 +614,7 @@ return current<reservationEnd && current+60>reservationStart
 
 if(!startsSoon &&
    fitsBeforeClosing(current,60,closeMinutes) &&
+   !overlapsClosedInterval(config,current,60) &&
    !conflict){
 return {state:"free",label:minutesToTime(current)}
 }
@@ -657,21 +683,14 @@ hideStep("stepButton")
 container.innerHTML='<div class="restrictionMessage">⚠️ 1h30 indisponible pour cette date. Les créneaux affichés sont en 1h.</div>'
 }
 
-const parts=selectedDate.split("-")
-const d=new Date(parts[0],parts[1]-1,parts[2])
+const config=paddockHoursForDate(paddock,selectedDate)
 
-const names=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"]
-
-let jour=names[d.getDay()]
-
-if(!horaires[paddock] || !horaires[paddock][jour] || horaires[paddock][jour].closed){
+if(!config || config.closed){
 
 container.innerHTML='<div class="fullMessage">Paddock fermé</div>'
 return
 
 }
-
-const config=horaires[paddock][jour]
 
 let startMinutes=timeToMinutes(config.open)
 let closeMinutes=timeToMinutes(config.close)
@@ -686,7 +705,7 @@ let current=startMinutes
 
 while(current < closeMinutes){
 
-if(fitsBeforeClosing(current,duration,closeMinutes)){
+if(fitsBeforeClosing(current,duration,closeMinutes) && !overlapsClosedInterval(config,current,duration)){
 slots.push(minutesToTime(current))
 }
 
@@ -730,6 +749,7 @@ if(diff<10) return
 }
 
 if(!fitsBeforeClosing(slotStartMinutes,duration,closeMinutes)) return
+if(overlapsClosedInterval(config,slotStartMinutes,duration)) return
 
 let conflict=false
 let mine=false
@@ -782,7 +802,7 @@ if(conflict && duration === 90){
 
         return slotStartMinutes < resEnd && slotEnd > resStart
 
-    }) && fitsBeforeClosing(slotStartMinutes,60,closeMinutes)
+    }) && fitsBeforeClosing(slotStartMinutes,60,closeMinutes) && !overlapsClosedInterval(config,slotStartMinutes,60)
 
 }
 
@@ -988,21 +1008,22 @@ return
 let slotStartMinutes=timeToMinutes(selected.time);
 let slotEndMinutes=slotStartMinutes+Number(selected.duration);
 
-const selectedDateParts=selected.date.split("-");
-const selectedDayDate=new Date(
-    selectedDateParts[0],
-    selectedDateParts[1]-1,
-    selectedDateParts[2]
-);
-const selectedDayNames=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
-const selectedDay=selectedDayNames[selectedDayDate.getDay()];
-const selectedHours=horaires[selected.paddock] && horaires[selected.paddock][selectedDay];
+const selectedHours=paddockHoursForDate(selected.paddock,selected.date);
 const selectedClosingTime=selectedHours && !selectedHours.closed
     ? timeToMinutes(selectedHours.close)
     : NaN;
 
 if(!fitsBeforeClosing(slotStartMinutes,Number(selected.duration),selectedClosingTime)){
     alert("Ce créneau ne permet pas de terminer avant la fermeture du paddock.");
+    selected=null;
+    generate();
+    hideStep("stepDetails");
+    hideStep("stepButton");
+    return;
+}
+
+if(overlapsClosedInterval(selectedHours,slotStartMinutes,Number(selected.duration))){
+    alert("Ce paddock est fermé sur cette tranche horaire.");
     selected=null;
     generate();
     hideStep("stepDetails");
@@ -1130,7 +1151,7 @@ if(event.detail?.type==="paddocks"||event.detail?.type==="all")loadDataRealtime(
 })
   
 </script>
-<script src="assets/js/status-realtime.js?v=20260831-4"></script>
+<script src="assets/js/status-realtime.js?v=20260831-5"></script>
 <div id="confirmSheet">
 
 <div class="sheetContent">
