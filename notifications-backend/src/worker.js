@@ -325,14 +325,15 @@ export default{
       if(url.pathname==="/api/paddocks/planning"&&request.method==="GET"){
         const viewer=await authenticatedUser(request,env);
         if(!viewer)return json({error:"Non autorisé"},401,cors);
-        const [reservationResult,hours,datedHours,restrictionResult,requestExceptionResult]=await Promise.all([
+        const today=parisNow().date;
+        const [reservationResult,datedHours,restrictionResult,requestExceptionResult]=await Promise.all([
           env.DB.prepare(`SELECT id,user_id,name,paddock,date,time,duration FROM paddock_reservations
             WHERE date>=date('now') ORDER BY date,time`).all(),
-          loadEffectivePaddockHours(env,parisNow().date),
           loadEffectivePaddockHoursByDate(env,14),
           env.DB.prepare("SELECT date,block_grande_90,block_beudot_90 FROM paddock_restrictions WHERE date>=date('now')").all(),
           env.DB.prepare("SELECT date,is_open,comment FROM paddock_request_exceptions WHERE date>=date('now')").all()
         ]);
+        const hours=datedHours[today]||await loadEffectivePaddockHours(env,today);
         const restrictions={};
         for(const row of restrictionResult.results)restrictions[row.date]={blockGrande90:Boolean(row.block_grande_90),blockBeudot90:Boolean(row.block_beudot_90)};
         const requestExceptions={};
@@ -1295,8 +1296,9 @@ export default{
           await notifyRealtime(env,"paddocks");
           let email={requested:false,sent:false};
           if(reservation.email&&reservation.email.includes("@"))email=await sendPaddockReservationCancellationEmail(env,reservation,comment);
+          const push=await sendPaddockReservationCancellationPush(env,reservation);
           await sendAdminEventPush(env,"Réservation paddock annulée",`${reservation.name} — ${reservation.date} à ${reservation.time}`,"paddocks.html");
-          return json({deleted:true,email},200,cors);
+          return json({deleted:true,email,push},200,cors);
         }
 
         if(request.method==="PUT"&&url.pathname==="/api/admin/paddocks/restrictions"){
@@ -1767,17 +1769,19 @@ async function loadPublicStatuses(env,date=new Date(),dateOverride=""){
   const paris=parisClock(date);
   const effectiveDate=dateOverride||parisDateTime(date).date;
   const effectiveDay=dayNumberFromIsoDate(effectiveDate)||paris.day;
+  const tomorrow=addIsoDays(effectiveDate,1);
   const [spacesResult,schedulesResult,activityOptions,alert]=await Promise.all([
     env.DB.prepare("SELECT * FROM spaces ORDER BY position").all(),
-    loadEffectiveSpaceSchedules(env,effectiveDate),
+    loadEffectiveSpaceSchedulesByDateRange(env,[effectiveDate,tomorrow]),
     loadEffectiveActivityOptions(env,effectiveDate),
     env.DB.prepare("SELECT message,urgent FROM home_alert WHERE id=1").first()
   ]);
-  const scheduleMap=new Map(schedulesResult.map(row=>[`${row.space_slug}:${row.day}`,row]));
+  const scheduleMap=new Map((schedulesResult[effectiveDate]||[]).map(row=>[`${row.space_slug}:${row.day}`,row]));
+  const tomorrowMap=new Map((schedulesResult[tomorrow]||[]).map(row=>[`${row.space_slug}:${row.day}`,row]));
   const rows=[];
   for(const space of spacesResult.results){
     const schedule=scheduleMap.get(`${space.slug}:${effectiveDay}`)||null;
-    const nextOpening=await findNextSpaceOpeningForDate(env,space.slug,effectiveDate,paris.minutes);
+    const nextOpening=findNextSpaceOpeningFromMaps(scheduleMap,tomorrowMap,space.slug,effectiveDay,paris.minutes);
     const activity=activityOptions[space.slug]||null;
     rows.push(publicSpace(schedule?{...space,...spaceProgramFields(schedule,space)}:space,schedule,paris.minutes,nextOpening,activity));
   }
@@ -1804,7 +1808,10 @@ function publicSpace(space,schedule,minutes,nextOpening=null,activity=null){
   let transition=null;
   if(space.manual_status==="ouvert"&&status==="ouvert"&&schedule){
     const opens=timeToMinutes(schedule.opens_at),closes=timeToMinutes(schedule.closes_at);
-    transition={type:"closing",time:schedule.closes_at,dayOffset:closes<=opens&&minutes>=opens?1:0};
+    const partialClose=nextClosedInterval(schedule,minutes);
+    transition=partialClose
+      ? {type:"closing",time:partialClose.open,dayOffset:0}
+      : {type:"closing",time:schedule.closes_at,dayOffset:closes<=opens&&minutes>=opens?1:0};
   }else if(status==="prevision"&&nextOpening){
     transition={type:"opening",time:nextOpening.time,dayOffset:nextOpening.dayOffset};
   }
@@ -1846,6 +1853,16 @@ function findNextSpaceOpening(scheduleMap,slug,currentDay,minutes){
     const schedule=scheduleMap.get(`${slug}:${day}`)||null;
     if(isOpenSchedule(schedule)&&timeToMinutes(schedule?.opens_at)!==null)return{time:schedule.opens_at,dayOffset};
   }
+  return null;
+}
+
+function findNextSpaceOpeningFromMaps(todayMap,tomorrowMap,slug,currentDay,minutes){
+  const today=todayMap.get(`${slug}:${currentDay}`)||null;
+  const todayOpening=isOpenSchedule(today)?timeToMinutes(today?.opens_at):null;
+  if(todayOpening!==null&&minutes<todayOpening)return{time:today.opens_at,dayOffset:0};
+  const tomorrowDay=(currentDay%7)+1;
+  const tomorrow=tomorrowMap.get(`${slug}:${tomorrowDay}`)||null;
+  if(isOpenSchedule(tomorrow)&&timeToMinutes(tomorrow?.opens_at)!==null)return{time:tomorrow.opens_at,dayOffset:1};
   return null;
 }
 
@@ -1963,14 +1980,53 @@ async function loadEffectiveGeneralSchedules(env,dateString=""){
 }
 
 async function loadEffectiveGeneralSchedulesByDate(env,dateList=[]){
+  const dates=[...new Set(dateList.map(validIsoDate).filter(Boolean))];
+  if(!dates.length)return{};
+  const sorted=[...dates].sort();
+  const [base,programs,exceptions]=await Promise.all([
+    env.DB.prepare("SELECT day,opens_at,closes_at FROM general_schedules ORDER BY day").all(),
+    loadApplicableHourProgramsWithEntries(env,"general",sorted[0],sorted[sorted.length-1]),
+    env.DB.prepare("SELECT * FROM hour_exceptions WHERE date>=? AND date<=? AND scope='general' AND target_slug='general' ORDER BY date")
+      .bind(sorted[0],sorted[sorted.length-1]).all()
+  ]);
+  const exceptionsByDate=new Map();
+  exceptions.results.map(publicHourException).forEach(item=>exceptionsByDate.set(item.date,item));
   const result={};
-  for(const date of dateList){
-    result[date]=(await loadEffectiveGeneralSchedules(env,date)).map(publicSchedule);
+  for(const date of dates){
+    result[date]=buildEffectiveGeneralSchedulesForDate(base.results,applicableEntriesForDate(programs,date),exceptionsByDate.get(date),date).map(publicSchedule);
   }
   return result;
 }
 
+function buildEffectiveGeneralSchedulesForDate(baseRows,entries,exception,date){
+  const day=dayNumberFromIsoDate(date);
+  const map=new Map(baseRows.map(row=>[Number(row.day),{...row}]));
+  entries.filter(row=>row.target_slug==="general").forEach(row=>{
+    const closed=String(row.manual_status||"ouvert")!=="ouvert";
+    map.set(Number(row.day),{day:row.day,opens_at:closed?"":row.opens_at,closes_at:closed?"":row.closes_at,program_manual_status:row.manual_status});
+  });
+  if(exception&&day){
+    const current=map.get(day)||{day};
+    if(isPartialClosureException(exception))map.set(day,addClosedInterval(current,exception));
+    else {
+      const closed=exception.manualStatus!=="ouvert";
+      map.set(day,{day,opens_at:closed?"":exception.opensAt,closes_at:closed?"":exception.closesAt,exception_manual_status:exception.manualStatus});
+    }
+  }
+  return [...map.values()].sort((a,b)=>Number(a.day)-Number(b.day));
+}
+
+const effectiveSpaceScheduleCache=new Map();
 async function loadEffectiveSpaceSchedules(env,dateString=""){
+  const date=validIsoDate(dateString)||parisNow().date;
+  const cached=effectiveSpaceScheduleCache.get(date);
+  if(cached&&Date.now()-cached.at<10000)return cached.value;
+  const value=await loadEffectiveSpaceSchedulesUncached(env,date);
+  effectiveSpaceScheduleCache.set(date,{at:Date.now(),value});
+  return value;
+}
+
+async function loadEffectiveSpaceSchedulesUncached(env,dateString=""){
   const date=validIsoDate(dateString)||parisNow().date;
   const day=dayNumberFromIsoDate(date);
   const base=await env.DB.prepare("SELECT * FROM space_schedules ORDER BY space_slug,day").all();
@@ -1978,11 +2034,12 @@ async function loadEffectiveSpaceSchedules(env,dateString=""){
   const map=new Map(base.results.map(row=>[`${row.space_slug}:${row.day}`,{...row}]));
   entries.forEach(row=>{
     const spaceSlug=row.target_slug==="grande"?"grande-voie":row.target_slug;
+    const closed=String(row.manual_status||"ouvert")!=="ouvert";
     map.set(`${spaceSlug}:${row.day}`,{
       space_slug:spaceSlug,
       day:row.day,
-      opens_at:row.opens_at,
-      closes_at:row.closes_at,
+      opens_at:closed?"":row.opens_at,
+      closes_at:closed?"":row.closes_at,
       program_manual_status:row.manual_status,
       program_special_hours:row.special_hours,
       program_info:row.info,
@@ -1999,6 +2056,76 @@ async function loadEffectiveSpaceSchedules(env,dateString=""){
       if(isPartialClosureException(item))map.set(key,addClosedInterval(current,item));
       else map.set(key,{space_slug:spaceSlug,day,opens_at:item.opensAt,closes_at:item.closesAt,
         program_manual_status:item.manualStatus,hour_exception:true});
+    });
+  }
+  return [...map.values()].sort((a,b)=>String(a.space_slug).localeCompare(String(b.space_slug))||Number(a.day)-Number(b.day));
+}
+
+async function loadEffectiveSpaceSchedulesByDateRange(env,dateList=[]){
+  const dates=[...new Set(dateList.map(validIsoDate).filter(Boolean))];
+  if(!dates.length)return{};
+  const result={};
+  const missing=[];
+  for(const date of dates){
+    const cached=effectiveSpaceScheduleCache.get(date);
+    if(cached&&Date.now()-cached.at<10000)result[date]=cached.value;
+    else missing.push(date);
+  }
+  if(!missing.length)return result;
+  const sorted=[...missing].sort();
+  const [base,workPrograms,paddockPrograms,exceptions]=await Promise.all([
+    env.DB.prepare("SELECT * FROM space_schedules ORDER BY space_slug,day").all(),
+    loadApplicableHourProgramsWithEntries(env,"work",sorted[0],sorted[sorted.length-1]),
+    loadApplicableHourProgramsWithEntries(env,"paddocks",sorted[0],sorted[sorted.length-1]),
+    env.DB.prepare("SELECT * FROM hour_exceptions WHERE date>=? AND date<=? ORDER BY date,scope,target_slug")
+      .bind(sorted[0],sorted[sorted.length-1]).all()
+  ]);
+  const exceptionsByDate=new Map();
+  exceptions.results.map(publicHourException).forEach(item=>{
+    const list=exceptionsByDate.get(item.date)||[];
+    list.push(item);
+    exceptionsByDate.set(item.date,list);
+  });
+  for(const date of missing){
+    const value=buildEffectiveSpaceSchedulesForDate(base.results,[
+      ...applicableEntriesForDate(workPrograms,date),
+      ...applicableEntriesForDate(paddockPrograms,date)
+    ],exceptionsByDate.get(date)||[],date);
+    effectiveSpaceScheduleCache.set(date,{at:Date.now(),value});
+    result[date]=value;
+  }
+  return result;
+}
+
+function buildEffectiveSpaceSchedulesForDate(baseRows,entries,exceptions,date){
+  const day=dayNumberFromIsoDate(date);
+  const map=new Map(baseRows.map(row=>[`${row.space_slug}:${row.day}`,{...row}]));
+  entries.forEach(row=>{
+    const spaceSlug=row.target_slug==="grande"?"grande-voie":row.target_slug;
+    const closed=String(row.manual_status||"ouvert")!=="ouvert";
+    map.set(`${spaceSlug}:${row.day}`,{
+      space_slug:spaceSlug,
+      day:row.day,
+      opens_at:closed?"":row.opens_at,
+      closes_at:closed?"":row.closes_at,
+      program_manual_status:row.manual_status,
+      program_special_hours:row.special_hours,
+      program_info:row.info,
+      program_liberte:row.liberte,
+      program_longe:row.longe
+    });
+  });
+  if(day){
+    exceptions.filter(item=>item.scope==="work"||item.scope==="paddocks").forEach(item=>{
+      const spaceSlug=item.scope==="paddocks"&&item.targetSlug==="grande"?"grande-voie":item.targetSlug;
+      const key=`${spaceSlug}:${day}`;
+      const current=map.get(key)||{space_slug:spaceSlug,day};
+      if(isPartialClosureException(item))map.set(key,addClosedInterval(current,item));
+      else {
+        const closed=item.manualStatus!=="ouvert";
+        map.set(key,{space_slug:spaceSlug,day,opens_at:closed?"":item.opensAt,closes_at:closed?"":item.closesAt,
+          program_manual_status:item.manualStatus,hour_exception:true});
+      }
     });
   }
   return [...map.values()].sort((a,b)=>String(a.space_slug).localeCompare(String(b.space_slug))||Number(a.day)-Number(b.day));
@@ -2073,14 +2200,89 @@ async function loadEffectivePaddockHours(env,dateString=""){
 async function loadEffectivePaddockHoursByDate(env,daysAhead=14){
   const days=Math.max(1,Math.min(Number(daysAhead)||14,180));
   const today=parisNow().date;
-  const result={};
+  const dates=[];
   for(let index=0;index<days;index++){
     const date=new Date(`${today}T12:00:00`);
     date.setDate(date.getDate()+index);
-    const key=date.toISOString().slice(0,10);
-    result[key]=await loadEffectivePaddockHours(env,key);
+    dates.push(date.toISOString().slice(0,10));
+  }
+  const [base,programs,exceptions]=await Promise.all([
+    env.DB.prepare("SELECT paddock,schedule_json FROM paddock_hours").all(),
+    loadApplicableHourProgramsWithEntries(env,"paddocks",dates[0],dates[dates.length-1]),
+    env.DB.prepare("SELECT * FROM hour_exceptions WHERE date>=? AND date<=? ORDER BY date,scope,target_slug")
+      .bind(dates[0],dates[dates.length-1]).all()
+  ]);
+  const exceptionsByDate=new Map();
+  exceptions.results.map(publicHourException).forEach(item=>{
+    const list=exceptionsByDate.get(item.date)||[];
+    list.push(item);
+    exceptionsByDate.set(item.date,list);
+  });
+  const result={};
+  for(const date of dates){
+    result[date]=buildEffectivePaddockHoursForDate(base.results,applicableEntriesForDate(programs,date),exceptionsByDate.get(date)||[],date);
   }
   return result;
+}
+
+async function loadApplicableHourProgramsWithEntries(env,scope,startDate,endDate){
+  const programResult=await env.DB.prepare(`
+    SELECT * FROM hour_programs
+    WHERE scope=? AND starts_on<=? AND (ends_on IS NULL OR ends_on='' OR ends_on>=?)
+    ORDER BY starts_on DESC,id DESC
+  `).bind(scope,endDate,startDate).all();
+  const programs=programResult.results;
+  if(!programs.length)return[];
+  const entryResult=await env.DB.prepare(
+    `SELECT * FROM hour_program_entries WHERE program_id IN (${programs.map(()=>"?").join(",")}) ORDER BY program_id,target_slug,day`
+  ).bind(...programs.map(program=>program.id)).all();
+  const byProgram=new Map();
+  entryResult.results.forEach(row=>{
+    const list=byProgram.get(Number(row.program_id))||[];
+    list.push(row);
+    byProgram.set(Number(row.program_id),list);
+  });
+  return programs.map(program=>({...program,entries:byProgram.get(Number(program.id))||[]}));
+}
+
+function applicableEntriesForDate(programs,date){
+  const program=programs.find(item=>item.starts_on<=date&&(!item.ends_on||item.ends_on>=date));
+  return program?.entries||[];
+}
+
+function buildEffectivePaddockHoursForDate(baseRows,entries,exceptions,date){
+  const day=dayNumberFromIsoDate(date);
+  const hours={};
+  for(const row of baseRows)hours[row.paddock]=JSON.parse(row.schedule_json);
+  const dayNames=["","lundi","mardi","mercredi","jeudi","vendredi","samedi","dimanche"];
+  for(const row of entries){
+    if(!["maison","grande","beudot"].includes(row.target_slug))continue;
+    const dayName=dayNames[Number(row.day)];
+    if(!dayName)continue;
+    const paddockHours=hours[row.target_slug]||{};
+    const closed=["ferme","hors-service"].includes(String(row.manual_status||""));
+    paddockHours[dayName]={closed,open:closed?"":row.opens_at,close:closed?"":row.closes_at};
+    hours[row.target_slug]=paddockHours;
+  }
+  if(day){
+    const dayName=DAY_NAMES[day];
+    exceptions.filter(item=>item.scope==="paddocks"&&["maison","grande","beudot"].includes(item.targetSlug)).forEach(item=>{
+      const paddockHours=hours[item.targetSlug]||{};
+      if(isPartialClosureException(item)){
+        paddockHours[dayName]={
+          ...(paddockHours[dayName]||{}),
+          closed:false,
+          closedIntervals:normalizeClosedIntervals([...(paddockHours[dayName]?.closedIntervals||[]),{open:item.opensAt,close:item.closesAt,status:item.manualStatus}])
+        };
+        hours[item.targetSlug]=paddockHours;
+        return;
+      }
+      const closed=["ferme","hors-service"].includes(item.manualStatus);
+      paddockHours[dayName]={closed,open:closed?"":item.opensAt,close:closed?"":item.closesAt};
+      hours[item.targetSlug]=paddockHours;
+    });
+  }
+  return hours;
 }
 
 function spaceProgramFields(schedule,space={}){
@@ -2475,7 +2677,9 @@ async function processPaddockPushReminders(env,now=new Date()){
   if(!isPushEnabled(env))return{processed:0,sent:0,disabled:true};
   const parisDate=new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"}).format(now);
   const result=await env.DB.prepare(`SELECT id,user_id,paddock,date,time,duration FROM paddock_reservations
-    WHERE user_id IS NOT NULL AND date BETWEEN date(?,'-1 day') AND date(?,'+1 day')`).bind(parisDate,parisDate).all();
+    WHERE user_id IS NOT NULL AND date BETWEEN date(?,'-1 day') AND date(?,'+1 day')
+    AND EXISTS(SELECT 1 FROM users WHERE users.id=paddock_reservations.user_id AND users.role='client')`)
+    .bind(parisDate,parisDate).all();
   const currentMinute=parisLocalMinute(now);let sent=0;
   for(const reservation of result.results){
     const subscriptions=await env.DB.prepare("SELECT subscription_id FROM user_push_subscriptions WHERE user_id=?")
@@ -2540,6 +2744,88 @@ async function sendPaddockReminderPush(env,reservation,type,subscriptionIds,deli
     if(!response.ok||data.errors)return{sent:false,error:data.errors||`HTTP ${response.status}`};
     return{sent:true,id:data.id||null};
   }catch(error){return{sent:false,error:String(error?.message||error)};}
+}
+
+async function sendOneSignalPush(env,payload){
+  try{
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),8000);
+    let response;
+    try{
+      response=await fetch("https://api.onesignal.com/notifications",{
+        method:"POST",
+        signal:controller.signal,
+        headers:{
+          "authorization":`Key ${env.ONESIGNAL_REST_API_KEY}`,
+          "content-type":"application/json; charset=utf-8"
+        },
+        body:JSON.stringify(payload)
+      });
+    }finally{
+      clearTimeout(timeout);
+    }
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok||data.errors)return{sent:false,error:data.errors||`HTTP ${response.status}`};
+    if(Number(data.recipients)===0)return{sent:false,error:"Aucun destinataire OneSignal actif"};
+    return{sent:true,id:data.id||null,recipients:Number(data.recipients)||null};
+  }catch(error){
+    return{sent:false,error:String(error?.message||error)};
+  }
+}
+
+async function sendUserPush(env,userId,{title,message,url,deliveryKey,email}){
+  if(!isPushEnabled(env))return{enabled:false,status:"disabled"};
+  const cleanEmail=normalizeEmail(email);
+  if(!userId&&!cleanEmail)return{enabled:true,status:"no-user"};
+  const subscriptions=userId&&cleanEmail
+    ?await env.DB.prepare(`SELECT DISTINCT s.subscription_id FROM user_push_subscriptions s
+      LEFT JOIN users u ON u.id=s.user_id WHERE s.user_id=? OR u.email=? COLLATE NOCASE
+      ORDER BY s.updated_at DESC`)
+      .bind(userId,cleanEmail).all()
+    :userId
+      ?await env.DB.prepare("SELECT subscription_id FROM user_push_subscriptions WHERE user_id=? ORDER BY updated_at DESC")
+        .bind(userId).all()
+      :await env.DB.prepare(`SELECT s.subscription_id FROM user_push_subscriptions s
+        JOIN users u ON u.id=s.user_id WHERE u.email=? COLLATE NOCASE ORDER BY s.updated_at DESC`)
+        .bind(cleanEmail).all();
+  const subscriptionIds=[...new Set((subscriptions.results||[]).map(item=>item.subscription_id).filter(Boolean))].slice(0,2);
+  const payload={
+    app_id:env.ONESIGNAL_APP_ID,
+    headings:{fr:title,en:title},
+    contents:{fr:message,en:message},
+    url
+  };
+  const sendTo=async(ids,key)=>sendOneSignalPush(env,{...payload,include_subscription_ids:ids,idempotency_key:key});
+  try{
+    if(!subscriptionIds.length)return{enabled:true,status:"no-subscribers"};
+    const result=await sendTo(subscriptionIds,deliveryKey||crypto.randomUUID());
+    if(result.sent)return{enabled:true,status:"sent",id:result.id||null,recipients:result.recipients,method:"subscriptions"};
+    if(subscriptionIds.length>1){
+      const sent=[];const errors=[];
+      for(const id of subscriptionIds){
+        const single=await sendTo([id],crypto.randomUUID());
+        if(single.sent)sent.push(single.id||id);
+        else errors.push(single.error||"Échec OneSignal");
+      }
+      if(sent.length)return{enabled:true,status:"sent",id:sent[0]||null,recipients:sent.length,partialErrors:errors.slice(0,3)};
+    }
+    return{enabled:true,status:"failed",error:result.error||"Échec OneSignal"};
+  }catch(error){
+    return{enabled:true,status:"failed",error:String(error?.message||error)};
+  }
+}
+
+async function sendPaddockReservationCancellationPush(env,reservation){
+  const paddock=({maison:"Maison",grande:"Grande voie",beudot:"Beudot"})[reservation.paddock]||reservation.paddock;
+  const title="Réservation paddock annulée";
+  const message=`Votre réservation au paddock ${paddock} du ${reservation.date} à ${reservation.time} a été annulée.`;
+  return sendUserPush(env,reservation.user_id,{
+    title,
+    message:message.slice(0,450),
+    url:"https://app.damiensiri.com/mesreservations.html",
+    email:reservation.email,
+    deliveryKey:crypto.randomUUID()
+  });
 }
 
 async function attachSchedules(env,alerts){
@@ -3081,16 +3367,26 @@ async function loadOrders(env,whereClause,bindings){
   const statement=env.DB.prepare(`SELECT o.id,o.public_id,o.user_id,o.source,o.status,o.comment,o.total_cents,o.billed,
     o.billed_at,o.created_at,o.updated_at,u.first_name,u.last_name,u.email
     FROM orders o JOIN users u ON u.id=o.user_id ${whereClause} ORDER BY o.created_at DESC,o.id DESC`);
-  const result=(bindings.length?await statement.bind(...bindings).all():await statement.all()).results;
-  return Promise.all(result.map(async row=>{
-    const itemResult=await env.DB.prepare(`SELECT product_id,name,unit_price_cents,quantity,line_total_cents
-      FROM order_items WHERE order_id=? ORDER BY id`).bind(row.id).all();
-    return{id:Number(row.id),publicId:row.public_id,userId:Number(row.user_id),source:row.source,status:row.status,
+  const rows=(bindings.length?await statement.bind(...bindings).all():await statement.all()).results;
+  if(!rows.length)return[];
+  const itemsByOrder=new Map();
+  const chunkSize=80;
+  for(let index=0;index<rows.length;index+=chunkSize){
+    const chunk=rows.slice(index,index+chunkSize);
+    const placeholders=chunk.map(() => "?").join(",");
+    const itemResult=await env.DB.prepare(`SELECT order_id,product_id,name,unit_price_cents,quantity,line_total_cents
+      FROM order_items WHERE order_id IN (${placeholders}) ORDER BY order_id,id`).bind(...chunk.map(row=>row.id)).all();
+    for(const item of itemResult.results){
+      const orderId=Number(item.order_id);
+      if(!itemsByOrder.has(orderId))itemsByOrder.set(orderId,[]);
+      itemsByOrder.get(orderId).push({productId:item.product_id,name:item.name,price:Number(item.unit_price_cents)/100,
+        quantity:Number(item.quantity),lineTotal:Number(item.line_total_cents)/100});
+    }
+  }
+  return rows.map(row=>({id:Number(row.id),publicId:row.public_id,userId:Number(row.user_id),source:row.source,status:row.status,
       comment:row.comment||"",total:Number(row.total_cents)/100,billed:Boolean(row.billed),billedAt:row.billed_at||null,
       createdAt:row.created_at,updatedAt:row.updated_at,customer:{firstName:row.first_name,lastName:row.last_name,email:row.email},
-      items:itemResult.results.map(item=>({productId:item.product_id,name:item.name,price:Number(item.unit_price_cents)/100,
-        quantity:Number(item.quantity),lineTotal:Number(item.line_total_cents)/100}))};
-  }));
+      items:itemsByOrder.get(Number(row.id))||[]}));
 }
 
 async function sendOrderEmail(env,type,order,user){
@@ -3424,4 +3720,5 @@ export{
   parisLocalMinute,reservationLocalMinute,duePaddockReminderTypes,isValidPushSubscriptionId,isValidPushInstallationId,processPaddockPushReminders,
   processScheduledNotifications,validatePaddockRequestDate,validStaffMonth,staffMonthRange,staffMinutes,validateStaffShift,isStaffWeekStart,addIsoDays,
   parseIcsCalendar,googleCalendarIcalUrls
+  ,sendUserPush,sendPaddockReservationCancellationPush
 };
