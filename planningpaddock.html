@@ -114,6 +114,7 @@
 </div>
 <div class="stepBody">
 <p id="bookingIdentity"></p>
+<div id="bookingHorses"></div>
 <label id="confirmationEmailOption"><input id="confirmEmail" type="checkbox"> Recevoir une confirmation par email</label>
 <p id="miseEmailNotice" hidden></p>
 </div>
@@ -127,6 +128,7 @@
 </div>
 
 <script src="assets/js/app-mailer.js?v=20260831-5"></script>
+<script src="assets/js/paddock-horses.js?v=20260906-prod-chevaux"></script>
 
 <script>
 
@@ -183,6 +185,7 @@ const miseEmailNotice=document.getElementById("miseEmailNotice")
 
 function updateEmailRequirement(){
 const mise=document.getElementById("type").value==="mise"
+document.getElementById('bookingHorses').hidden=mise
 confirmEmail.checked=mise
 confirmEmail.disabled=mise
 confirmationEmailOption.hidden=false
@@ -427,6 +430,8 @@ horaires=data.horaires||{}
 horairesParDate=data.horairesParDate||{}
 restrictions=data.restrictions||{}
 requestExceptions=data.requestExceptions||{}
+const horseBox=document.getElementById('bookingHorses');
+PaddockHorses.render(horseBox,data.horseOptions||[],PaddockHorses.selected(horseBox));
 currentViewer=data.viewer
 adminMode=currentViewer?.role==="admin"
 title.innerHTML=adminMode?"RÉSERVATION 🔧":"RÉSERVATION"
@@ -1060,6 +1065,7 @@ paddock:selected.paddock,
 date:selected.date,
 time:selected.time,
 duration:selected.duration,
+horseIds:PaddockHorses.selected(document.getElementById("bookingHorses")),
 confirmationRequested:confirmEmail.checked
 })
 })

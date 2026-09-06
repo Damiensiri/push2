@@ -1,3 +1,6 @@
+import {handleHorseHealth,processHorseReminders,resolveHealthMail} from './horse-health.js';
+import {validateBookingHorses,bookingHorseInsert,bookingHorseOptions,bookingHorsesJson,paddockLabelSql} from './paddock-horses.js';
+import { handleHorses, planningEvent } from './horses.js';
 const JSON_HEADERS={
   "content-type":"application/json; charset=utf-8",
   "cache-control":"no-store",
@@ -6,10 +9,16 @@ const JSON_HEADERS={
 
 export default{
   async scheduled(controller,env,ctx){
+    if(controller.cron==='0 7 * * *'){
+      const request=new Request('https://internal/api/cron/horse-health'),diagnostics=createRequestDiagnostics(request,new URL(request.url));
+      ctx.waitUntil(processHorseReminders({...env,DB:instrumentD1(env.DB,diagnostics)},new Date(controller.scheduledTime))
+        .then(result=>console.log(JSON.stringify({type:'horse-health-cron',...result}))).finally(()=>logRequestDiagnostics(diagnostics,ctx)));
+      return;
+    }
     ctx.waitUntil(processPaddockPushReminders(env,new Date(controller.scheduledTime)));
     ctx.waitUntil(processScheduledNotifications(env,new Date(controller.scheduledTime)));
   },
-  async fetch(request,env){
+  async fetch(request,env,ctx){
     const url=new URL(request.url);
     const cors=corsHeaders(request,env);
 
@@ -17,7 +26,17 @@ export default{
       return new Response(null,{status:204,headers:cors});
     }
 
+    const diagnostics=createRequestDiagnostics(request,url);
+    if(diagnostics.enabled)env={...env,DB:instrumentD1(env.DB,diagnostics)};
     try{
+      if(url.pathname==='/api/horse-mail/resolve'&&request.method==='POST'){
+        const input=await readJson(request),row=await resolveHealthMail(env,Number(input?.id),input?.token);
+        if(!row)return json({error:'Rappel non disponible'},404,cors);
+        return json({email:row.email,firstName:row.first_name,horseName:row.horse_name,label:row.label,nextDueOn:row.next_due_on},200,cors);
+      }
+      const healthResponse=await handleHorseHealth(request,env,{json,cors,readJson,isAdmin,authenticatedUser});if(healthResponse)return healthResponse;
+      const horseResponse=await handleHorses(request,env,{json,cors,readJson,isAdmin,authenticatedUser});
+      if(horseResponse)return horseResponse;
       if(request.method==="GET"&&url.pathname==="/api/health"){
         return json({ok:true,environment:env.ENVIRONMENT||"unknown",pushEnabled:isPushEnabled(env)},200,cors);
       }
@@ -74,7 +93,7 @@ export default{
       if(kioskTask&&request.method==="POST"){
         const device=await kioskDevice(request,env);
         if(!device)return json({error:"Tablette non autorisée"},401,cors);
-        const task=await env.DB.prepare("SELECT * FROM planning_tasks WHERE id=?").bind(Number(kioskTask[1])).first();
+        const task=await env.DB.prepare("SELECT * FROM planning_tasks WHERE id=? AND source<>'client'").bind(Number(kioskTask[1])).first();
         if(!task)return json({error:"Tâche introuvable"},404,cors);
         if(task.completed_at)return json({task:publicPlanningTask(task),duplicate:true},200,cors);
         if(task.request_id)await completePaddockRequest(env,Number(task.request_id),"Réalisée depuis le planning");
@@ -326,7 +345,8 @@ export default{
         const viewer=await authenticatedUser(request,env);
         if(!viewer)return json({error:"Non autorisé"},401,cors);
         const today=parisNow().date;
-        const [reservationResult,datedHours,restrictionResult,requestExceptionResult]=await Promise.all([
+        const [horseOptions,reservationResult,datedHours,restrictionResult,requestExceptionResult]=await Promise.all([
+          bookingHorseOptions(env,viewer.id),
           env.DB.prepare(`SELECT id,user_id,name,paddock,date,time,duration FROM paddock_reservations
             WHERE date>=date('now') ORDER BY date,time`).all(),
           loadEffectivePaddockHoursByDate(env,14),
@@ -341,7 +361,7 @@ export default{
         return json({
           reservations:reservationResult.results.map(row=>({id:String(row.id),name:row.name,paddock:row.paddock,
             date:row.date,time:row.time,duration:Number(row.duration),mine:Number(row.user_id)===Number(viewer.id)})),
-          horaires:hours,horairesParDate:datedHours,restrictions,requestExceptions,
+          horaires:hours,horairesParDate:datedHours,restrictions,requestExceptions,horseOptions,
           viewer:{firstName:viewer.first_name,email:viewer.email,role:viewer.role}
         },200,cors);
       }
@@ -349,11 +369,11 @@ export default{
       if(url.pathname==="/api/paddocks/reservations"&&request.method==="GET"){
         const viewer=await authenticatedUser(request,env);
         if(!viewer)return json({error:"Non autorisé"},401,cors);
-        const result=await env.DB.prepare(`SELECT id,name,paddock,date,time,duration,created_at
-          FROM paddock_reservations WHERE user_id=? AND date>=date('now','-3 days')
+        const result=await env.DB.prepare(`SELECT r.id,r.name,r.paddock,r.date,r.time,r.duration,r.created_at,r.version,${bookingHorsesJson} AS horses_json
+          FROM paddock_reservations r WHERE user_id=? AND date>=date('now','-3 days')
           ORDER BY date DESC,time DESC,id DESC`).bind(viewer.id).all();
         return json({reservations:result.results.map(row=>({id:String(row.id),name:row.name,paddock:row.paddock,
-          date:row.date,time:row.time,duration:Number(row.duration),createdAt:row.created_at}))},200,cors);
+          date:row.date,time:row.time,duration:Number(row.duration),createdAt:row.created_at,version:row.version,horses:JSON.parse(row.horses_json)}))},200,cors);
       }
 
       if(url.pathname==="/api/paddocks/reservations"&&request.method==="POST"){
@@ -362,6 +382,8 @@ export default{
         const input=await readJson(request);
         const booking=validatePaddockBooking(input);
         if(booking.error)return json({error:booking.error},400,cors);
+        const horseSelection=await validateBookingHorses(env,input?.horseIds,viewer.id);
+        if(horseSelection.error)return json({error:horseSelection.error},horseSelection.status,cors);
         const policyError=await paddockBookingPolicyError(env,booking);
         if(policyError)return json({error:policyError},409,cors);
         const conflict=await env.DB.prepare(`SELECT id FROM paddock_reservations WHERE date=? AND paddock=?
@@ -381,6 +403,7 @@ export default{
             env.DB.prepare(`INSERT INTO paddock_reservations(lock_key,user_id,name,email,paddock,date,time,duration,created_at)
               VALUES(?,?,?,?,?,?,?,?,?)`).bind(lockKey,viewer.id,viewer.first_name,viewer.email,booking.paddock,
               booking.date,booking.time,booking.duration,now),
+            bookingHorseInsert(env,lockKey,horseSelection.ids),
             ...paddockLockStatements(env,{lockKey,date:booking.date,paddock:booking.paddock,startMinutes:booking.startMinutes,duration:booking.duration})
           ]);
         }catch(error){
@@ -388,7 +411,7 @@ export default{
           throw error;
         }
         const created=await env.DB.prepare("SELECT id FROM paddock_reservations WHERE lock_key=?").bind(lockKey).first();
-        await notifyRealtime(env,"paddocks");
+        await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
         await sendAdminEventPush(env,"Nouvelle réservation paddock",`${viewer.first_name} — ${booking.date} à ${booking.time}`,"paddocks.html");
         return json({reservation:{id:String(created.id),name:viewer.first_name,paddock:booking.paddock,
           date:booking.date,time:booking.time,duration:booking.duration,mine:true},
@@ -472,6 +495,72 @@ export default{
         }
       }
 
+      const editBookingMatch=url.pathname.match(/^\/api\/(admin\/)?paddocks\/reservations\/(\d+)$/);
+      if(editBookingMatch&&request.method==='PATCH'){
+        const admin=Boolean(editBookingMatch[1]);
+        const viewer=admin?null:await authenticatedUser(request,env);
+        if(admin?!isAdmin(request,env):!viewer)return json({error:'Non autorisé'},401,cors);
+        const reservation=await env.DB.prepare('SELECT * FROM paddock_reservations WHERE id=?').bind(Number(editBookingMatch[2])).first();
+        if(!reservation)return json({error:'Réservation introuvable'},404,cors);
+        if(!admin&&Number(reservation.user_id)!==Number(viewer.id))return json({error:'Action interdite'},403,cors);
+        const input=await readJson(request);
+        if(!Number.isSafeInteger(input?.version)||input.version!==reservation.version)return json({error:'La réservation a changé. Actualisez la page.'},409,cors);
+        if(!admin){
+          if(Object.keys(input).some(key=>!['version','horseIds'].includes(key)))return json({error:'Seuls les chevaux peuvent être modifiés depuis Mes réservations'},403,cors);
+          if(!Array.isArray(input.horseIds))return json({error:'Sélection de chevaux requise'},400,cors);
+          const selection=await validateBookingHorses(env,input.horseIds,viewer.id);
+          if(selection.error)return json({error:selection.error},selection.status,cors);
+          try{
+            const results=await env.DB.batch([
+              env.DB.prepare(`UPDATE paddock_reservations SET version=CASE WHEN version=? THEN version+1 ELSE NULL END WHERE id=?`).bind(input.version,reservation.id),
+              env.DB.prepare('DELETE FROM paddock_booking_horses WHERE booking_id=?').bind(reservation.id),
+              bookingHorseInsert(env,reservation.lock_key,selection.ids)
+            ]);
+            if(!results[0].meta.changes)return json({error:'La réservation a été supprimée'},409,cors);
+          }catch(error){
+            if(String(error?.message||error).includes('NOT NULL'))return json({error:'La réservation a changé. Actualisez la page.'},409,cors);
+            throw error;
+          }
+          await notifyRealtime(env,'paddocks');await notifyRealtime(env,'planning');
+          return json({reservation:{id:String(reservation.id),date:reservation.date,time:reservation.time,paddock:reservation.paddock,
+            duration:reservation.duration,horseIds:selection.ids,version:input.version+1}},200,cors);
+        }
+        const booking=validatePaddockBooking({...reservation,...input});
+        if(booking.error)return json({error:booking.error},400,cors);
+        const horseSelection=await validateBookingHorses(env,input.horseIds,reservation.user_id);
+        if(horseSelection.error)return json({error:horseSelection.error},horseSelection.status,cors);
+        // Require the complete selection to avoid silently dropping associations.
+        if(!Array.isArray(input.horseIds))return json({error:'Sélection de chevaux requise'},400,cors);
+        const policyError=await paddockBookingPolicyError(env,booking);
+        if(policyError)return json({error:policyError},409,cors);
+        const conflict=await env.DB.prepare(`SELECT id FROM paddock_reservations WHERE id<>? AND date=? AND
+          ((paddock=? AND ? < CAST(substr(time,1,2) AS INTEGER)*60+CAST(substr(time,4,2) AS INTEGER)+duration
+          AND ?+? > CAST(substr(time,1,2) AS INTEGER)*60+CAST(substr(time,4,2) AS INTEGER)) OR user_id=?) LIMIT 1`)
+          .bind(reservation.id,booking.date,booking.paddock,booking.startMinutes,booking.startMinutes,booking.duration,reservation.user_id).first();
+        if(conflict)return json({error:'Créneau occupé ou autre réservation ce jour'},409,cors);
+        const lockKey=crypto.randomUUID();
+        try{
+          const results=await env.DB.batch([
+            env.DB.prepare(`UPDATE paddock_reservations SET paddock=?,date=?,time=?,duration=?,lock_key=?,
+              version=CASE WHEN version=? THEN version+1 ELSE NULL END WHERE id=?`)
+              .bind(booking.paddock,booking.date,booking.time,booking.duration,lockKey,input.version,reservation.id),
+            env.DB.prepare(`DELETE FROM paddock_slot_locks WHERE reservation_key=? AND EXISTS(SELECT 1 FROM paddock_reservations WHERE lock_key=?)`).bind(reservation.lock_key,lockKey),
+            env.DB.prepare(`INSERT INTO paddock_slot_locks(date,paddock,slot_minute,reservation_key)
+              SELECT r.date,r.paddock,CAST(substr(r.time,1,2) AS INTEGER)*60+CAST(substr(r.time,4,2) AS INTEGER)+j.value,r.lock_key
+              FROM paddock_reservations r,json_each(?) j WHERE r.lock_key=?`).bind(JSON.stringify(booking.duration===90?[0,30,60]:[0,30]),lockKey),
+            env.DB.prepare(`DELETE FROM paddock_booking_horses WHERE booking_id=(SELECT id FROM paddock_reservations WHERE lock_key=?)`).bind(lockKey),
+            bookingHorseInsert(env,lockKey,horseSelection.ids)
+          ]);
+          if(!results[0].meta.changes)return json({error:'La réservation a été supprimée'},409,cors);
+        }catch(error){
+          if(/UNIQUE|NOT NULL/.test(String(error?.message||error)))return json({error:'La réservation ou le créneau a changé. Actualisez la page.'},409,cors);
+          throw error;
+        }
+        await notifyRealtime(env,'paddocks');await notifyRealtime(env,'planning');
+        return json({reservation:{id:String(reservation.id),date:booking.date,time:booking.time,paddock:booking.paddock,
+          duration:booking.duration,horseIds:horseSelection.ids,version:input.version+1}},200,cors);
+      }
+
       const paddockReservationMatch=url.pathname.match(/^\/api\/paddocks\/reservations\/(\d+)$/);
       if(paddockReservationMatch&&request.method==="DELETE"){
         const viewer=await authenticatedUser(request,env);
@@ -481,10 +570,10 @@ export default{
         if(!reservation)return json({error:"Réservation introuvable"},404,cors);
         if(viewer.role!=="admin"&&Number(reservation.user_id)!==Number(viewer.id))return json({error:"Action interdite"},403,cors);
         await env.DB.batch([
-          env.DB.prepare("DELETE FROM paddock_slot_locks WHERE reservation_key=?").bind(reservation.lock_key),
+          env.DB.prepare("DELETE FROM paddock_slot_locks WHERE reservation_key IN (SELECT lock_key FROM paddock_reservations WHERE id=?)").bind(reservation.id),
           env.DB.prepare("DELETE FROM paddock_reservations WHERE id=?").bind(reservation.id)
         ]);
-        await notifyRealtime(env,"paddocks");
+        await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
         await sendAdminEventPush(env,"Réservation paddock annulée",`${viewer.first_name} a annulé sa réservation.`,"paddocks.html");
         return json({deleted:true},200,cors);
       }
@@ -523,19 +612,20 @@ export default{
         if(request.method==="GET"&&url.pathname==="/api/admin/planning"){
           const week=validWeekStart(url.searchParams.get("week"));
           if(!week)return json({error:"Semaine invalide"},400,cors);
-          const planning=await loadPlanning(env,week);
-          const requests=await env.DB.prepare(`SELECT id,user_id,name,email,date,status,comment FROM paddock_requests
-            WHERE date>=? AND date<=date(?, '+6 days') AND status='accepted' ORDER BY date,name`).bind(week,week).all();
-          return json({...planning,requests:requests.results.map(publicPaddockRequest)},200,cors);
+          const horseIds=validHorseIds(url.searchParams.get("horse_ids"));
+          if(horseIds===undefined)return json({error:"Filtre chevaux invalide"},400,cors);
+          return json(await loadPlanning(env,week,true,horseIds),200,cors);
         }
 
         if(request.method==="POST"&&url.pathname==="/api/admin/planning/horses"){
-          const input=await readJson(request);const week=validWeekStart(input?.weekStart);const name=String(input?.name||"").trim();
-          if(!week||!name||name.length>80)return json({error:"Semaine ou nom du cheval invalide"},400,cors);
-          const now=new Date().toISOString();
-          await env.DB.prepare(`INSERT INTO planning_horses(name,active,created_at,updated_at) VALUES(?,1,?,?)
-            ON CONFLICT(name) DO UPDATE SET active=1,updated_at=excluded.updated_at`).bind(name,now,now).run();
-          const horse=await env.DB.prepare("SELECT id FROM planning_horses WHERE name=? COLLATE NOCASE").bind(name).first();
+          const input=await readJson(request);const week=validWeekStart(input?.weekStart);let horseId=Number(input?.horseId);
+          if(week&&!horseId&&String(input?.name||'').trim()){
+            const name=String(input.name).trim().slice(0,100);const existing=await env.DB.prepare("SELECT id FROM planning_horses WHERE name=? AND status='active' ORDER BY id LIMIT 1").bind(name).first();
+            if(existing)horseId=existing.id;else{const now=new Date().toISOString();const created=await env.DB.prepare("INSERT INTO planning_horses(name,created_at,updated_at) VALUES(?,?,?) RETURNING id").bind(name,now,now).first();horseId=created.id;}
+          }
+          if(!week||!Number.isSafeInteger(horseId)||horseId<1)return json({error:"Sélectionnez un cheval de la fiche CHEVAUX"},400,cors);
+          const horse=await env.DB.prepare("SELECT id FROM planning_horses WHERE id=? AND status='active'").bind(horseId).first();
+          if(!horse)return json({error:"Cheval actif introuvable"},404,cors);
           const pos=await env.DB.prepare("SELECT COALESCE(MAX(position),-1)+1 AS n FROM planning_week_horses WHERE week_start=?").bind(week).first();
           await env.DB.prepare(`INSERT OR IGNORE INTO planning_week_horses(week_start,horse_id,position) VALUES(?,?,?)`).bind(week,horse.id,pos.n).run();
           await notifyRealtime(env,"planning");
@@ -552,19 +642,17 @@ export default{
 
         const adminWeekHorse=url.pathname.match(/^\/api\/admin\/planning\/weeks\/(\d{4}-\d{2}-\d{2})\/horses\/(\d+)$/);
         if(adminWeekHorse&&request.method==="DELETE"){
-          await env.DB.batch([
-            env.DB.prepare("DELETE FROM planning_tasks WHERE week_start=? AND horse_id=?").bind(adminWeekHorse[1],Number(adminWeekHorse[2])),
-            env.DB.prepare("DELETE FROM planning_week_horses WHERE week_start=? AND horse_id=?").bind(adminWeekHorse[1],Number(adminWeekHorse[2]))
-          ]);
+          await env.DB.prepare("DELETE FROM planning_week_horses WHERE week_start=? AND horse_id=?")
+            .bind(adminWeekHorse[1],Number(adminWeekHorse[2])).run();
           await notifyRealtime(env,"planning");return json({deleted:true},200,cors);
         }
 
         if(request.method==="POST"&&url.pathname==="/api/admin/planning/tasks"){
           const input=await readJson(request);const validated=validatePlanningTask(input);
           if(validated.error)return json({error:validated.error},400,cors);
-          const membership=await env.DB.prepare("SELECT 1 ok FROM planning_week_horses WHERE week_start=? AND horse_id=?")
-            .bind(validated.weekStart,validated.horseId).first();
-          if(!membership)return json({error:"Cheval absent de cette semaine"},409,cors);
+          const membership=await env.DB.prepare("SELECT 1 ok FROM planning_horses WHERE id=?")
+            .bind(validated.horseId).first();
+          if(!membership)return json({error:"Cheval introuvable"},409,cors);
           if(validated.requestId){const linked=await env.DB.prepare("SELECT id FROM paddock_requests WHERE id=? AND status='accepted'").bind(validated.requestId).first();if(!linked)return json({error:"Seule une demande acceptée peut être liée au planning"},409,cors);}
           const now=new Date().toISOString();
           if(validated.employeeId&&!await planningEmployeeAvailable(env,validated.employeeId,validated.weekStart,validated.dayIndex))
@@ -581,9 +669,9 @@ export default{
           if(input?.requestId&&days.length>1)return json({error:"Une demande de mise au paddock ne peut être liée qu’à une seule journée"},409,cors);
           const tasks=days.map(dayIndex=>validatePlanningTask({...input,dayIndex}));const invalid=tasks.find(task=>task.error);
           if(invalid)return json({error:invalid.error},400,cors);
-          const membership=await env.DB.prepare("SELECT 1 ok FROM planning_week_horses WHERE week_start=? AND horse_id=?")
-            .bind(tasks[0].weekStart,tasks[0].horseId).first();
-          if(!membership)return json({error:"Cheval absent de cette semaine"},409,cors);
+          const membership=await env.DB.prepare("SELECT 1 ok FROM planning_horses WHERE id=?")
+            .bind(tasks[0].horseId).first();
+          if(!membership)return json({error:"Cheval introuvable"},409,cors);
           if(tasks[0].requestId){const linked=await env.DB.prepare("SELECT id FROM paddock_requests WHERE id=? AND status='accepted'").bind(tasks[0].requestId).first();if(!linked)return json({error:"Seule une demande acceptée peut être liée au planning"},409,cors);}
           if(tasks[0].employeeId){
             const availability=await Promise.all(tasks.map(task=>planningEmployeeAvailable(env,task.employeeId,task.weekStart,task.dayIndex)));
@@ -610,9 +698,9 @@ export default{
           if(input?.task){
             const taskId=Number(input.task.id),horseId=Number(input.task.horseId),dayIndex=Number(input.task.dayIndex),position=Number(input.task.position||0);
             if(!Number.isInteger(taskId)||!Number.isInteger(horseId)||!Number.isInteger(dayIndex)||dayIndex<0||dayIndex>6||!Number.isInteger(position)||position<0)return json({error:"Déplacement de tâche invalide"},400,cors);
-            const membership=await env.DB.prepare("SELECT 1 ok FROM planning_week_horses WHERE week_start=? AND horse_id=?").bind(week,horseId).first();
-            if(!membership)return json({error:"Cheval absent de cette semaine"},409,cors);
-            await env.DB.prepare("UPDATE planning_tasks SET horse_id=?,day_index=?,position=?,updated_at=? WHERE id=? AND week_start=?")
+            const membership=await env.DB.prepare("SELECT 1 ok FROM planning_horses WHERE id=?").bind(horseId).first();
+            if(!membership)return json({error:"Cheval introuvable"},409,cors);
+            await env.DB.prepare("UPDATE planning_tasks SET horse_id=?,day_index=?,position=?,updated_at=? WHERE id=? AND week_start=? AND source<>'client'")
               .bind(horseId,dayIndex,position,new Date().toISOString(),taskId,week).run();
           }
           await notifyRealtime(env,"planning");return json(await loadPlanning(env,week),200,cors);
@@ -620,11 +708,11 @@ export default{
 
         const adminTask=url.pathname.match(/^\/api\/admin\/planning\/tasks\/(\d+)$/);
         if(adminTask&&request.method==="DELETE"){
-          await env.DB.prepare("DELETE FROM planning_tasks WHERE id=?").bind(Number(adminTask[1])).run();
+          await env.DB.prepare("DELETE FROM planning_tasks WHERE id=? AND source<>'client'").bind(Number(adminTask[1])).run();
           await notifyRealtime(env,"planning");return json({deleted:true},200,cors);
         }
         if(adminTask&&request.method==="PATCH"){
-          const current=await env.DB.prepare("SELECT * FROM planning_tasks WHERE id=?").bind(Number(adminTask[1])).first();
+          const current=await env.DB.prepare("SELECT * FROM planning_tasks WHERE id=? AND source<>'client'").bind(Number(adminTask[1])).first();
           if(!current)return json({error:"Tâche introuvable"},404,cors);
           const input=await readJson(request);
           const edits=["horseId","dayIndex","type","description","paddock","startsAt","endsAt","requestId","employeeId"].some(key=>input[key]!==undefined);
@@ -1161,7 +1249,7 @@ export default{
 
         if(request.method==="GET"&&url.pathname==="/api/admin/paddocks"){
           const [reservationResult,hours,datedHours,restrictionResult,requestResult]=await Promise.all([
-            env.DB.prepare(`SELECT id,name,email,paddock,date,time,duration FROM paddock_reservations
+            env.DB.prepare(`SELECT r.id,r.user_id,r.name,r.email,r.paddock,r.date,r.time,r.duration,r.version,${bookingHorsesJson} AS horses_json FROM paddock_reservations r
               WHERE date>=date('now') ORDER BY date,time`).all(),
             loadEffectivePaddockHours(env,parisNow().date),
             loadEffectivePaddockHoursByDate(env,120),
@@ -1170,10 +1258,15 @@ export default{
               FROM paddock_requests ORDER BY date DESC,id DESC`).all()
           ]);
           const restrictions={};for(const row of restrictionResult.results)restrictions[row.date]={blockGrande90:Boolean(row.block_grande_90),blockBeudot90:Boolean(row.block_beudot_90)};
-          return json({reservations:reservationResult.results.map(row=>({...row,id:String(row.id),duration:Number(row.duration)})),
+          return json({reservations:reservationResult.results.map(row=>({id:String(row.id),userId:row.user_id,name:row.name,email:row.email,paddock:row.paddock,date:row.date,time:row.time,duration:Number(row.duration),version:row.version,horses:JSON.parse(row.horses_json)})),
             requests:requestResult.results.map(publicPaddockRequest),horaires:hours,horairesParDate:datedHours,restrictions},200,cors);
         }
 
+        if(request.method==="GET"&&url.pathname==="/api/admin/paddocks/horse-options"){
+          const userId=Number(url.searchParams.get('userId'));
+          if(!Number.isSafeInteger(userId)||userId<1)return json({error:'Client invalide'},400,cors);
+          return json({horses:await bookingHorseOptions(env,userId)},200,cors);
+        }
         if(request.method==="POST"&&url.pathname==="/api/admin/paddocks/reservations"){
           const input=await readJson(request);
           const booking=validatePaddockBooking(input);
@@ -1183,6 +1276,8 @@ export default{
           const user=await env.DB.prepare(`SELECT * FROM users WHERE id=? AND status='active'
             AND COALESCE(approval_status,'approved')='approved'`).bind(userId).first();
           if(!user)return json({error:"Client actif introuvable"},404,cors);
+          const horseSelection=await validateBookingHorses(env,input?.horseIds,user.id);
+          if(horseSelection.error)return json({error:horseSelection.error},horseSelection.status,cors);
           const policyError=await paddockBookingPolicyError(env,booking);
           if(policyError)return json({error:policyError},409,cors);
           const conflict=await env.DB.prepare(`SELECT id FROM paddock_reservations WHERE date=? AND paddock=?
@@ -1201,7 +1296,8 @@ export default{
               env.DB.prepare(`INSERT INTO paddock_reservations(lock_key,user_id,name,email,paddock,date,time,duration,created_at)
                 VALUES(?,?,?,?,?,?,?,?,?)`).bind(lockKey,user.id,user.first_name,user.email,booking.paddock,
                 booking.date,booking.time,booking.duration,now),
-              ...paddockLockStatements(env,{lockKey,date:booking.date,paddock:booking.paddock,
+              bookingHorseInsert(env,lockKey,horseSelection.ids),
+            ...paddockLockStatements(env,{lockKey,date:booking.date,paddock:booking.paddock,
                 startMinutes:booking.startMinutes,duration:booking.duration})
             ]);
           }catch(error){
@@ -1209,7 +1305,7 @@ export default{
             throw error;
           }
           const created=await env.DB.prepare("SELECT id FROM paddock_reservations WHERE lock_key=?").bind(lockKey).first();
-          await notifyRealtime(env,"paddocks");
+          await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
           const email=await sendPaddockReservationConfirmationEmail(env,{
             id:created.id,name:user.first_name,email:user.email,paddock:booking.paddock,
             date:booking.date,time:booking.time,duration:booking.duration
@@ -1277,7 +1373,7 @@ export default{
             if(String(error?.message||error).includes("UNIQUE"))return json({error:"Un créneau est déjà occupé"},409,cors);
             throw error;
           }
-          await notifyRealtime(env,"paddocks");
+          await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
           return json({created:paddocks.length},201,cors);
         }
 
@@ -1290,10 +1386,10 @@ export default{
           const comment=String(input?.comment||"").trim();
           if(comment.length>500)return json({error:"Commentaire trop long"},400,cors);
           await env.DB.batch([
-            env.DB.prepare("DELETE FROM paddock_slot_locks WHERE reservation_key=?").bind(reservation.lock_key),
+            env.DB.prepare("DELETE FROM paddock_slot_locks WHERE reservation_key IN (SELECT lock_key FROM paddock_reservations WHERE id=?)").bind(reservation.id),
             env.DB.prepare("DELETE FROM paddock_reservations WHERE id=?").bind(reservation.id)
           ]);
-          await notifyRealtime(env,"paddocks");
+          await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
           let email={requested:false,sent:false};
           if(reservation.email&&reservation.email.includes("@"))email=await sendPaddockReservationCancellationEmail(env,reservation,comment);
           const push=await sendPaddockReservationCancellationPush(env,reservation);
@@ -1308,14 +1404,14 @@ export default{
             VALUES(?,?,?,?) ON CONFLICT(date) DO UPDATE SET block_grande_90=excluded.block_grande_90,
             block_beudot_90=excluded.block_beudot_90,updated_at=excluded.updated_at`)
             .bind(date,input.blockGrande90?1:0,input.blockBeudot90?1:0,new Date().toISOString()).run();
-          await notifyRealtime(env,"paddocks");
+          await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
           return json({saved:true},200,cors);
         }
 
         const adminRestriction=url.pathname.match(/^\/api\/admin\/paddocks\/restrictions\/(\d{4}-\d{2}-\d{2})$/);
         if(request.method==="DELETE"&&adminRestriction){
           await env.DB.prepare("DELETE FROM paddock_restrictions WHERE date=?").bind(adminRestriction[1]).run();
-          await notifyRealtime(env,"paddocks");
+          await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
           return json({deleted:true},200,cors);
         }
 
@@ -1327,7 +1423,7 @@ export default{
           await env.DB.batch(paddocks.map(paddock=>env.DB.prepare(`INSERT INTO paddock_hours(paddock,schedule_json,updated_at)
             VALUES(?,?,?) ON CONFLICT(paddock) DO UPDATE SET schedule_json=excluded.schedule_json,updated_at=excluded.updated_at`)
             .bind(paddock,encoded,now)));
-          await notifyRealtime(env,"paddocks");
+          await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
           return json({saved:true,paddocks},200,cors);
         }
 
@@ -1434,7 +1530,7 @@ export default{
             env.DB.prepare("DELETE FROM users WHERE id=?").bind(current.id)
           ]);
           await env.PRODUCT_IMAGES.delete(`profiles/${current.id}.jpg`);
-          await notifyRealtime(env,"paddocks");
+          await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
           await notifyRealtime(env,"paddock-accounts");
           return json({deleted:true},200,cors);
         }
@@ -1580,7 +1676,7 @@ export default{
             validated.opensAt,validated.closesAt,now,now).run();
           await notifyRealtime(env,"schedules");
           await notifyRealtime(env,"statuses");
-          await notifyRealtime(env,"paddocks");
+          await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
           return json({exception:await loadHourException(env,validated.date,validated.scope,validated.targetSlug)},200,cors);
         }
 
@@ -1591,7 +1687,7 @@ export default{
           if(!result.meta.changes)return json({error:"Exception horaire introuvable"},404,cors);
           await notifyRealtime(env,"schedules");
           await notifyRealtime(env,"statuses");
-          await notifyRealtime(env,"paddocks");
+          await notifyRealtime(env,"paddocks");await notifyRealtime(env,"planning");
           return json({deleted:true},200,cors);
         }
 
@@ -1744,10 +1840,117 @@ export default{
 
       return json({error:"Route introuvable"},404,cors);
     }catch(error){
+      if(String(error?.message||error).includes('HEALTH_SEND_IN_PROGRESS'))return json({error:'Un rappel sanitaire est en cours d’envoi. Réessayez dans quelques instants.'},409,cors);
       return json({error:"Erreur interne",detail:String(error?.message||error)},500,cors);
-    }
+    }finally{logRequestDiagnostics(diagnostics,ctx);}
   }
 };
+
+function createRequestDiagnostics(request,url){
+  const enabled=url.pathname.startsWith("/api/");
+  return{
+    enabled,
+    id:crypto.randomUUID(),
+    method:request.method,
+    path:url.pathname,
+    query:url.search||"",
+    startedAt:Date.now(),
+    d1Count:0,
+    d1Ms:0,
+    rowsRead:0,rowsWritten:0,metadataComplete:true,
+    statements:[]
+  };
+}
+
+function instrumentD1(db,diagnostics){
+  return new Proxy(db,{
+    get(target,prop,receiver){
+      if(prop==="prepare"){
+        return sql=>instrumentD1Statement(Reflect.apply(target.prepare,target,[sql]),diagnostics,sql);
+      }
+      if(prop==="batch"){
+        return async statements=>{
+          const count=Array.isArray(statements)?statements.length:0;
+          const start=Date.now();
+          try{
+            const results=await Reflect.apply(target.batch,target,[statements]);
+            results.forEach(result=>recordD1Metadata(diagnostics,result));
+            return results;
+          }finally{
+            const elapsed=Date.now()-start;
+            diagnostics.d1Count+=count||1;
+            diagnostics.d1Ms+=elapsed;
+            diagnostics.statements.push({op:"batch",count:count||1,ms:elapsed,sql:"D1 batch"});
+          }
+        };
+      }
+      return Reflect.get(target,prop,receiver);
+    }
+  });
+}
+
+function instrumentD1Statement(statement,diagnostics,sql){
+  return new Proxy(statement,{
+    get(target,prop,receiver){
+      if(prop==="bind"){
+        return(...args)=>instrumentD1Statement(Reflect.apply(target.bind,target,args),diagnostics,sql);
+      }
+      if(["all","first","run","raw"].includes(prop)){
+        return async(...args)=>{
+          const start=Date.now();
+          try{
+            if(prop==="first"){
+              const result=await target.all();recordD1Metadata(diagnostics,result);
+              const row=result.results[0]??null;
+              if(args[0]!==undefined&&row!==null){
+                if(!Object.prototype.hasOwnProperty.call(row,args[0]))throw new Error("D1_COLUMN_NOTFOUND");
+                return row[args[0]];
+              }
+              return row;
+            }
+            const result=await Reflect.apply(target[prop],target,args);
+            recordD1Metadata(diagnostics,result);
+            return result;
+          }finally{
+            const elapsed=Date.now()-start;
+            diagnostics.d1Count+=1;
+            diagnostics.d1Ms+=elapsed;
+            diagnostics.statements.push({op:String(prop),count:1,ms:elapsed,sql:compactSql(sql)});
+          }
+        };
+      }
+      return Reflect.get(target,prop,receiver);
+    }
+  });
+}
+
+function recordD1Metadata(diagnostics,result){
+  const meta=result?.meta;
+  if(typeof meta?.rows_read!=="number"||typeof meta?.rows_written!=="number"){diagnostics.metadataComplete=false;return;}
+  diagnostics.rowsRead+=meta.rows_read;diagnostics.rowsWritten+=meta.rows_written;
+}
+
+function compactSql(sql){
+  return String(sql||"").replace(/\s+/g," ").trim().slice(0,180);
+}
+
+function logRequestDiagnostics(diagnostics,ctx){
+  const payload={
+    type:"d1-diagnostics",
+    requestId:diagnostics.id,
+    method:diagnostics.method,
+    path:diagnostics.path,
+    query:diagnostics.query,
+    d1Queries:diagnostics.d1Count,
+    d1Ms:diagnostics.d1Ms,
+    rowsRead:diagnostics.rowsRead,rowsWritten:diagnostics.rowsWritten,metadataComplete:diagnostics.metadataComplete,
+    totalMs:Date.now()-diagnostics.startedAt,
+    statements:diagnostics.statements
+  };
+  const write=()=>console.log(JSON.stringify(payload));
+  if(ctx?.waitUntil)ctx.waitUntil(Promise.resolve().then(write));
+  else write();
+}
 
 function compatibleAlert(row){
   return{
@@ -3008,6 +3211,13 @@ function validWeekStart(value){
   return !Number.isNaN(date.getTime())&&date.getUTCDay()===1?week:"";
 }
 
+function validHorseIds(value){
+  if(value===null||value==='')return null;
+  const ids=String(value).split(',').map(Number);
+  if(!ids.length||ids.length>100||ids.some(id=>!Number.isSafeInteger(id)||id<1)||new Set(ids).size!==ids.length)return undefined;
+  return ids;
+}
+
 function publicPlanningTask(row){
   return{id:Number(row.id),weekStart:row.week_start,horseId:Number(row.horse_id),dayIndex:Number(row.day_index),
     type:row.type,description:row.description||"",paddock:row.paddock||"",startsAt:row.starts_at||"",
@@ -3015,24 +3225,36 @@ function publicPlanningTask(row){
     employeeId:row.employee_id===null||row.employee_id===undefined?null:Number(row.employee_id),
     employeeName:row.employee_name||"",employeeColor:row.employee_color||"",
     employeeAvailable:row.employee_id===null||row.employee_id===undefined?true:Boolean(Number(row.employee_available)),
-    completedAt:row.completed_at||null,completedBy:row.completed_by||null};
+    source:row.source||"backstage",completedAt:row.completed_at||null,completedBy:row.completed_by||null};
 }
 
-async function loadPlanning(env,week){
+async function loadPlanning(env,week,includeRequests=false,horseIds=null){
+  const taskFilter=horseIds?.length?` AND t.horse_id IN (${horseIds.map(()=>'?').join(',')})`:'';
   const [horseResult,taskResult,reservationResult,hoursResult,requestResult,employeeResult]=await Promise.all([
     env.DB.prepare(`SELECT h.id,h.name,wh.position FROM planning_week_horses wh JOIN planning_horses h ON h.id=wh.horse_id
-      WHERE wh.week_start=? AND h.active=1 ORDER BY wh.position,h.name`).bind(week).all(),
-    env.DB.prepare(`SELECT t.*,e.name AS employee_name,e.color AS employee_color,
+      WHERE wh.week_start=? AND h.status='active' ORDER BY wh.position,h.name`).bind(week).all(),
+    env.DB.prepare(`SELECT 'task' AS event_kind,json_object('id',t.id,'week_start',t.week_start,'horse_id',t.horse_id,'day_index',t.day_index,'type',t.type,'description',t.description,'paddock',t.paddock,'starts_at',t.starts_at,'ends_at',t.ends_at,'request_id',t.request_id,'position',t.position,'completed_at',t.completed_at,'completed_by',t.completed_by,'employee_id',t.employee_id,'source',t.source,'created_by_user_id',t.created_by_user_id,
+      'employee_name',e.name,'employee_color',e.color,'employee_available',
       CASE WHEN t.employee_id IS NULL THEN 1 WHEN EXISTS(
         SELECT 1 FROM staff_shifts s WHERE s.employee_id=t.employee_id AND s.status='work'
           AND s.work_date=date(t.week_start,printf('+%d days',t.day_index))
-      ) THEN 1 ELSE 0 END AS employee_available
+      ) THEN 1 ELSE 0 END) AS payload
       FROM planning_tasks t LEFT JOIN staff_employees e ON e.id=t.employee_id
-      WHERE t.week_start=? ORDER BY t.day_index,t.horse_id,t.position,t.id`).bind(week).all(),
+      WHERE t.week_start=? AND t.source<>'client' AND EXISTS(SELECT 1 FROM planning_week_horses wh
+        WHERE wh.week_start=t.week_start AND wh.horse_id=t.horse_id)${taskFilter}
+      UNION ALL
+      SELECT 'paddock_booking',json_object('id','paddock:'||r.id,'sourceId',r.id,'horseId',bh.horse_id,
+        'date',r.date,'dayIndex',CAST(julianday(r.date)-julianday(?) AS INTEGER),'startsAt',r.time,
+        'endsAt',substr(time(r.time,printf('+%d minutes',r.duration)),1,5),'type','paddock',
+        'label','Paddock · '||${paddockLabelSql},'source','paddock_booking','canEdit',json('false'))
+      FROM paddock_reservations r JOIN paddock_booking_horses bh ON bh.booking_id=r.id
+      WHERE r.date>=? AND r.date<=date(?,'+6 days') AND EXISTS(SELECT 1 FROM planning_week_horses wh
+        WHERE wh.week_start=? AND wh.horse_id=bh.horse_id)${horseIds?.length?` AND bh.horse_id IN (${horseIds.map(()=>'?').join(',')})`:''}`)
+      .bind(week,...(horseIds||[]),week,week,week,week,...(horseIds||[])).all(),
     env.DB.prepare(`SELECT id,name,paddock,date,time,duration FROM paddock_reservations
       WHERE date>=? AND date<=date(?, '+6 days') ORDER BY date,time,paddock,id`).bind(week,week).all(),
     env.DB.prepare("SELECT paddock,schedule_json FROM paddock_hours").all(),
-    env.DB.prepare(`SELECT id,date,name FROM paddock_requests WHERE date>=? AND date<=date(?, '+6 days')
+    env.DB.prepare(`SELECT ${includeRequests?'id,user_id,name,email,date,status,comment':'id,date,name'} FROM paddock_requests WHERE date>=? AND date<=date(?, '+6 days')
       AND status='accepted' ORDER BY date,name,id`).bind(week,week).all(),
     env.DB.prepare(`SELECT e.id,e.name,e.color,s.work_date
       FROM staff_employees e JOIN staff_shifts s ON s.employee_id=e.id
@@ -3040,8 +3262,12 @@ async function loadPlanning(env,week){
       ORDER BY e.position,e.name,s.work_date`).bind(week,week).all()
   ]);
   const paddockHours={};for(const row of hoursResult.results)paddockHours[row.paddock]=JSON.parse(row.schedule_json);
-  return{weekStart:week,horses:horseResult.results.map(row=>({id:Number(row.id),name:row.name,position:Number(row.position)})),
-    tasks:taskResult.results.map(publicPlanningTask),paddockReservations:reservationResult.results.map(row=>({id:String(row.id),
+  const availableHorses=horseResult.results.map(row=>({id:Number(row.id),name:row.name,position:Number(row.position)}));
+  const selected=horseIds?new Set(horseIds):null;
+  return{...(includeRequests?{requests:requestResult.results.map(publicPaddockRequest)}:{}),weekStart:week,
+    availableHorses,horses:selected?availableHorses.filter(horse=>selected.has(horse.id)):availableHorses,
+    tasks:taskResult.results.filter(row=>row.event_kind==='task').map(row=>publicPlanningTask(JSON.parse(row.payload))).sort((a,b)=>a.dayIndex-b.dayIndex||a.position-b.position||a.id-b.id),
+    events:taskResult.results.map(row=>{const data=JSON.parse(row.payload);return row.event_kind==='paddock_booking'?data:{...planningEvent(data,null),canEdit:includeRequests};}),paddockReservations:reservationResult.results.map(row=>({id:String(row.id),
       name:row.name,paddock:row.paddock,date:row.date,time:row.time,duration:Number(row.duration)})),paddockHours,
     paddockRequests:requestResult.results.map(row=>({id:String(row.id),date:row.date,name:row.name})),
     employees:[...employeeResult.results.reduce((map,row)=>{
@@ -3060,11 +3286,15 @@ function validatePlanningTask(input){
   if(!["paddock","travail","longe","repos","concours","proprietaire","autre"].includes(type))return{error:"Type de tâche invalide"};
   if(description.length>300)return{error:"Description trop longue"};
   if(type==="autre"&&!description)return{error:"Le texte de la tâche est obligatoire"};
-  if(type==="paddock"&&(!paddock||!/^\d{2}:\d{2}$/.test(startsAt||"")||!/^\d{2}:\d{2}$/.test(endsAt||"")))return{error:"Paddock et horaires obligatoires"};
+  const timePattern=/^([01]\d|2[0-3]):[0-5]\d$/;
+  if(startsAt&&!timePattern.test(startsAt)||endsAt&&!timePattern.test(endsAt))return{error:"Horaire invalide"};
+  if(endsAt&&!startsAt)return{error:"Ajoutez une heure de début avant l’heure de fin"};
+  if(startsAt&&endsAt&&endsAt<=startsAt)return{error:"L’heure de fin doit suivre l’heure de début"};
+  if(type==="paddock"&&(!paddock||!startsAt||!endsAt))return{error:"Paddock et horaires obligatoires"};
   if(requestId!==null&&(!Number.isInteger(requestId)||requestId<1))return{error:"Demande liée invalide"};
   if(employeeId!==null&&(!Number.isInteger(employeeId)||employeeId<1))return{error:"Salarié invalide"};
-  return{weekStart,horseId,dayIndex,type,description,paddock:type==="paddock"?paddock:"",startsAt:type==="paddock"?startsAt:null,
-    endsAt:type==="paddock"?endsAt:null,requestId,employeeId};
+  return{weekStart,horseId,dayIndex,type,description,paddock:type==="paddock"?paddock:"",startsAt,
+    endsAt,requestId,employeeId};
 }
 
 async function planningEmployeeAvailable(env,employeeId,weekStart,dayIndex){
@@ -3301,8 +3531,9 @@ function validatePaddockBooking(input){
   const time=String(input?.time||"");
   const duration=Number(input?.duration);
   if(!["maison","grande","beudot"].includes(paddock))return{error:"Paddock invalide"};
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return{error:"Date invalide"};
+  if(!validIsoDate(date))return{error:"Date invalide"};
   if(!/^\d{2}:\d{2}$/.test(time)||timeToMinutes(time)===null)return{error:"Heure invalide"};
+  if(timeToMinutes(time)%30!==0)return{error:"Choisissez une heure ou une demi-heure"};
   if(![60,90].includes(duration))return{error:"Durée invalide"};
   if(duration===90&&paddock==="maison")return{error:"Les réservations de 1 h 30 sont réservées à Grande voie et Beudot"};
   return{paddock,date,time,duration,startMinutes:timeToMinutes(time)};
@@ -3619,7 +3850,7 @@ function corsHeaders(request,env){
   return{
     "access-control-allow-origin":allowed,
     "access-control-allow-methods":"GET,POST,PUT,PATCH,DELETE,OPTIONS",
-    "access-control-allow-headers":"authorization,content-type",
+    "access-control-allow-headers":"authorization,content-type,if-match",
     "vary":"Origin"
   };
 }
@@ -3747,3 +3978,5 @@ export{
   parseIcsCalendar,googleCalendarIcalUrls
   ,sendUserPush,sendPaddockReservationCancellationPush
 };
+
+export { instrumentD1, createRequestDiagnostics, loadPlanning };
