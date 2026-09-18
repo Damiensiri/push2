@@ -922,6 +922,20 @@ changer ou de supprimer ce numéro. Le chargement de la carte, le calcul du
 solde restant, la jauge et l’affichage de la dernière mise sont conservés à
 l’identique.
 
+## Densification visuelle du planning écurie
+
+La vue quotidienne de `planning.html` donne désormais environ deux tiers de
+la largeur aux tâches, présentées sur deux colonnes, et un tiers au planning
+des paddocks, présenté sous forme de trois cartes compactes empilées. La liste
+des tâches possède son propre défilement sur grand écran afin de garder les
+paddocks visibles. Une flèche purement indicative apparaît au bas des tâches
+uniquement quand du contenu reste à consulter, puis disparaît en fin de liste.
+
+Le logo existant est conservé et la sous-ligne d’environnement a été retirée.
+Les demandes de mise au paddock restent signalées en orange. Cette évolution
+ne modifie ni les données, ni les validations définitives, ni les appels API,
+ni la navigation Jour/Semaine, ni le comportement des réservations paddock.
+
 ## Reprise d’une nouvelle session
 
 À chaque nouvelle conversation ou reprise du projet :
