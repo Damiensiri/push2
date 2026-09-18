@@ -932,9 +932,11 @@ paddocks visibles. Une flèche purement indicative apparaît au bas des tâches
 uniquement quand du contenu reste à consulter, puis disparaît en fin de liste.
 
 Le logo existant est conservé et la sous-ligne d’environnement a été retirée.
-Les demandes de mise au paddock restent signalées en orange. Cette évolution
-ne modifie ni les données, ni les validations définitives, ni les appels API,
-ni la navigation Jour/Semaine, ni le comportement des réservations paddock.
+Chaque carte possède une petite vignette de cheval décorative. Les demandes de
+mise au paddock restent signalées en orange et le salarié affecté n’est affiché
+qu’une seule fois. Cette évolution ne modifie ni les données, ni les validations
+définitives, ni les appels API, ni la navigation Jour/Semaine, ni le comportement
+des réservations paddock.
 
 ## Reprise d’une nouvelle session
 
