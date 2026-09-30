@@ -4,7 +4,7 @@ window.METEOALARM_VIGILANCE = {
   "label": "Jaune",
   "phenomenon": "Orages",
   "period": "Du 30 septembre à 16:03 au 2 octobre à 00:00",
-  "updatedAt": "30 septembre à 16:04",
+  "updatedAt": "30 septembre à 22:05",
   "source": "MeteoAlarm / EUMETNET",
   "sourceUrl": "https://meteoalarm.org"
 };
