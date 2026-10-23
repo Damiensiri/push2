@@ -28,6 +28,13 @@ qu’avec la racine du domaine de production.
 Les notifications OneSignal ne sont pas activées sur la bêta. Elles restent
 réservées au domaine de production `app.damiensiri.com`.
 
+### Alertes temporaires d’accueil
+
+Backstage permet de programmer un bandeau d’accueil orange ou rouge pour une
+seule journée ou une période définie par une date de début et une date de fin.
+Ce bandeau est indépendant des horaires : il ne remplace ni le statut
+d’ouverture de l’accueil ni les horaires affichés sur la page Horaires.
+
 ## Workflow
 
 1. Tous les développements commencent sur `push2-beta`.

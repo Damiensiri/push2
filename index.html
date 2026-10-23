@@ -9,7 +9,7 @@
 <title>Ecurie Damien Siri</title>
 
 <script>
-const APP_VERSION="20260918-085300";
+const APP_VERSION="20261023-130058";
 const APP_BASE_URL=new URL("./",window.location.href);
 </script>
 <link rel="manifest" id="app-manifest">
@@ -38,19 +38,19 @@ setTimeout(()=>registration?.update?.(),3000);
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;700&display=swap" rel="stylesheet">
 
-<script src="assets/js/app-config.js?v=20260918-085300"></script>
-<script src="assets/js/app-layout.js?v=20260918-085300"></script>
-<script src="assets/js/profile-store.js?v=20260918-085300" defer></script>
-<script src="assets/js/pages/index-profile.js?v=20260918-085300" defer></script>
-<script src="assets/js/pages/index-install-prompt.js?v=20260918-085300" defer></script>
+<script src="assets/js/app-config.js?v=20261023-130058"></script>
+<script src="assets/js/app-layout.js?v=20261023-130058"></script>
+<script src="assets/js/profile-store.js?v=20261023-130058" defer></script>
+<script src="assets/js/pages/index-profile.js?v=20261023-130058" defer></script>
+<script src="assets/js/pages/index-install-prompt.js?v=20261023-130058" defer></script>
 
-<link rel="stylesheet" href="assets/css/app.css?v=20260918-085300">
-<link rel="stylesheet" href="assets/css/themes/summer.css?v=20260918-085300">
-<link rel="stylesheet" href="assets/css/themes/autumn.css?v=20260918-085300">
-<link rel="stylesheet" href="assets/css/themes/christmas.css?v=20260918-085300">
-<link rel="stylesheet" href="assets/css/themes/winter.css?v=20260918-085300">
-<link rel="stylesheet" href="assets/css/themes/spring.css?v=20260918-085300">
-<link rel="stylesheet" href="assets/css/pages/index.css?v=20260918-085300">
+<link rel="stylesheet" href="assets/css/app.css?v=20261023-130058">
+<link rel="stylesheet" href="assets/css/themes/summer.css?v=20261023-130058">
+<link rel="stylesheet" href="assets/css/themes/autumn.css?v=20261023-130058">
+<link rel="stylesheet" href="assets/css/themes/christmas.css?v=20261023-130058">
+<link rel="stylesheet" href="assets/css/themes/winter.css?v=20261023-130058">
+<link rel="stylesheet" href="assets/css/themes/spring.css?v=20261023-130058">
+<link rel="stylesheet" href="assets/css/pages/index.css?v=20261023-130058">
 </head>
 
 <!-- REMPLACE UNIQUEMENT ÇA -->
@@ -301,38 +301,27 @@ status.classList.remove("open","closed","exception");
 
 const accueil=statuts.find(e=>e.espace==="accueil");
 const alerte=getSheetValue(accueil,"alerte");
+const now=new Date();
+const today=localIsoDate(now);
+const activeException=(exceptions||[])
+  .filter(item=>{
+    const start=String(item.date||"").slice(0,10);
+    const end=String(item.endDate||item.end_date||start).slice(0,10);
+    return start&&start<=today&&today<=end;
+  })
+  .sort((a,b)=>String(b.date).localeCompare(String(a.date)))[0];
 
-if(accueil && alerte && alerte.trim()!==""){
-const isUrgent=String(getSheetValue(accueil,"urgent")).trim().toLowerCase()==="oui";
+if(activeException||(accueil&&alerte&&alerte.trim()!=="")){
+const alertMessage=activeException?.message||alerte;
+const isUrgent=activeException
+  ? String(activeException.color||"orange").toLowerCase()==="red"
+  : String(getSheetValue(accueil,"urgent")).trim().toLowerCase()==="oui";
 alertBox.style.display="flex";
 alertBox.classList.toggle("urgent",isUrgent);
-alertBox.innerHTML="⚠️ "+alerte;
+alertBox.textContent="⚠️ "+alertMessage;
 }else{
 alertBox.style.display="none";
 alertBox.classList.remove("urgent");
-}
-
-const now=new Date();
-
-const today=localIsoDate(now);
-
-const ex = exceptions.find(e=>{
-  if(!e.date) return false;
-
-  const d = new Date(e.date);
-
-  const local =
-    d.getFullYear() + "-" +
-    String(d.getMonth()+1).padStart(2,"0") + "-" +
-    String(d.getDate()).padStart(2,"0");
-
-  return local === today;
-});
-
-if(ex){
-status.classList.add("exception");
-status.textContent=ex.message;
-return;
 }
 
 const h=scheduleForDate(horaires,today);
@@ -476,7 +465,7 @@ setInterval(updateBell,60000);
 
 </script>
 
-<script src="assets/js/status-realtime.js?v=20260918-085300"></script>
+<script src="assets/js/status-realtime.js?v=20261023-130058"></script>
 
 </body>
 </html>
