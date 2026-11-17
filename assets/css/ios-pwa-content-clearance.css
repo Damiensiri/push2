@@ -1,6 +1,6 @@
 /*
- * iOS PWA : éloigne uniquement l'interface supérieure du voile système.
- * Les fonds et les couches d'ambiance restent inchangés.
+ * Expérience bêta iOS PWA : éloigne uniquement l'interface supérieure du
+ * voile système. Les fonds et les couches d'ambiance restent inchangés.
  */
 
 html.ios-pwa-content-clearance body.index-page header{

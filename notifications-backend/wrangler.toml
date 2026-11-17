@@ -29,6 +29,10 @@ database_id = "2bc15667-ca81-484a-9b49-e0cfa3926466"
 binding = "PRODUCT_IMAGES"
 bucket_name = "ecurie-products-prod"
 
+[[services]]
+binding = "GRAND_RANG"
+service = "ce-grandrang"
+
 [triggers]
 crons = ["* * * * *", "0 7 * * *"]
 
