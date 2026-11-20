@@ -3,8 +3,8 @@ window.METEOALARM_VIGILANCE = {
   "level": "yellow",
   "label": "Jaune",
   "phenomenon": "Vent violent",
-  "period": "Du 20 novembre à 06:00 au 21 novembre à 00:00",
-  "updatedAt": "20 novembre à 06:00",
+  "period": "Du 20 novembre à 16:00 au 21 novembre à 00:00",
+  "updatedAt": "20 novembre à 16:00",
   "source": "MeteoAlarm / EUMETNET",
   "sourceUrl": "https://meteoalarm.org"
 };
